@@ -17,7 +17,7 @@ export default defineConfig({
         background_color: '#49334f',
         display: 'standalone',
         orientation: 'portrait',
-        icons: [{ src: '/favicon.svg', sizes: 'any', type: 'image/svg+xml' }],
+        icons: [{ src: 'favicon.svg', sizes: 'any', type: 'image/svg+xml' }],
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,json}'],

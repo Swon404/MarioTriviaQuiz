@@ -10,7 +10,12 @@ test('Mario Kart quiz gives four answers, feedback, and rewind before Next', asy
   await page.getByRole('button', { name: 'Quiz Battle' }).click();
   await page.getByLabel('Player name').fill('Blaize');
   await page.getByRole('button', { name: 'Mario Kart', exact: true }).click();
+  for (const level of ['Rookie', 'Pro', 'Legend']) {
+    await expect(page.getByRole('button', { name: level })).toBeVisible();
+  }
+  await page.getByRole('button', { name: 'Pro' }).click();
   await page.getByRole('button', { name: 'Start!' }).click();
+  await expect(page.locator('.quiz-topline')).toContainText('Pro');
   await expect(page.getByText('Question 1 of 10')).toBeVisible();
   await expect(page.locator('.answer-grid button')).toHaveCount(4);
   await page.locator('.answer-grid button').first().click();
@@ -41,6 +46,7 @@ test('completed results survive reload and stay in a separate storage namespace'
   await page.getByRole('button', { name: 'High Scores' }).click();
   await expect(page.locator('.score-list li')).toHaveCount(1);
   await expect(page.locator('.score-list')).toContainText('Blaize');
+  await expect(page.locator('.score-list')).toContainText('Rookie');
   const keys = await page.evaluate(() => Object.keys(localStorage));
   expect(keys).toContain('mariotrivia_results_v1');
   expect(keys.some(key => key.startsWith('elementalquiz_'))).toBe(false);
@@ -165,7 +171,7 @@ test('Clue Duel reveals five clues, accepts a guess, and rewinds before Next', a
   await page.getByRole('button', { name: 'Play Games' }).click();
   await page.getByRole('button', { name: 'Clue Duel' }).click();
   await page.getByRole('button', { name: 'Mario games' }).click();
-  await page.getByRole('button', { name: 'Professor' }).click();
+  await page.getByRole('button', { name: 'Legend' }).click();
   await page.getByRole('button', { name: 'Start!' }).click();
   await expect(page.getByText('Question 1 of 5')).toBeVisible();
   await expect(page.getByText('Clue 1 of 5')).toBeVisible();
@@ -197,7 +203,7 @@ test('Category Finder shows a consecutive 5×5 window with a valid target', asyn
   await page.goto('./');
   await page.getByRole('button', { name: 'Play Games' }).click();
   await page.getByRole('button', { name: 'Category Finder' }).click();
-  await page.getByRole('button', { name: 'Professor' }).click();
+  await page.getByRole('button', { name: 'Legend' }).click();
   await page.getByRole('button', { name: 'Start!' }).click();
   await expect(page.locator('.category-grid button')).toHaveCount(25);
   const numbers = (await page.locator('.category-grid button small').allTextContents()).map(Number);
