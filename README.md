@@ -1,6 +1,6 @@
 # Jump & Discover (working title)
 
-The public-facing title is deliberately neutral and provisional; it has not been cleared for release. The app describes its Mario subject matter plainly without using Nintendo's name or a named item as the app brand. The repository and local URL still use the internal `MarioTriviaQuiz` name until a hosting destination is chosen.
+The public-facing title is deliberately neutral and provisional; it has not been cleared for release. The app describes its Mario subject matter plainly without using Nintendo's name or a named item as the app brand. The repository and Pages URL still use the internal `MarioTriviaQuiz` name.
 
 Championship combines two or more supported games in Quick, Standard or Epic length. Choose Solo, Two Players or Play Computer. In versus play, each side gets the same rounds in separate turns with a handover screen; the Computer's answers are fixed before its turn. The selected difficulty carries through every leg, earned points add to each player's total, and Match & Hunt always has three rounds. Championship results are saved locally and shown on High Scores. The Elemental Quiz flip-card/time-trial Match variant remains future work.
 
@@ -24,7 +24,7 @@ npm run test:all
 
 The app currently uses a local browser profile name and the `mariotrivia_` storage prefix. No login, account service or AI API is needed to play. Existing ElementalQuiz saved data is not read or changed.
 
-The fork lives in a private GitHub repository. GitHub Actions runs the question audit, browser tests and production build on pushes and pull requests. It does not deploy a playable site: GitHub Pages is unavailable for this private repository on the current account plan. The public name, branding and release route are still under review. See [the implementation checklist](docs/mario-quiz-plan.md) for the remaining modes, Mario Kart catalogue and release work.
+The fork lives in a public GitHub repository. GitHub Actions runs the question audit, browser tests and production build on pushes and pull requests; a passing `main` build deploys the playable site to [GitHub Pages](https://swon404.github.io/MarioTriviaQuiz/). The public name and branding are still under review. See [the implementation checklist](docs/mario-quiz-plan.md) for the remaining modes, Mario Kart catalogue and release work.
 
 Nintendo owns the Mario names, characters and games referenced in the questions. This fan project is not affiliated with or endorsed by Nintendo.
 Nintendo sprites and artwork have not been added. Their use in a distributed app needs separate rights review or permission; an unofficial label alone does not grant it.
