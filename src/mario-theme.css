@@ -1,0 +1,110 @@
+:root {
+  --bg-primary: #49334f;
+  --bg-secondary: #85445b;
+  --bg-card: #59364a;
+  --surface: #69414f;
+  --text-primary: #fffdf7;
+  --text-secondary: #f3dfe3;
+  --accent: #f26455;
+  --accent-glow: #ffa479;
+  --correct: #66d093;
+  --wrong: #ff8178;
+  --gold: #ffe06e;
+  --border: rgba(255, 255, 255, .32);
+  --radius: 16px;
+  --radius-md: 16px;
+  --radius-sm: 10px;
+}
+
+.mario-app { isolation: isolate; }
+body:has(.mario-app) {
+  background:
+    radial-gradient(circle at 13% 10%, rgba(255,255,255,.15) 0 38px, transparent 39px),
+    radial-gradient(circle at 22% 9%, rgba(255,255,255,.13) 0 29px, transparent 30px),
+    radial-gradient(circle at 81% 22%, rgba(255,255,255,.12) 0 46px, transparent 47px),
+    linear-gradient(155deg, #a75448 0%, #85445b 48%, #49334f 100%);
+}
+.mario-app .game-title { color: #fffdf7; font-size: clamp(1.9rem, 5.5vw, 2.3rem); letter-spacing: .01em; text-shadow: 0 2px 0 rgba(55,25,42,.55); }
+.mario-app .title-word { display: inline-block; white-space: nowrap; }
+.mario-app .title-letter { display: inline-block; }
+.mario-app .title-letter:nth-child(6n + 1) { color: #ffe06e; }
+.mario-app .title-letter:nth-child(6n + 2) { color: #ffcab8; }
+.mario-app .title-letter:nth-child(6n + 3) { color: #a9ecc2; }
+.mario-app .title-letter:nth-child(6n + 4) { color: #e1ceff; }
+.mario-app .title-letter:nth-child(6n + 5) { color: #ffbde0; }
+.mario-app .title-letter:nth-child(6n) { color: #fff6d9; }
+.mario-app .title-amp { color: #fffdf7; white-space: nowrap; }
+.mario-app .home-stats, .mario-app .result-card { border: 1px solid var(--border); border-top: 5px solid var(--gold); box-shadow: 0 12px 26px rgba(47,22,38,.24); }
+.mario-app .menu-btn, .mario-app .game-mode-btn, .mario-app .choice-btn, .mario-app .round-btn, .mario-app .diff-btn, .mario-app .order-tiles button, .mario-app .finder-grid button, .mario-app .match-column button { box-shadow: 0 4px 0 rgba(48,23,40,.35); }
+.mario-app .menu-btn.primary, .mario-app .start-btn { background: linear-gradient(145deg, #ff765e, #d9474f); border-color: #ffad74; color: #fff; }
+.mario-app .menu-btn.primary .menu-desc { color: #fff3e7; }
+.mario-app .menu-btn:hover, .mario-app .game-mode-btn:hover, .mario-app .round-btn:hover:not(:disabled) { border-color: var(--gold); background-color: #754457; }
+.mario-app .choice-btn:hover:not(:disabled):not(.disabled), .mario-app .finder-grid button:hover:not(:disabled), .mario-app .match-column button:hover:not(:disabled) { border-color: var(--gold); background: #754457; }
+.mario-app .round-btn.selected, .mario-app .diff-btn.selected, .mario-app .champ-game-toggle.selected { border-color: var(--gold); background: #754457; }
+.mario-app .back-btn { border-color: var(--border); color: var(--text-primary); background: rgba(53,26,45,.4); }
+.mario-app .progress-track { background: rgba(53,26,45,.5); }
+.mario-app .progress-track > div { background: linear-gradient(90deg, #ffe06e, #84df91); }
+.mario-app .ep-bar { background: linear-gradient(90deg, #f8c94c, #84df91); }
+.mario-app .quiz-panel, .mario-app .high-scores-screen, .mario-app .mario-tracks, .mario-app .mario-learning-zone { color: var(--text-primary); }
+.mario-app .champ-live-total { background: linear-gradient(125deg, rgba(255,224,110,.22), rgba(236,120,93,.15)); border-color: rgba(255,224,110,.65); }
+.mario-app .champ-game-banner { background: rgba(78,45,66,.96); border-color: var(--gold); color: var(--gold); }
+.mario-app .game-mode-btn.championship { background: linear-gradient(135deg, #714255, #84504f); border-color: var(--gold); }
+.mario-app a { color: #fff0a8; }
+.mario-app { display: flex; flex-direction: column; gap: 16px; }
+.mario-tagline, .hub-intro, .setup-intro { color: var(--text-secondary); text-align: center; line-height: 1.45; }
+.mario-tagline { margin-top: -8px; }
+.mario-home-tip { max-width: 420px; margin: 12px auto 4px; padding: 12px; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--surface); text-align: center; line-height: 1.4; }
+.mario-app .home-header > .tts-btn, .mario-game > .tts-btn, .versus-game > .tts-btn { align-self: center; }
+.mario-app .voice-settings-toggle { align-self: center; }
+.mario-points-line { color: var(--gold); font-weight: 700; text-align: right; font-size: .85rem; }
+.mario-earned { color: var(--gold); font-weight: 800; }
+.mario-stat-line { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; font-size: .85rem; color: var(--text-secondary); }
+.mario-setup fieldset { border: 0; }
+.mario-setup legend, .mario-setup .field-label { display: block; margin-bottom: 8px; font-weight: 700; }
+.mario-setup .round-select { justify-content: center; }
+.mario-setup .round-btn { min-width: 78px; }
+.mario-setup .start-btn { margin-top: 8px; }
+.mario-game { display: flex; flex-direction: column; gap: 14px; }
+.game-topbar, .quiz-topline { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+.quiz-topline { color: var(--text-secondary); font-size: .85rem; }
+.mario-game h1 { text-align: center; font-size: clamp(1.35rem, 4vw, 1.8rem); line-height: 1.3; margin: 14px 0 4px; }
+.progress-track { height: 9px; border-radius: 8px; overflow: hidden; background: rgba(255,255,255,.12); }
+.progress-track > div { height: 100%; background: linear-gradient(90deg, var(--accent), var(--gold)); }
+.answer-grid { display: grid; gap: 10px; margin: 10px 0; }
+.answer-grid .choice-btn { min-height: 54px; }
+.answer-grid .choice-btn:disabled { cursor: default; }
+.feedback { margin-top: 8px; }
+.feedback h2 { font-size: 1.18rem; margin-bottom: 8px; }
+.feedback p { margin: 8px 0; }
+.feedback a, .source-link { color: #8dd7ff; }
+.feedback-actions { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 18px; }
+.feedback-actions .start-btn { flex: 1; }
+.result-panel .start-btn { width: 100%; }
+.result-panel .back-btn { align-self: center; }
+.result-panel .result-card p { color: var(--text-secondary); line-height: 1.4; }
+.eyebrow { color: var(--gold); font-size: .75rem; font-weight: 800; letter-spacing: .13em; text-transform: uppercase; }
+.score-list { list-style: none; display: grid; gap: 8px; margin-top: 16px; }
+.score-list li { display: flex; align-items: center; justify-content: space-between; gap: 12px; background: var(--bg-card); border-radius: var(--radius); padding: 12px 14px; }
+.score-list small { display: block; color: var(--text-secondary); margin-top: 4px; }
+.mario-tracks { display: flex; flex-direction: column; gap: 12px; }
+.mario-learning-zone { display: flex; flex-direction: column; gap: 12px; }
+.mario-learning-zone h1 { margin: 0; text-align: center; font-size: 1.8rem; }
+.mario-learning-zone .intro-copy, .learning-zone-note { max-width: 640px; margin: 0 auto 12px; color: var(--text-secondary); text-align: center; line-height: 1.5; }
+.learning-topic-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.learning-topic-card { padding: 18px; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--surface); }
+.learning-topic-icon { font-size: 1.6rem; }
+.learning-topic-card h2 { margin: 8px 0; font-size: 1.05rem; }
+.learning-topic-card p { margin: 0; color: var(--text-secondary); font-size: .88rem; }
+@media (max-width: 520px) { .learning-topic-grid { grid-template-columns: 1fr; } }
+.mario-tracks h1 { font-size: 1.6rem; text-align: center; }
+.mario-tracks .intro-copy { color: var(--text-secondary); text-align: center; line-height: 1.5; }
+.wave-section { background: var(--bg-card); border-radius: var(--radius); padding: 14px 18px; }
+.wave-section h2 { color: var(--gold); font-size: 1.15rem; margin-bottom: 10px; }
+.wave-section h3 { font-size: 1rem; margin: 10px 0 4px; }
+.wave-section ol { padding-left: 24px; line-height: 1.7; }
+.mario-footer { color: var(--text-secondary); text-align: center; font-size: .75rem; line-height: 1.5; margin-top: auto; padding: 24px 0 8px; }
+@media (max-width: 520px) {
+  .mario-app { padding: 12px; }
+  .mario-setup .round-select { justify-content: flex-start; }
+  .game-topbar .score-display { font-size: .9rem; }
+}

@@ -1,16 +1,15 @@
 {
-  "name": "elementalquiz",
+  "name": "mario-trivia-quiz",
   "private": true,
-  "version": "1.0.30",
+  "version": "0.1.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "test:questions": "node scripts/audit-questions.mjs",
-    "test:rewind": "node scripts/test-rewind.mjs",
+    "test:questions": "node scripts/audit-mario.mjs",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
-    "test:all": "npm run test:questions && npm run test:rewind && npm run test:e2e && npm run build",
+    "test:all": "npm run test:questions && npm run test:e2e && npm run build",
     "preview": "vite preview"
   },
   "devDependencies": {

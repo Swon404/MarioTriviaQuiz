@@ -1,166 +1,30 @@
-# ⚛️ ElementalQuiz
+# Jump & Discover (working title)
 
-A fun, interactive periodic table quiz game built for kids! Learn about all 118 elements through quizzes, fun facts, and exploration — guided by **Elementor**, your friendly atom mascot.
+The public-facing title is deliberately neutral and provisional; it has not been cleared for release. The app describes its Mario subject matter plainly without using Nintendo's name or a named item as the app brand. The repository and local URL still use the internal `MarioTriviaQuiz` name until a hosting destination is chosen.
 
-![React](https://img.shields.io/badge/React-19-blue) ![TypeScript](https://img.shields.io/badge/TypeScript-6-blue) ![Vite](https://img.shields.io/badge/Vite-8-purple) ![PWA](https://img.shields.io/badge/PWA-Offline%20Ready-green)
+Championship combines two or more supported games in Quick, Standard or Epic length. Choose Solo, Two Players or Play Computer. In versus play, each side gets the same rounds in separate turns with a handover screen; the Computer's answers are fixed before its turn. The selected difficulty carries through every leg, earned points add to each player's total, and Match & Hunt always has three rounds. Championship results are saved locally and shown on High Scores. The Elemental Quiz flip-card/time-trial Match variant remains future work.
 
-## Features
+The Elemental Quiz-style voice controls are present on the home screen, with read-aloud buttons for questions and feedback. Correct answers earn difficulty-based EP with streak bonuses; the home screen shows the player's Mario rank, EP progress, best streak and milestones. Championship totals add the EP actually earned in each game. The optional timer is currently a stopwatch, so it does not award the original countdown speed bonus.
 
-### 🎮 Unified games
+Explore now opens a Learning Zone scaffold. Its planned character, power-up and game sections are clearly marked as unconfirmed; the reviewed Booster Course Pass track list is reached from its Mario Kart section.
 
-Choose **Solo**, **2 Players**, or **Player vs Bot**, then play the same seven-game catalogue:
+A text-only, unofficial fan quiz about Mario games and Mario Kart. This is a separate local fork of ElementalQuiz at source commit `acbe7c70c4ecc9ad35020bd855b7955afce35d1f`.
 
-- **Quiz Battle** — Element questions with Classic, Sprint, and Showdown variants
-- **True or False Blitz** — Decide whether element statements are true before the timer expires
-- **Element Match** — Timed Hunt and Time Trial boards; this is the preserved multiplayer-first matching game
-- **Clue Duel** — Identify elements from progressively clearer clues
-- **Symbol Pick** — Pick the correct chemical symbol from close look-alikes
-- **Atomic Order** — Arrange elements using Easy, Medium, or Hard rules and 1×–4× tile sizes
-- **Atom Quiz** — Questions about atomic structure, forces, radiation, and related science
+The current playable milestone has six solo games: Quiz Battle, Game Order, Track Finder, Match & Hunt, Clue Duel and Category Finder. Quiz Battle also supports alternating two-player turns and a local Computer opponent, with five distinct questions per side and a handover screen. Its home screen, game hub, setup screens, round layout and results use the Elemental Quiz visual style and navigation pattern. Quiz Battle draws from 102 sourced multiple-choice questions: 51 general Mario and 51 Mario Kart, tagged by subject and balanced across categories in each game. Topics include characters, baddies, power-ups and items, games, consoles, tracks, and documented bugs that Nintendo has fixed. Game Order uses dated titles from Nintendo's Mario history; Track Finder uses the Mario Kart 8 Deluxe Booster Course Pass catalogue. Match & Hunt presents three fresh name-to-clue boards, with a target guaranteed to appear on each board. Clue Duel uses five progressively revealing clues for each of 16 authored character or track subjects, with five non-repeating rounds and more answer choices at higher levels. Category Finder uses a 40-item numbered Mario catalogue; its three rounds show consecutive 3×3, 4×4 or 5×5 windows with a valid target type. Choose Explorer, Scientist or Professor and optionally show a timer for solo games. Feedback adds a related fact, and Rewind restarts the current round before Next; Match & Hunt also lets you restart a go mid-round. Completed results are saved locally and visible on the High Scores screen. A text guide lists all 48 Booster Course Pass tracks by wave and cup.
 
-Every compatible configuration has its own leaderboard category. Bots participate in sessions but are never added to human leaderboards.
+The games share `src/mario/rounds.ts` for round creation and answer checks and `src/mario/session.ts` for submitting, rewinding, scoring and advancing. Championship rules and fixed Computer answers are in `src/mario/championship.ts`. Standalone two-player and Computer Quiz Battle use the same question bank with a separate turn-state engine in `src/mario/versus.ts`. Rewind does not reroll Computer answers.
 
-### 🏆 Championship
+Development:
 
-- Choose an ordered combination of the same seven games
-- Quick, Standard, and Epic lengths
-- Solo, 2 Players, and Player vs Bot formats
-- Championships total the points earned in each match without normalization
-- Championship Element Match Time Trials use the Atomic Order round count as their match target and a board three times that size; Hunt keeps its existing board sizes
-- Individual game leaderboards update after each leg
-- Exact game/rules combinations have separate Championship leaderboards
-
-### 🔍 Explore and Create
-
-- **Explore** — Browse the periodic table, open element details, study one element in Deep Dive, or learn about rare and radioactive Exotic Elements
-- **Element Lab** — Invent custom elements and retain them in the player collection
-
-### 🧠 Question Variety
-12+ question categories with multiple generators each:
-- Symbol & name recognition
-- Atomic numbers & periodic table position
-- Element classification & groups
-- Discovery history (who, when, where)
-- States of matter & radioactivity
-- Compounds & isotopes
-- Real-world uses & how elements are obtained
-- **6 fun-fact question types** — including true/false, "I Spy" two-clue puzzles, and "Amazing fact!" challenges
-
-### 🌟 Fun Facts
-Every element has **10 curated fun facts** focused on:
-- Everyday connections kids can relate to (smoke detectors, phone batteries, toothpaste)
-- Mind-blowing comparisons and world records
-- Strange and amazing science
-- Real-world "wow" moments and history
-
-## Content Safety Guidelines
-
-This app is designed for kids, so fact and question wording should stay educational and age-appropriate.
-
-- Keep safety and health information factual, calm, and non-graphic.
-- Avoid death-centered, violent, or sensational phrasing in prompts, hints, and explanations.
-- Prefer wording that teaches safe behavior (for example: testing, protection, careful handling).
-- If a historical event is relevant, describe it briefly without graphic detail.
-- Preserve scientific accuracy while using child-friendly language.
-
-### 🤖 Elementor Mascot
-A kawaii-style atom character that guides you through the app:
-- Big expressive eyes with sparkles and animations
-- Rosy cheeks and cute little arms
-- 6 expressions: greeting, thinking, correct, wrong, hint, celebrate
-- Contextual messages and encouragement throughout
-
-### 📊 Progress System
-- **Element Points (EP)** earned from correct answers
-- **Rank progression** through Atom Explorer → Super Scientist → Element Emperor
-- **Element collection** — collect elements as you learn about them
-- **Player profiles** with stats tracking via localStorage
-- **3 difficulty levels** — `Explorer` (36 most-famous elements, simpler questions, second chance), `Scientist` (86 elements), `Professor` (all 118)
-
-### 📱 PWA Support
-- Install as an app on any device
-- Works offline after first load
-- Responsive design for mobile and desktop
-- Hardened mobile touch handling (no red tap-highlight, focus-visible-only outlines)
-
-## Getting Started
-
-### Prerequisites
-- [Node.js](https://nodejs.org/) (v18+)
-
-### Install & Run
-
-```bash
-# Install dependencies
+```sh
 npm install --legacy-peer-deps
-
-# Start development server
 npm run dev
-
-# Build for production
-npm run build
-
-# Preview production build
-npm run preview
+npm run test:all
 ```
 
-## Tech Stack
+The app currently uses a local browser profile name and the `mariotrivia_` storage prefix. No login, account service or AI API is needed to play. Existing ElementalQuiz saved data is not read or changed.
 
-- **React 19** — UI framework
-- **TypeScript 6** — Type safety
-- **Vite 8** — Build tool & dev server
-- **vite-plugin-pwa** — Service worker & offline support
-- **localStorage** — Player data persistence
+The fork has no Git remote and its inherited publishing workflow is disabled. The public name, branding and release route are still under review. See [the implementation checklist](docs/mario-quiz-plan.md) for the remaining modes, Mario Kart catalogue and release work.
 
-## Project Structure
-
-```
-src/
-├── components/       # Reusable UI components
-│   ├── AtomModel.tsx       # Animated atom (protons/neutrons/electrons)
-│   ├── CollectionTable.tsx # Periodic table view of collected elements
-│   ├── Elementor.tsx       # Mascot character (SVG)
-│   ├── ElementInfo.tsx     # Element detail panel
-│   ├── PeriodicTable.tsx   # Interactive periodic table
-│   └── QuizCard.tsx        # Question display & answers
-├── data/
-│   ├── elements.ts         # All 118 elements with facts
-│   └── comparisonData.ts   # Real-world size/mass comparisons
-├── engine/
-│   ├── questionGenerator.ts  # Question generation logic
-│   ├── gameResults.ts        # Generic game and Championship leaderboards
-│   ├── scoring.ts            # EP, ranks & difficulty config
-│   ├── sounds.ts             # SFX
-│   ├── storage.ts            # Profile, progress & custom-element persistence
-│   └── tts.ts                # Optional text-to-speech
-├── games/              # Canonical catalogue and shared game engines
-│   ├── catalog.ts
-│   ├── atomicOrder.ts
-│   ├── clueDuel.ts
-│   ├── elementMatch.ts
-│   ├── symbolPick.ts
-│   └── trueFalse.ts
-├── screens/
-│   ├── HomeScreen.tsx
-│   ├── IntroScreen.tsx
-│   ├── ProfileScreen.tsx
-│   ├── GameHubScreen.tsx       # Shared game and player-format catalogue
-│   ├── QuizScreen.tsx          # Quiz Battle content variants
-│   ├── AtomQuizScreen.tsx
-│   ├── ExoticQuizScreen.tsx
-│   ├── SymbolPickScreen.tsx
-│   ├── ElementOrderScreen.tsx  # Canonical Atomic Order Solo UI
-│   ├── SoloClueDuelScreen.tsx
-│   ├── SoloElementMatchScreen.tsx
-│   ├── SoloTrueFalseScreen.tsx
-│   ├── ElementLabScreen.tsx
-│   ├── TwoPlayerScreen.tsx     # All 2-player modes + Championship
-│   └── ExploreScreen.tsx
-├── App.tsx
-├── main.tsx
-└── styles.css
-```
-
-## License
-
-This project is for personal/educational use.
+Nintendo owns the Mario names, characters and games referenced in the questions. This fan project is not affiliated with or endorsed by Nintendo.
+Nintendo sprites and artwork have not been added. Their use in a distributed app needs separate rights review or permission; an unofficial label alone does not grant it.
