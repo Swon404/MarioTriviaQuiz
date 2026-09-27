@@ -1,4 +1,4 @@
-# Jump & Discover (working title)
+# Mushroom Power Quiz (working title)
 
 The public-facing title is deliberately neutral and provisional; it has not been cleared for release. The app describes its Mario subject matter plainly without using Nintendo's name or a named item as the app brand. The repository and Pages URL still use the internal `MarioTriviaQuiz` name.
 
@@ -27,4 +27,4 @@ The app currently uses a local browser profile name and the `mariotrivia_` stora
 The fork lives in a public GitHub repository. GitHub Actions runs the question audit, browser tests and production build on pushes and pull requests; a passing `main` build deploys the playable site to [GitHub Pages](https://swon404.github.io/MarioTriviaQuiz/). The public name and branding are still under review. See [the implementation checklist](docs/mario-quiz-plan.md) for the remaining modes, Mario Kart catalogue and release work.
 
 Nintendo owns the Mario names, characters and games referenced in the questions. This fan project is not affiliated with or endorsed by Nintendo.
-Nintendo sprites and artwork have not been added. Their use in a distributed app needs separate rights review or permission; an unofficial label alone does not grant it.
+The background in `public/platform-landscape.png` is original AI-generated platform-game scenery, not Nintendo artwork. Nintendo sprites and artwork have not been added. Their use in a distributed app needs separate rights review or permission; an unofficial label alone does not grant it.

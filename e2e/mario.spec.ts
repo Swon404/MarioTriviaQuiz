@@ -21,13 +21,13 @@ test('Mario Kart quiz gives four answers, feedback, and rewind before Next', asy
   await page.locator('.answer-grid button').first().click();
   await expect(page.getByText('Fun fact:')).toBeVisible();
   await expect(page.locator('.mario-earned')).toContainText('EP');
-  await page.getByRole('button', { name: 'Rewind' }).click();
+  await page.getByRole('button', { name: '↶ Rewind', exact: true }).click();
   await expect(page.getByText('Fun fact:')).toHaveCount(0);
   await expect(page.locator('.answer-grid button:not([disabled])')).toHaveCount(4);
   await page.locator('.answer-grid button').first().click();
   await page.getByRole('button', { name: 'Next question' }).click();
   await expect(page.getByText('Question 2 of 10')).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Rewind' })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: '↶ Rewind', exact: true })).toHaveCount(0);
 });
 
 test('completed results survive reload and stay in a separate storage namespace', async ({ page }) => {
@@ -75,9 +75,15 @@ test('track guide lists all 48 Booster Course Pass courses', async ({ page }) =>
 test('Explore opens the Learning Zone with clearly unconfirmed placeholders', async ({ page }) => {
   await page.setViewportSize({ width: 360, height: 740 });
   await page.goto('./');
-  await expect(page).toHaveTitle('Jump & Discover');
-  await expect(page.getByRole('heading', { name: 'Jump & Discover' })).toBeVisible();
+  await expect(page).toHaveTitle('Mushroom Power Quiz');
+  await expect(page.getByRole('heading', { name: 'Mushroom Power Quiz' })).toBeVisible();
+  await expect(page.locator('.title-word')).toHaveCount(3);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(false);
+  expect(await page.evaluate(() => getComputedStyle(document.body).backgroundImage)).toContain('platform-landscape.png');
   expect(new Set(await page.locator('.title-letter').evaluateAll(letters => letters.map(letter => getComputedStyle(letter).color))).size).toBeGreaterThanOrEqual(4);
+  expect(await page.locator('.title-word').first().locator('.title-letter').evaluateAll(letters => letters.slice(0, 4).map(letter => getComputedStyle(letter).color))).toEqual([
+    'rgb(255, 106, 99)', 'rgb(255, 230, 109)', 'rgb(99, 190, 255)', 'rgb(121, 231, 138)',
+  ]);
   await expect(page.getByText('Unofficial, text-only trivia about Mario games and Mario Kart tracks.')).toBeVisible();
   expect(await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--bg-primary').trim())).toBe('#49334f');
   await page.getByRole('button', { name: 'Explore Learning Zone' }).click();
@@ -99,7 +105,7 @@ test('Game Order checks a shuffled board and rewind restarts the round', async (
   const initial = await page.locator('.order-tiles button').allTextContents();
   await page.getByRole('button', { name: 'Check order' }).click();
   await expect(page.getByText('Answer:')).toBeVisible();
-  await page.getByRole('button', { name: 'Rewind' }).click();
+  await page.getByRole('button', { name: '↶ Rewind', exact: true }).click();
   await expect(page.locator('.order-tiles button')).toHaveCount(3);
   expect(await page.locator('.order-tiles button').allTextContents()).toEqual(initial);
   await page.locator('.order-tiles button').nth(0).click();
@@ -160,7 +166,7 @@ test('Match & Hunt uses real pairs and rewind restarts the whole go', async ({ p
   }
   await expect(page.getByText('4/4 pairs found')).toBeVisible();
   await expect(page.getByText('Fun fact:')).toBeVisible();
-  await page.getByRole('button', { name: 'Rewind' }).click();
+  await page.getByRole('button', { name: '↶ Rewind', exact: true }).click();
   await expect(page.getByText('0/4 pairs found')).toBeVisible();
   await expect(page.locator('.match-column').first().getByRole('button', { name: target, exact: true })).toBeEnabled();
   await expect(page.getByText('Fun fact:')).toHaveCount(0);
@@ -188,14 +194,14 @@ test('Clue Duel reveals five clues, accepts a guess, and rewinds before Next', a
   await expect(page.locator('.clue-list li')).toHaveCount(5);
   await page.locator('.answer-grid button').filter({ hasText: answer }).first().click();
   await expect(page.getByText('Fun fact:')).toBeVisible();
-  await page.getByRole('button', { name: 'Rewind' }).click();
+  await page.getByRole('button', { name: '↶ Rewind', exact: true }).click();
   await expect(page.getByText('Clue 1 of 5')).toBeVisible();
   await expect(page.locator('.clue-list li')).toHaveCount(1);
   await page.locator('.answer-grid button').filter({ hasText: answer }).first().click();
   await page.getByRole('button', { name: 'Next question' }).click();
   await expect(page.getByText('Question 2 of 5')).toBeVisible();
   await expect(page.locator('.answer-grid button')).toHaveCount(5);
-  await expect(page.getByRole('button', { name: 'Rewind' })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: '↶ Rewind', exact: true })).toHaveCount(0);
 });
 
 test('Category Finder shows a consecutive 5×5 window with a valid target', async ({ page }) => {
@@ -215,7 +221,7 @@ test('Category Finder shows a consecutive 5×5 window with a valid target', asyn
   await page.locator('.category-grid button').nth(visible.indexOf(target.name)).click();
   await expect(page.getByText('Correct!')).toBeVisible();
   expect(await page.locator('.category-grid button.right-answer').count()).toBeGreaterThan(0);
-  await page.getByRole('button', { name: 'Rewind' }).click();
+  await page.getByRole('button', { name: '↶ Rewind', exact: true }).click();
   await expect(page.locator('.category-grid button:not([disabled])')).toHaveCount(25);
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth > innerWidth);
   expect(overflow).toBe(false);
@@ -237,7 +243,7 @@ test('two-player Quiz Battle alternates hidden turns and saves both scores', asy
   const choices = await page.locator('.answer-grid .choice-text').allTextContents();
   await page.locator('.answer-grid button').nth(choices.indexOf(answer)).click();
   await expect(page.getByText('Correct!')).toBeVisible();
-  await page.getByRole('button', { name: 'Rewind' }).click();
+  await page.getByRole('button', { name: '↶ Rewind', exact: true }).click();
   await expect(page.locator('.answer-grid button:not([disabled])')).toHaveCount(4);
   await page.locator('.answer-grid button').nth(choices.indexOf(answer)).click();
   await page.getByRole('button', { name: 'Next turn' }).click();
@@ -276,7 +282,7 @@ test('Computer Quiz Battle reveals a prechosen answer after its handover', async
   await page.getByRole('button', { name: "Reveal Computer's answer" }).click();
   const selected = await page.locator('.answer-grid button.wrong, .answer-grid button.correct').count();
   expect(selected).toBeGreaterThan(0);
-  await page.getByRole('button', { name: 'Rewind' }).click();
+  await page.getByRole('button', { name: '↶ Rewind', exact: true }).click();
   await expect(page.getByRole('button', { name: "Reveal Computer's answer" })).toBeVisible();
   await page.getByRole('button', { name: "Reveal Computer's answer" }).click();
   await expect(page.getByText('Fun fact:')).toBeVisible();
@@ -423,7 +429,7 @@ test('Computer championship preselects answers and does not reroll after rewind'
   await page.getByRole('button', { name: "Start Computer's turn" }).click();
   await page.getByRole('button', { name: "Reveal Computer's answer" }).click();
   const answer = await page.getByText('Computer chose:').textContent();
-  await page.getByRole('button', { name: 'Rewind' }).click();
+  await page.getByRole('button', { name: '↶ Rewind', exact: true }).click();
   await page.getByRole('button', { name: "Reveal Computer's answer" }).click();
   expect(await page.getByText('Computer chose:').textContent()).toBe(answer);
   for (let i = 0; i < 3; i += 1) {

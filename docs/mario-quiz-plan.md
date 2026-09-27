@@ -11,7 +11,7 @@ The initial release target is a free web/PWA edition without adverts or purchase
 
 This is the concrete first subject adaptation of [the game-series plan](game-series-plan.md). For this edition, Mario replaces Animals as the next subject. Start with Quiz Battle rather than the earlier plan's matching/category prototype. Extract reusable code as each mode needs it.
 
-Working repository name: `MarioTriviaQuiz` (provisional internal name). The UI and PWA currently use `Jump & Discover` as an uncleared working title; the final public name remains undecided.
+Working repository name: `MarioTriviaQuiz` (provisional internal name). The UI and PWA currently use `Mushroom Power Quiz` as an uncleared working title; the final public name remains undecided.
 
 ## 1. Establish the fork
 

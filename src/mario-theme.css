@@ -18,21 +18,24 @@
 
 .mario-app { isolation: isolate; }
 body:has(.mario-app) {
-  background:
-    radial-gradient(circle at 13% 10%, rgba(255,255,255,.15) 0 38px, transparent 39px),
-    radial-gradient(circle at 22% 9%, rgba(255,255,255,.13) 0 29px, transparent 30px),
-    radial-gradient(circle at 81% 22%, rgba(255,255,255,.12) 0 46px, transparent 47px),
-    linear-gradient(155deg, #a75448 0%, #85445b 48%, #49334f 100%);
+  background-color: #49334f;
+  background-image:
+    linear-gradient(180deg, rgba(66, 35, 63, .58), rgba(55, 34, 60, .78)),
+    url('/platform-landscape.png');
+  background-position: center, center 40%;
+  background-size: cover;
+  background-attachment: fixed;
 }
-.mario-app .game-title { color: #fffdf7; font-size: clamp(1.9rem, 5.5vw, 2.3rem); letter-spacing: .01em; text-shadow: 0 2px 0 rgba(55,25,42,.55); }
+.mario-app .game-title { color: #fffdf7; font-size: clamp(1.9rem, 5.5vw, 2.3rem); letter-spacing: .01em; text-shadow: -1px -1px 0 #3e223b, 1px -1px 0 #3e223b, -1px 1px 0 #3e223b, 1px 1px 0 #3e223b, 0 3px 0 rgba(55,25,42,.7); }
 .mario-app .title-word { display: inline-block; white-space: nowrap; }
+.mario-app .title-word + .title-word { margin-left: .22em; }
 .mario-app .title-letter { display: inline-block; }
-.mario-app .title-letter:nth-child(6n + 1) { color: #ffe06e; }
-.mario-app .title-letter:nth-child(6n + 2) { color: #ffcab8; }
-.mario-app .title-letter:nth-child(6n + 3) { color: #a9ecc2; }
-.mario-app .title-letter:nth-child(6n + 4) { color: #e1ceff; }
-.mario-app .title-letter:nth-child(6n + 5) { color: #ffbde0; }
-.mario-app .title-letter:nth-child(6n) { color: #fff6d9; }
+.mario-app .title-letter:nth-child(6n + 1) { color: #ff6a63; }
+.mario-app .title-letter:nth-child(6n + 2) { color: #ffe66d; }
+.mario-app .title-letter:nth-child(6n + 3) { color: #63beff; }
+.mario-app .title-letter:nth-child(6n + 4) { color: #79e78a; }
+.mario-app .title-letter:nth-child(6n + 5) { color: #ffad59; }
+.mario-app .title-letter:nth-child(6n) { color: #cf9dff; }
 .mario-app .title-amp { color: #fffdf7; white-space: nowrap; }
 .mario-app .home-stats, .mario-app .result-card { border: 1px solid var(--border); border-top: 5px solid var(--gold); box-shadow: 0 12px 26px rgba(47,22,38,.24); }
 .mario-app .menu-btn, .mario-app .game-mode-btn, .mario-app .choice-btn, .mario-app .round-btn, .mario-app .diff-btn, .mario-app .order-tiles button, .mario-app .finder-grid button, .mario-app .match-column button { box-shadow: 0 4px 0 rgba(48,23,40,.35); }

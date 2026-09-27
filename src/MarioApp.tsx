@@ -336,7 +336,7 @@ export default function MarioApp() {
   return <main className="app mario-app">
     {screen === 'home' && <section className="home-screen">
       <div className="home-header">
-        <h1 className="game-title" aria-label="Jump & Discover"><span className="title-word" aria-hidden="true">{Array.from('Jump').map((letter, index) => <span className="title-letter" key={index}>{letter}</span>)}</span><span className="title-amp" aria-hidden="true"> &amp; </span><span className="title-word" aria-hidden="true">{Array.from('Discover').map((letter, index) => <span className="title-letter" key={index}>{letter}</span>)}</span></h1>
+        <h1 className="game-title" aria-label="Mushroom Power Quiz">{['Mushroom', 'Power', 'Quiz'].map(word => <span className="title-word" aria-hidden="true" key={word}>{Array.from(word).map((letter, index) => <span className="title-letter" key={index}>{letter}</span>)}</span>)}</h1>
         <p className="mario-tagline">Unofficial, text-only trivia about Mario games and Mario Kart tracks.</p>
         <p className="mario-home-tip">{homeTip}</p>
         {speechAvailable() && <button className="tts-btn tts-btn-small" title="Read welcome aloud" aria-label="Read welcome aloud" onClick={() => speakText(homeTip)}>🔊</button>}
