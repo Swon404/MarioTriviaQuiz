@@ -16,7 +16,8 @@
 .category-grid button { min-height: 82px; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 3px; }
 .category-grid button small { align-self: flex-start; color: var(--text-secondary); font-size: .7rem; }
 .category-grid button span { font-weight: 700; }
-.match-progress, .match-message { text-align: center; color: var(--text-secondary); }
+.match-progress, .match-message, .match-retries { text-align: center; color: var(--text-secondary); }
+.match-retries { margin: 0; font-size: .9rem; font-weight: 700; }
 .match-restart { display: block; margin: 0 auto 8px; }
 .match-board { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr); gap: 12px; margin: 20px 0; }
 .match-column { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
@@ -25,6 +26,21 @@
 .match-column button.selected-tile { background: rgba(233,69,96,.2); border-color: var(--accent); }
 .match-column button.matched-tile { background: rgba(76,175,80,.2); border-color: var(--correct); }
 .match-column button:disabled { opacity: 1; cursor: default; }
+.pair-card-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; width: min(100%, 680px); margin: 10px auto 18px; }
+.pair-card { min-width: 0; min-height: 96px; border: 3px solid var(--border); border-radius: var(--radius); color: var(--text-primary); font-weight: 750; padding: 7px; overflow-wrap: anywhere; transition: background-color .18s, border-color .18s, transform .18s; }
+.pair-card-back { background: linear-gradient(145deg, #764158, #4d304e); border-color: #ba8ca7; cursor: pointer; }
+.pair-card-back:hover:not(:disabled), .pair-card-back:focus-visible { border-color: var(--gold); transform: translateY(-2px); }
+.pair-card-mark { font-size: 2rem; color: var(--gold); }
+.pair-card-face { background: #704766; border-color: var(--gold); }
+.pair-card-found { background: #285749; border-color: #79d69a; }
+.pair-card:disabled { opacity: 1; }
+.pair-card-icon { font-size: clamp(1.8rem, 5vw, 2.5rem); }
+.pair-card-svg { display: block; width: min(100%, 76px); height: 76px; margin: auto; object-fit: contain; }
+.pair-card-text-icon { display: inline-block; padding: 5px 3px; color: #ffdf7c; font-size: clamp(.78rem, 2.4vw, 1rem); font-weight: 900; letter-spacing: .12em; text-shadow: 0 2px 0 #4a2447; }
+.pair-card-word { font-size: clamp(.73rem, 2.4vw, 1rem); line-height: 1.15; }
+.hunt-target-banner { text-align: center; margin: 0 auto; padding: 9px 14px; border: 2px solid var(--gold); border-radius: var(--radius); background: rgba(255, 214, 75, .12); color: var(--text-primary); }
+.pair-timer-ready { width: min(100%, 500px); margin: 20px auto; padding: 22px; text-align: center; border: 2px solid var(--border); border-radius: var(--radius); background: var(--bg-card); }
+.pair-timer-ready .start-btn { width: 100%; }
 .clue-count { text-align: center; color: var(--gold); font-weight: 700; }
 .clue-list { max-width: 620px; margin: 12px auto 18px; padding: 0 0 0 2rem; line-height: 1.5; }
 .clue-list li { padding: 7px 10px; margin: 5px 0; border-radius: var(--radius); background: var(--bg-card); border: 1px solid var(--border); }
@@ -39,4 +55,8 @@
   .order-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .match-board { gap: 6px; }
   .match-column button { padding: 6px; font-size: .72rem; }
+  .pair-card-grid { gap: 6px; }
+  .pair-card { min-height: 72px; padding: 4px; }
+  .pair-card-svg { height: 58px; }
+  .pair-card-word { font-size: .72rem; }
 }

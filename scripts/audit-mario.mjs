@@ -1,23 +1,28 @@
 import assert from 'node:assert/strict';
+import { existsSync } from 'node:fs';
 import { QUESTIONS, createQuiz } from '../src/mario/questions.ts';
 import { BOOSTER_COURSES } from '../src/mario/courses.ts';
-import { createRounds, isCorrect, MARIO_TIMELINE } from '../src/mario/rounds.ts';
+import { availableModes, createRounds, DEFAULT_PAIR_OPTIONS, isCorrect, MARIO_TIMELINE } from '../src/mario/rounds.ts';
 import { CLUE_SUBJECTS } from '../src/mario/clues.ts';
 import { CATEGORY_ITEMS } from '../src/mario/categoryCatalog.ts';
+import { ICON_PAIRS } from '../src/mario/pairCatalog.ts';
 import { advanceVersusQuiz, answerVersusQuiz, rewindVersusQuiz, startVersusQuiz } from '../src/mario/versus.ts';
 import { advance, rewind, startSession, submit } from '../src/mario/session.ts';
 import { calculatePoints } from '../src/mario/scoring.ts';
-import { championshipPoints, computerChampionshipAnswers } from '../src/mario/championship.ts';
+import { championshipPoints, championshipRoundCount, computerChampionshipAnswers, createChampionshipRounds } from '../src/mario/championship.ts';
 
 assert.equal(calculatePoints('explorer', true, 0), 12);
 assert.equal(calculatePoints('scientist', true, 3), 50);
 assert.equal(calculatePoints('professor', false, 12), 0);
 assert.equal(championshipPoints([{ correct: 3, points: 36 }, { correct: 2, points: 24 }]), 60);
+for (const size of ['quick', 'standard', 'epic']) assert.equal(championshipRoundCount('pair-match', size), 3);
+const huntComputerRounds = createRounds('pair-match', 'mario', 'explorer');
+assert.deepEqual(computerChampionshipAnswers(huntComputerRounds, 'explorer'), huntComputerRounds.map(round => round.completionId));
 const computerRounds = createRounds('quiz', 'mario', 'explorer').slice(0, 3);
 assert.deepEqual(computerChampionshipAnswers(computerRounds, 'explorer', () => 0), computerRounds.map(round => round.question.answer));
 assert.ok(computerChampionshipAnswers(computerRounds, 'explorer', () => 0.99).every((answer, index) => answer !== computerRounds[index].question.answer));
 
-assert.equal(QUESTIONS.length, 102, 'The expanded bank needs 102 questions');
+assert.equal(QUESTIONS.length, 138, 'The expanded bank needs 138 questions');
 const ids = new Set();
 const prompts = new Set();
 for (const question of QUESTIONS) {
@@ -42,13 +47,14 @@ for (const topic of ['mario', 'kart', 'mixed']) {
       const quiz = createQuiz(topic, difficulty, 10);
       assert.equal(quiz.length, 10);
       assert.equal(new Set(quiz.map(question => question.knowledgeId)).size, 10, `${topic}/${difficulty}: repeated knowledge`);
+      assert.equal(new Set(quiz.map(question => question.answer)).size, 10, `${topic}/${difficulty}: repeated answer`);
       assert.equal(new Set(quiz.map(question => question.funFact)).size, 10, `${topic}/${difficulty}: repeated fun fact`);
       assert.ok(new Set(quiz.map(question => question.category)).size >= 3, `${topic}/${difficulty}: too few categories`);
       assert.ok(quiz.every(question => question.difficulty === difficulty && (topic === 'mixed' || question.topic === topic)));
     }
   }
 }
-assert.throws(() => createQuiz('kart', 'explorer', 18), /Only 17 questions/);
+assert.throws(() => createQuiz('kart', 'explorer', 24), /Only 23 questions/);
 assert.equal(BOOSTER_COURSES.length, 48);
 assert.equal(new Set(BOOSTER_COURSES.map(course => course.id)).size, 48);
 assert.equal(new Set(BOOSTER_COURSES.map(course => course.cup)).size, 12);
@@ -60,6 +66,51 @@ for (const cup of new Set(BOOSTER_COURSES.map(course => course.cup))) {
   assert.deepEqual(courses.map(course => course.position), [1, 2, 3, 4]);
 }
 assert.equal(new Set(MARIO_TIMELINE.map(game => game.year)).size, MARIO_TIMELINE.length);
+assert.equal(ICON_PAIRS.length, 40);
+assert.equal(new Set(ICON_PAIRS.map(pair => pair.id)).size, ICON_PAIRS.length);
+assert.ok(ICON_PAIRS.every(pair => pair.icon && pair.name === pair.question.answer));
+assert.ok(ICON_PAIRS.every(pair => ['emoji', 'svg', 'text'].includes(pair.iconKind)));
+for (const pair of ICON_PAIRS.filter(item => item.iconKind === 'svg')) {
+  assert.ok(existsSync(new URL(`../public/${pair.icon}`, import.meta.url)), `${pair.name}: missing icon`);
+  assert.ok(pair.iconAlt.length > 8, `${pair.name}: missing accessible description`);
+}
+assert.equal(ICON_PAIRS.find(pair => pair.name === 'Daisy').iconKind, 'text');
+for (const section of ['mario', 'kart', 'mixed']) {
+  for (const difficulty of ['explorer', 'scientist', 'professor']) {
+    for (const pairCount of [12, 16, 20]) {
+      const rounds = createRounds('pair-match', section, difficulty, Math.random, { ...DEFAULT_PAIR_OPTIONS, pairCount });
+      assert.equal(rounds.length, 1, 'Relaxed Hunt is one board outside a championship');
+      for (const round of rounds) {
+        assert.equal(round.mode, 'pair-match');
+        assert.equal(round.variant, 'hunt');
+        assert.equal(round.targetPairId, null);
+        assert.equal(round.goal, pairCount);
+        assert.equal(round.timed, false);
+        assert.equal(round.pairs.length, pairCount);
+        assert.equal(round.cards.length, pairCount * 2);
+        assert.equal(new Set(round.pairs.map(pair => pair.id)).size, pairCount);
+        for (const pair of round.pairs) {
+          assert.deepEqual(new Set(round.cards.filter(card => card.pairId === pair.id).map(card => card.kind)), new Set(['icon', 'word']));
+        }
+        assert.ok(isCorrect(round, round.completionId));
+        assert.ok(!isCorrect(round, 'incomplete-board'));
+        assert.ok(round.sourceUrl.startsWith('https://'));
+      }
+    }
+    const chosen = ICON_PAIRS.find(pair => section === 'mixed' || pair.topic === section);
+    const hunt = createRounds('pair-match', section, difficulty, Math.random, { ...DEFAULT_PAIR_OPTIONS, targetMode: 'choose', chosenTargetId: chosen.id, unlockPairs: 2, huntTimed: true });
+    assert.equal(hunt.length, 3);
+    assert.ok(hunt.every(round => round.targetPairId === chosen.id && round.unlockPairs === 2 && round.timed));
+    const trial = createRounds('pair-match', section, difficulty, Math.random, { ...DEFAULT_PAIR_OPTIONS, variant: 'time-trial', trialTarget: 5 });
+    assert.equal(trial.length, 3);
+    assert.ok(trial.every(round => round.targetPairId === null && round.goal === 5 && round.timed));
+  }
+}
+for (const [size, goal] of [['quick', 3], ['standard', 4], ['epic', 5]]) {
+  const rounds = createChampionshipRounds('pair-match', 'mario', 'explorer', size, Math.random, { ...DEFAULT_PAIR_OPTIONS, variant: 'time-trial' });
+  assert.equal(rounds.length, 3);
+  assert.ok(rounds.every(round => round.pairs.length === goal * 3 && round.goal === goal));
+}
 for (const difficulty of ['explorer', 'scientist', 'professor']) {
   for (const mode of ['game-order', 'track-finder']) {
     const rounds = createRounds(mode, mode === 'game-order' ? 'mario' : 'kart', difficulty);
@@ -108,10 +159,11 @@ for (const section of ['mario', 'kart', 'mixed']) {
 assert.equal(CATEGORY_ITEMS.length, 40);
 assert.deepEqual(CATEGORY_ITEMS.map(item => item.number), Array.from({ length: 40 }, (_, index) => index + 1));
 assert.equal(new Set(CATEGORY_ITEMS.map(item => item.name)).size, 40);
+assert.equal(availableModes('mixed').length, 7, 'All games must be available with mixed content');
 for (const difficulty of ['explorer', 'scientist', 'professor']) {
   const width = difficulty === 'explorer' ? 3 : difficulty === 'scientist' ? 4 : 5;
-  for (let run = 0; run < 30; run += 1) {
-    const rounds = createRounds('category-finder', 'mario', difficulty);
+  for (const section of ['mario', 'mixed']) for (let run = 0; run < 30; run += 1) {
+    const rounds = createRounds('category-finder', section, difficulty);
     assert.equal(rounds.length, 3);
     assert.equal(new Set(rounds.map(round => round.id)).size, 3);
     assert.equal(new Set(rounds.map(round => round.targetCategory)).size, 3);
@@ -162,8 +214,14 @@ assert.deepEqual(versus.points, [12, 12]);
 assert.equal(CLUE_SUBJECTS.length, 16);
 for (const subject of CLUE_SUBJECTS) {
   assert.equal(subject.clues.length, 5, `${subject.id}: five clues required`);
+  assert.equal(new Set(subject.clues).size, 5, `${subject.id}: clues should add new information`);
   assert.ok(subject.clues.every(clue => clue.length >= 16), `${subject.id}: thin clue`);
   assert.ok(subject.clues.slice(0, 4).every(clue => !clue.toLowerCase().includes(subject.answer.toLowerCase())), `${subject.id}: answer leaked early`);
+  const answerWords = subject.answer.toLowerCase().match(/[a-z]{4,}/g) ?? [];
+  for (const clue of subject.clues.slice(0, 2)) {
+    const clueWords = new Set(clue.toLowerCase().match(/[a-z]+/g) ?? []);
+    assert.ok(answerWords.every(word => !clueWords.has(word)), `${subject.id}: early clue repeats a word from the answer`);
+  }
   assert.ok(subject.sourceUrl.startsWith('https://'));
 }
 for (const section of ['mario', 'kart', 'mixed']) {
@@ -172,12 +230,12 @@ for (const section of ['mario', 'kart', 'mixed']) {
     assert.equal(rounds.length, 5);
     assert.equal(new Set(rounds.map(round => round.id)).size, 5, 'Clue subjects must not repeat');
     assert.equal(new Set(rounds.map(round => round.funFact)).size, 5, 'Clue fun facts must not repeat');
-    for (const [index, round] of rounds.entries()) {
+    for (const round of rounds) {
       assert.equal(round.mode, 'clue-duel');
       assert.equal(round.clues.length, 5);
-      assert.equal(round.choices.length, Math.min(difficulty === 'explorer' ? 4 : difficulty === 'scientist' ? 6 : 8, 4 + index));
+      assert.equal(round.choices.length, difficulty === 'explorer' ? 4 : difficulty === 'scientist' ? 6 : 8);
       assert.equal(new Set(round.choices.map(choice => choice.id)).size, round.choices.length);
-      assert.equal(new Set(round.choices.map(choice => choice.label[0].toUpperCase())).size, round.choices.length, 'The last initial clue must identify one choice');
+      assert.equal(new Set(round.choices.map(choice => choice.label[0].toUpperCase())).size, round.choices.length, 'Answer labels must remain distinguishable');
       assert.ok(round.choices.some(choice => choice.id === round.answerId));
       assert.ok(isCorrect(round, round.answerId));
     }

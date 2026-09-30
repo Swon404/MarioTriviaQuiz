@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" role="img" aria-label="Friendly blue squid">
+  <path d="M30 52C29 27 39 14 48 11c9 3 19 16 18 41l-10 10H40z" fill="#88d3e1" stroke="#2f6880" stroke-width="3"/>
+  <path d="M31 45 21 52l9 4M65 45l10 7-9 4" fill="#5caec5" stroke="#2f6880" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M34 57c-8 4-11 15-7 24m13-22c-4 10-3 18 1 23m8-22c0 10 2 18 5 22m6-24c7 8 10 17 9 24" fill="none" stroke="#5caec5" stroke-width="7" stroke-linecap="round"/>
+  <circle cx="42" cy="45" r="3" fill="#243d53"/><circle cx="55" cy="45" r="3" fill="#243d53"/><path d="M45 53q4 3 8 0" fill="none" stroke="#2f6880" stroke-width="2" stroke-linecap="round"/>
+</svg>

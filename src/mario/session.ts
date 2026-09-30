@@ -21,11 +21,11 @@ export function startSession(rounds: readonly GameRound[], difficulty: Difficult
   return { rounds, difficulty, index: 0, correct: 0, points: 0, streak: 0, bestStreak: 0, submission: null, complete: false };
 }
 
-export function submit(session: GameSession, answer: Answer): GameSession {
+export function submit(session: GameSession, answer: Answer, pointsOverride?: number): GameSession {
   if (session.complete || session.submission) return session;
   const round = session.rounds[session.index];
   const correct = isCorrect(round, answer);
-  return { ...session, submission: { answer, correct, correctLabel: correctLabel(round), points: calculatePoints(session.difficulty, correct, session.streak) } };
+  return { ...session, submission: { answer, correct, correctLabel: correctLabel(round), points: correct && pointsOverride !== undefined ? pointsOverride : calculatePoints(session.difficulty, correct, session.streak) } };
 }
 
 export function rewind(session: GameSession): GameSession {

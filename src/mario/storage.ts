@@ -1,5 +1,5 @@
 import type { Difficulty, Topic } from './questions.ts';
-import type { GameMode } from './rounds.ts';
+import type { GameMode, PairVariant } from './rounds.ts';
 
 const PROFILE_KEY = 'mariotrivia_profile_v1';
 const RESULTS_KEY = 'mariotrivia_results_v1';
@@ -11,11 +11,11 @@ export type ChampionshipResult = {
   topic: Topic | 'mixed';
   difficulty: Difficulty;
   size: 'quick' | 'standard' | 'epic';
-  games: { mode: GameMode; correct: number; total: number; points: number }[];
+  games: { mode: GameMode; variant?: PairVariant; correct: number; total: number; points: number }[];
   points: number;
   format?: 'solo' | 'two-player' | 'computer';
   opponent?: string;
-  opponentGames?: { mode: GameMode; correct: number; total: number; points: number }[];
+  opponentGames?: { mode: GameMode; variant?: PairVariant; correct: number; total: number; points: number }[];
   opponentPoints?: number;
   completedAt: string;
 };
@@ -23,6 +23,7 @@ export type ChampionshipResult = {
 export type QuizResult = {
   id: string;
   mode?: GameMode;
+  variant?: PairVariant;
   player: string;
   topic: Topic | 'mixed';
   difficulty: Difficulty;

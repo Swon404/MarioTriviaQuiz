@@ -1,4 +1,5 @@
 import { EXPANDED_QUESTIONS } from './expandedQuestions.ts';
+import { FRESH_QUESTIONS } from './freshQuestions.ts';
 
 export type Difficulty = 'explorer' | 'scientist' | 'professor';
 export type Topic = 'mario' | 'kart';
@@ -132,6 +133,7 @@ export const QUESTIONS: readonly TriviaQuestion[] = [
   ...createRows('kart', 'scientist', kartScientist, ['tracks','tracks','tracks','tracks','tracks','tracks','tracks','tracks','tracks','games']),
   ...createRows('kart', 'professor', kartProfessor, ['tracks','tracks','tracks','tracks','tracks','tracks','tracks','games','games','games']),
   ...EXPANDED_QUESTIONS,
+  ...FRESH_QUESTIONS,
 ];
 
 export function shuffled<T>(values: readonly T[], random = Math.random): T[] {
@@ -154,12 +156,18 @@ export function createQuiz(topic: Topic | 'mixed', difficulty: Difficulty, count
   }
   const selected: TriviaQuestion[] = [];
   const used = new Map<Category, number>();
+  const usedAnswers = new Set<string>();
   while (selected.length < count) {
     const available = [...byCategory].filter(([, group]) => group.length > 0);
-    const smallest = Math.min(...available.map(([category]) => used.get(category) ?? 0));
-    const candidates = available.filter(([category]) => (used.get(category) ?? 0) === smallest);
+    const fresh = available.filter(([, group]) => group.some(question => !usedAnswers.has(question.answer)));
+    const eligible = fresh.length > 0 ? fresh : available;
+    const smallest = Math.min(...eligible.map(([category]) => used.get(category) ?? 0));
+    const candidates = eligible.filter(([category]) => (used.get(category) ?? 0) === smallest);
     const [category, group] = candidates[Math.floor(random() * candidates.length)];
-    selected.push(group.pop()!);
+    const index = group.findLastIndex(question => !usedAnswers.has(question.answer));
+    const [question] = group.splice(index < 0 ? group.length - 1 : index, 1);
+    selected.push(question);
+    usedAnswers.add(question.answer);
     used.set(category, (used.get(category) ?? 0) + 1);
   }
   return selected.map(question => ({ ...question, choices: shuffled(question.choices, random) }));

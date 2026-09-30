@@ -1,5 +1,5 @@
 import type { Difficulty } from './questions.ts';
-import { availableModes, createRounds, type GameMode, type GameRound, type Section } from './rounds.ts';
+import { availableModes, createRounds, DEFAULT_PAIR_OPTIONS, type GameMode, type GameRound, type PairMatchOptions, type Section } from './rounds.ts';
 import type { Answer } from './session.ts';
 
 export type ChampionshipSize = 'quick' | 'standard' | 'epic';
@@ -10,6 +10,7 @@ const ROUND_COUNTS: Record<GameMode, Record<ChampionshipSize, number>> = {
   'game-order': { quick: 3, standard: 4, epic: 5 },
   'track-finder': { quick: 3, standard: 4, epic: 5 },
   'match-hunt': { quick: 3, standard: 3, epic: 3 },
+  'pair-match': { quick: 3, standard: 3, epic: 3 },
   'clue-duel': { quick: 3, standard: 4, epic: 5 },
   'category-finder': { quick: 3, standard: 3, epic: 3 },
 };
@@ -18,9 +19,15 @@ export function championshipRoundCount(mode: GameMode, size: ChampionshipSize): 
   return ROUND_COUNTS[mode][size];
 }
 
-export function createChampionshipRounds(mode: GameMode, section: Section, difficulty: Difficulty, size: ChampionshipSize, random = Math.random): GameRound[] {
+export function createChampionshipRounds(mode: GameMode, section: Section, difficulty: Difficulty, size: ChampionshipSize, random = Math.random, pairOptions: PairMatchOptions = DEFAULT_PAIR_OPTIONS): GameRound[] {
   if (!availableModes(section).includes(mode)) throw new Error(`${mode} is not available in ${section}.`);
-  return createRounds(mode, section, difficulty, random).slice(0, championshipRoundCount(mode, size));
+  const atomicCount = ROUND_COUNTS['game-order'][size];
+  const options = mode === 'pair-match' ? {
+    ...pairOptions, roundCount: 3,
+    pairCount: pairOptions.variant === 'time-trial' ? atomicCount * 3 : pairOptions.pairCount,
+    trialTarget: pairOptions.variant === 'time-trial' ? atomicCount as 3 | 4 | 5 : pairOptions.trialTarget,
+  } : pairOptions;
+  return createRounds(mode, section, difficulty, random, options).slice(0, championshipRoundCount(mode, size));
 }
 
 export function championshipPoints(games: readonly { correct: number; points?: number }[]): number {
@@ -36,6 +43,7 @@ export function computerChampionshipAnswers(rounds: readonly GameRound[], diffic
     if (round.mode === 'track-finder') return (round.tiles.find(tile => right ? tile.cup === round.targetCup : tile.cup !== round.targetCup) ?? round.tiles[0]).id;
     if (round.mode === 'category-finder') return (round.tiles.find(tile => right ? tile.category === round.targetCategory : tile.category !== round.targetCategory) ?? round.tiles[0]).id;
     if (round.mode === 'clue-duel') return right ? round.answerId : round.choices.find(choice => choice.id !== round.answerId)!.id;
+    if (round.mode === 'pair-match') return round.completionId;
     // A completed matching board always finds its target.
     return round.targetId;
   });
