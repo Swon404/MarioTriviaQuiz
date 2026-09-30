@@ -384,8 +384,8 @@ test('Clue Duel reveals five clues, accepts a guess, and rewinds before Next', a
   await expect(page.getByText('Clue 1 of 5')).toBeVisible();
   await expect(page.locator('.answer-grid button')).toHaveCount(8);
   const firstClue = (await page.locator('.clue-list li').first().textContent())!;
-  const answer = CLUE_SUBJECTS.find(subject => subject.clues[0] === firstClue)!.answer;
-  const wrong = (await page.locator('.answer-grid .choice-text').allTextContents()).find(choice => choice !== answer)!;
+  const possibleAnswers = CLUE_SUBJECTS.filter(subject => subject.clues[0] === firstClue).map(subject => subject.answer);
+  const wrong = (await page.locator('.answer-grid .choice-text').allTextContents()).find(choice => !possibleAnswers.includes(choice))!;
   await page.locator('.answer-grid button').filter({ hasText: wrong }).first().click();
   await expect(page.getByText('Clue 2 of 5')).toBeVisible();
   for (let clue = 3; clue <= 5; clue += 1) {
@@ -393,6 +393,8 @@ test('Clue Duel reveals five clues, accepts a guess, and rewinds before Next', a
     await expect(page.getByText(`Clue ${clue} of 5`)).toBeVisible();
   }
   await expect(page.locator('.clue-list li')).toHaveCount(5);
+  const clues = await page.locator('.clue-list li').allTextContents();
+  const answer = CLUE_SUBJECTS.find(subject => subject.clues.every((clue, index) => clues[index] === clue))!.answer;
   await page.locator('.answer-grid button').filter({ hasText: answer }).first().click();
   await expect(page.getByText('Fun fact:')).toBeVisible();
   await page.getByRole('button', { name: '↶ Rewind', exact: true }).click();
