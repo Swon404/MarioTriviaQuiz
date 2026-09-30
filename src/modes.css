@@ -7,6 +7,22 @@
 .order-tiles button:disabled, .finder-grid button:disabled { cursor: default; opacity: 1; }
 .check-button { width: 100%; }
 .finder-grid { display: grid; gap: 7px; margin-top: 24px; }
+.finder-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.finder-verdict { padding: 18px; margin: 16px 0; border: 3px solid; border-radius: 14px; font-size: 1.3rem; font-weight: 800; text-align: center; }
+.finder-verdict.win { background: #245c42; border-color: #92edb1; }
+.finder-verdict.miss { background: #713449; border-color: #ffb0b7; }
+.tile-verdict { display: block; margin-top: 8px; font-size: .85rem; }
+.order-big-timer { text-align: center; font-size: 3.5rem; font-weight: 900; color: var(--gold); font-variant-numeric: tabular-nums; }
+.order-big-timer small { font-size: 1.2rem; }
+.order-feedback { text-align: center; font-size: 1.2rem; font-weight: 800; }
+.order-challenge .order-tiles button.order-correct { border: 4px solid #85e3a4; }
+.order-challenge .order-tiles button.order-wrong { border: 4px solid #ff8495; }
+.order-challenge .order-tiles button.order-color-2 small { color: #503c1a; }
+.order-leaderboard { max-width: 560px; margin: 24px auto; padding: 16px; border: 2px solid var(--border); border-radius: 16px; background: var(--bg-card); }
+.order-leaderboard h3, .order-leaderboard p { text-align: center; }
+.order-leaderboard li { padding: 6px; }
+.order-leaderboard li strong { float: right; }
+.champ-options-group .diff-btn span { display: block; font-size: .85rem; margin-top: 5px; }
 .finder-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .finder-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .finder-5 { grid-template-columns: repeat(5, minmax(0, 1fr)); }

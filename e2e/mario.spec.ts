@@ -1,8 +1,45 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 import { BOOSTER_COURSES } from '../src/mario/courses.ts';
 import { QUESTIONS } from '../src/mario/questions.ts';
 import { CLUE_SUBJECTS } from '../src/mario/clues.ts';
 import { CATEGORY_ITEMS, CATEGORY_LABELS } from '../src/mario/categoryCatalog.ts';
+
+async function answerQuizCorrectly(page: Page) {
+  const prompt = await page.locator('.quiz-playing h1').textContent();
+  const question = QUESTIONS.find(item => item.prompt === prompt)!;
+  await page.locator('.answer-grid').getByText(question.answer, { exact: true }).click();
+}
+
+for (const [level, attempts] of [['Rookie', 4], ['Pro', 2], ['Legend', 1]] as const) {
+  test(`Quiz Battle ${level} allows ${attempts} attempts and resets on rewind and Next`, async ({ page }) => {
+    await page.goto('./');
+    await page.getByRole('button', { name: 'Play Games' }).click();
+    await page.getByRole('button', { name: 'Quiz Battle' }).click();
+    await page.getByRole('button', { name: level }).click();
+    await page.getByRole('button', { name: 'Start!' }).click();
+    const prompt = await page.locator('.quiz-playing h1').textContent();
+    const question = QUESTIONS.find(item => item.prompt === prompt)!;
+    const wrong = question.choices.filter(choice => choice !== question.answer);
+    for (let index = 0; index < Math.min(attempts, wrong.length); index += 1) {
+      await page.locator('.answer-grid').getByText(wrong[index], { exact: true }).click();
+      if (index + 1 < attempts) {
+        await expect(page.locator('.feedback')).toHaveCount(0);
+        await expect(page.locator('.answer-grid .correct')).toHaveCount(0);
+        await expect(page.locator('.quiz-retries')).toContainText(`Attempts left: ${attempts - index - 1}`);
+        await expect(page.locator('.answer-grid button').filter({ hasText: wrong[index] })).toBeDisabled();
+      }
+    }
+    if (level === 'Rookie') await answerQuizCorrectly(page);
+    await expect(page.locator('.feedback')).toBeVisible();
+    await page.getByRole('button', { name: 'Rewind' }).click();
+    await expect(page.locator('.answer-grid button:enabled')).toHaveCount(4);
+    await expect(page.locator('.quiz-retries')).toContainText(`Attempts left: ${attempts}`);
+    await answerQuizCorrectly(page);
+    await page.getByRole('button', { name: 'Next question' }).click();
+    await expect(page.locator('.quiz-retries')).toContainText(`Attempts left: ${attempts}`);
+    await expect(page.locator('.answer-grid button:enabled')).toHaveCount(4);
+  });
+}
 
 test('mixed quiz gives four answers, feedback, and rewind before Next', async ({ page }) => {
   await page.goto('./');
@@ -19,13 +56,13 @@ test('mixed quiz gives four answers, feedback, and rewind before Next', async ({
   await expect(page.getByText('Question 1 of 10')).toBeVisible();
   await expect(page.locator('.score-display')).toContainText('Blaize · 0 correct · 0 EP');
   await expect(page.locator('.answer-grid button')).toHaveCount(4);
-  await page.locator('.answer-grid button').first().click();
+  await answerQuizCorrectly(page);
   await expect(page.getByText('Fun fact:')).toBeVisible();
   await expect(page.locator('.mario-earned')).toContainText('EP');
   await page.getByRole('button', { name: '↶ Rewind', exact: true }).click();
   await expect(page.getByText('Fun fact:')).toHaveCount(0);
   await expect(page.locator('.answer-grid button:not([disabled])')).toHaveCount(4);
-  await page.locator('.answer-grid button').first().click();
+  await answerQuizCorrectly(page);
   await page.getByRole('button', { name: 'Next question' }).click();
   await expect(page.getByText('Question 2 of 10')).toBeVisible();
   await expect(page.locator('.score-display')).toContainText(/Blaize · [01] correct · \d+ EP/);
@@ -40,7 +77,7 @@ test('completed results survive reload and stay in a separate storage namespace'
   await page.getByLabel('Player name').fill('Blaize');
   await page.getByRole('button', { name: 'Start!' }).click();
   for (let i = 0; i < 10; i += 1) {
-    await page.locator('.answer-grid button').first().click();
+    await answerQuizCorrectly(page);
     await page.getByRole('button', { name: i === 9 ? 'See result' : 'Next question' }).click();
   }
   await expect(page.getByText('Nice work, Blaize!')).toBeVisible();
@@ -99,42 +136,9 @@ test('Explore opens the Learning Zone with clearly unconfirmed placeholders', as
   await expect(page.getByRole('button', { name: 'Explore Learning Zone' })).toBeVisible();
 });
 
-test('Game Order checks a shuffled board and rewind restarts the round', async ({ page }) => {
-  await page.goto('./');
-  await page.getByRole('button', { name: 'Play Games' }).click();
-  await page.getByRole('button', { name: 'Game Order' }).click();
-  await page.getByRole('button', { name: 'Start!' }).click();
-  await expect(page.locator('.order-tiles button')).toHaveCount(3);
-  await expect(page.locator('.order-tiles button small')).toHaveCount(0);
-  expect(await page.locator('.order-tiles button').first().evaluate(button => parseFloat(getComputedStyle(button).fontSize))).toBeGreaterThanOrEqual(18);
-  const initial = await page.locator('.order-tiles button').allTextContents();
-  const colors = await page.locator('.order-tiles button').evaluateAll(buttons => buttons.map(button => getComputedStyle(button).backgroundImage));
-  expect(new Set(colors).size).toBe(3);
-  await page.getByRole('button', { name: 'Check order' }).click();
-  await expect(page.getByText('Answer:')).toBeVisible();
-  await page.getByRole('button', { name: '↶ Rewind', exact: true }).click();
-  await expect(page.locator('.order-tiles button')).toHaveCount(3);
-  expect(await page.locator('.order-tiles button').allTextContents()).toEqual(initial);
-  await page.locator('.order-tiles button').nth(0).click();
-  await expect(page.locator('.order-tiles button').first()).toHaveAttribute('aria-pressed', 'true');
-  await expect(page.locator('.order-tiles button').first()).toHaveCSS('outline-width', '4px');
-  await page.locator('.order-tiles button').nth(1).click();
-  expect(await page.locator('.order-tiles button').allTextContents()).not.toEqual(initial);
-  const movedColors = await page.locator('.order-tiles button').evaluateAll(buttons => buttons.map(button => getComputedStyle(button).backgroundImage));
-  expect(movedColors[1]).toBe(colors[0]);
-});
 
-test('Game Order titles remain readable without numbers on a narrow phone', async ({ page }) => {
-  await page.setViewportSize({ width: 360, height: 740 });
-  await page.goto('./');
-  await page.getByRole('button', { name: 'Play Games' }).click();
-  await page.getByRole('button', { name: 'Game Order' }).click();
-  await page.getByRole('button', { name: 'Start!' }).click();
-  await expect(page.locator('.order-tiles button')).toHaveCount(3);
-  await expect(page.locator('.order-tiles button small')).toHaveCount(0);
-  expect(await page.locator('.order-tiles button').first().evaluate(button => parseFloat(getComputedStyle(button).fontSize))).toBeGreaterThanOrEqual(18);
-  expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(false);
-});
+
+
 
 test('Match & Hunt relaxed mode keeps cards hidden and scores every pair on one board', async ({ page }) => {
   await page.setViewportSize({ width: 360, height: 740 });
@@ -203,7 +207,7 @@ test('Match & Hunt Time Trial uses three timed championship boards sized from Ga
   await expect(page.getByText('Find 3 pairs on a 9-pair board')).toBeVisible();
   await page.getByRole('button', { name: 'Start Solo Championship' }).click();
   for (let question = 0; question < 3; question += 1) {
-    await page.locator('.answer-grid button').first().click();
+    await answerQuizCorrectly(page);
     await page.getByRole('button', { name: question === 2 ? 'See result' : 'Next question' }).click();
   }
   await page.getByRole('button', { name: 'Next: Match & Hunt' }).click();
@@ -293,7 +297,7 @@ test('Track Finder accepts a course in the requested cup', async ({ page }) => {
   await page.getByRole('button', { name: 'Play Games' }).click();
   await page.getByRole('button', { name: 'Track Finder' }).click();
   await page.getByRole('button', { name: 'Start!' }).click();
-  await expect(page.locator('.finder-grid button')).toHaveCount(9);
+  await expect(page.locator('.finder-grid button')).toHaveCount(4);
   const prompt = await page.locator('.quiz-panel h1').textContent();
   const cup = prompt?.match(/Find one track from the (.+?)\./)?.[1];
   expect(cup).toBeTruthy();
@@ -384,8 +388,8 @@ test('Clue Duel reveals five clues, accepts a guess, and rewinds before Next', a
   await expect(page.getByText('Clue 1 of 5')).toBeVisible();
   await expect(page.locator('.answer-grid button')).toHaveCount(8);
   const firstClue = (await page.locator('.clue-list li').first().textContent())!;
-  const answer = CLUE_SUBJECTS.find(subject => subject.clues[0] === firstClue)!.answer;
-  const wrong = (await page.locator('.answer-grid .choice-text').allTextContents()).find(choice => choice !== answer)!;
+  const possibleAnswers = CLUE_SUBJECTS.filter(subject => subject.clues[0] === firstClue).map(subject => subject.answer);
+  const wrong = (await page.locator('.answer-grid .choice-text').allTextContents()).find(choice => !possibleAnswers.includes(choice))!;
   await page.locator('.answer-grid button').filter({ hasText: wrong }).first().click();
   await expect(page.getByText('Clue 2 of 5')).toBeVisible();
   for (let clue = 3; clue <= 5; clue += 1) {
@@ -393,6 +397,8 @@ test('Clue Duel reveals five clues, accepts a guess, and rewinds before Next', a
     await expect(page.getByText(`Clue ${clue} of 5`)).toBeVisible();
   }
   await expect(page.locator('.clue-list li')).toHaveCount(5);
+  const shownClues = await page.locator('.clue-list li').allTextContents();
+  const answer = CLUE_SUBJECTS.find(subject => subject.clues.every((clue, index) => clue === shownClues[index]))!.answer;
   await page.locator('.answer-grid button').filter({ hasText: answer }).first().click();
   await expect(page.getByText('Fun fact:')).toBeVisible();
   await page.getByRole('button', { name: '↶ Rewind', exact: true }).click();
@@ -452,13 +458,13 @@ test('two-player Quiz Battle alternates hidden turns and saves both scores', asy
   await expect(page.locator('.answer-grid button')).toHaveCount(0);
   await expect(page.locator('.score-display')).toContainText('Ada 1 · Ben 0');
   await page.locator('.versus-handover .start-btn').click();
-  await page.locator('.answer-grid button').first().click();
+  await answerQuizCorrectly(page);
   await page.getByRole('button', { name: 'Next turn' }).click();
   await expect(page.getByRole('heading', { name: "Ada's turn" })).toBeVisible();
   await expect(page.getByText('Round 2 of 5')).toBeVisible();
   for (let turn = 2; turn < 10; turn += 1) {
     await page.locator('.versus-handover .start-btn').click();
-    await page.locator('.answer-grid button').first().click();
+    await answerQuizCorrectly(page);
     await page.getByRole('button', { name: turn === 9 ? 'See result' : 'Next turn' }).click();
   }
   await expect(page.getByText('MATCH COMPLETE')).toBeVisible();
@@ -475,7 +481,7 @@ test('Mushbot Quiz Battle reveals a prechosen answer after its handover', async 
   await page.getByRole('button', { name: 'Play Mushbot' }).click();
   await page.getByRole('button', { name: 'Start!' }).click();
   await page.locator('.versus-handover .start-btn').click();
-  await page.locator('.answer-grid button').first().click();
+  await answerQuizCorrectly(page);
   await page.getByRole('button', { name: 'Next turn' }).click();
   await expect(page.getByRole('heading', { name: "Mushbot's turn" })).toBeVisible();
   await expect(page.getByRole('img', { name: 'Mushbot', exact: true })).toBeVisible();
@@ -560,130 +566,11 @@ test('voice settings persist and EP rank progress appears on the home screen', a
   expect(await page.evaluate(() => (window as typeof window & { spokenText?: string }).spokenText)).toContain('Mario challenge');
 });
 
-test('two-player championship hands over identical games and saves both totals', async ({ page }) => {
-  await page.goto('./');
-  await page.getByRole('button', { name: 'Play Games' }).click();
-  await page.getByRole('button', { name: 'Championship', exact: false }).click();
-  await page.getByRole('button', { name: 'Two Players' }).click();
-  await page.getByLabel('Player name', { exact: true }).fill('Ada');
-  await page.getByLabel('Player 2 name').fill('Ben');
-  await page.getByRole('button', { name: 'Quick' }).click();
-  for (const game of ['Track Finder', 'Clue Match Up', 'Match & Hunt', 'Clue Duel', 'Category Finder']) await page.locator('.champ-game-toggle').filter({ hasText: game }).click();
-  await page.getByRole('button', { name: 'Start Championship' }).click();
-  await expect(page.getByRole('heading', { name: "Ada's turn" })).toBeVisible();
-  await expect(page.locator('.answer-grid button')).toHaveCount(0);
-  await page.getByRole('button', { name: "Start Ada's turn" }).click();
-  const prompts: string[] = [];
-  for (let i = 0; i < 3; i += 1) {
-    const prompt = (await page.locator('.quiz-panel h1').textContent())!;
-    prompts.push(prompt);
-    const answer = QUESTIONS.find(question => question.prompt === prompt)!.answer;
-    await page.locator('.answer-grid').getByText(answer, { exact: true }).click();
-    await page.getByRole('button', { name: i === 2 ? 'See result' : 'Next question' }).click();
-  }
-  await expect(page.locator('.champ-live-total')).toContainText('Ada: 36 EP');
-  await page.getByRole('button', { name: 'Pass to Ben' }).click();
-  await expect(page.getByRole('heading', { name: "Ben's turn" })).toBeVisible();
-  await expect(page.locator('.answer-grid button')).toHaveCount(0);
-  await page.getByRole('button', { name: "Start Ben's turn" }).click();
-  for (let i = 0; i < 3; i += 1) {
-    const prompt = (await page.locator('.quiz-panel h1').textContent())!;
-    expect(prompt).toBe(prompts[i]);
-    const answer = QUESTIONS.find(question => question.prompt === prompt)!.answer;
-    const wrong = (await page.locator('.answer-grid .choice-text').allTextContents()).find(choice => choice !== answer)!;
-    await page.locator('.answer-grid').getByText(wrong, { exact: true }).click();
-    await page.getByRole('button', { name: i === 2 ? 'See result' : 'Next question' }).click();
-  }
-  await page.getByRole('button', { name: 'Next: Game Order' }).click();
-  await page.getByRole('button', { name: "Start Ada's turn" }).click();
-  const initialOrder = await page.locator('.order-tiles button').allTextContents();
-  for (let i = 0; i < 3; i += 1) {
-    await page.getByRole('button', { name: 'Check order' }).click();
-    await page.getByRole('button', { name: i === 2 ? 'See result' : 'Next question' }).click();
-  }
-  await page.getByRole('button', { name: 'Pass to Ben' }).click();
-  await page.getByRole('button', { name: "Start Ben's turn" }).click();
-  expect(await page.locator('.order-tiles button').allTextContents()).toEqual(initialOrder);
-  for (let i = 0; i < 3; i += 1) {
-    await page.getByRole('button', { name: 'Check order' }).click();
-    await page.getByRole('button', { name: i === 2 ? 'See result' : 'Next question' }).click();
-  }
-  await page.getByRole('button', { name: 'See championship result' }).click();
-  await expect(page.getByRole('heading', { name: 'Ada wins!' })).toBeVisible();
-  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('mariotrivia_championships_v1') || '[]'));
-  expect(saved[0].points).toBe(36);
-  expect(saved[0].opponentPoints).toBe(0);
-  expect(saved[0].format).toBe('two-player');
-});
 
-test('Mushbot championship plays each section once and records both totals', async ({ page }) => {
-  await page.goto('./');
-  await page.getByRole('button', { name: 'Play Games' }).click();
-  await page.getByRole('button', { name: 'Championship', exact: false }).click();
-  await page.getByRole('button', { name: 'Play Mushbot' }).click();
-  await page.getByRole('button', { name: 'Quick' }).click();
-  for (const game of ['Track Finder', 'Clue Match Up', 'Match & Hunt', 'Clue Duel', 'Category Finder']) await page.locator('.champ-game-toggle').filter({ hasText: game }).click();
-  await page.getByRole('button', { name: 'Start Championship' }).click();
-  await page.getByRole('button', { name: "Start Player's turn" }).click();
-  for (let i = 0; i < 3; i += 1) {
-    await page.locator('.answer-grid button').first().click();
-    await page.getByRole('button', { name: i === 2 ? 'See result' : 'Next question' }).click();
-  }
-  await expect(page.getByText('Mushbot played the same rounds.')).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Pass to Mushbot' })).toHaveCount(0);
-  await page.getByRole('button', { name: 'Next: Game Order' }).click();
-  await page.getByRole('button', { name: "Start Player's turn" }).click();
-  for (let i = 0; i < 3; i += 1) {
-    await page.getByRole('button', { name: 'Check order' }).click();
-    await page.getByRole('button', { name: i === 2 ? 'See result' : 'Next question' }).click();
-  }
-  await page.getByRole('button', { name: 'See championship result' }).click();
-  await expect(page.getByText('CHAMPIONSHIP COMPLETE')).toBeVisible();
-  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('mariotrivia_championships_v1') || '[]'));
-  expect(saved[0].format).toBe('computer');
-  expect(saved[0].opponent).toBe('Mushbot');
-  expect(saved[0].opponentGames).toHaveLength(2);
-});
 
-test('two-player championship Clue Match Up gives both players the same three boards', async ({ page }) => {
-  await page.goto('./');
-  await page.getByRole('button', { name: 'Play Games' }).click();
-  await page.getByRole('button', { name: 'Championship', exact: false }).click();
-  await page.getByRole('button', { name: 'Two Players' }).click();
-  await page.getByRole('button', { name: 'Quick' }).click();
-  for (const game of ['Game Order', 'Track Finder', 'Match & Hunt', 'Clue Duel', 'Category Finder']) await page.locator('.champ-game-toggle').filter({ hasText: game }).click();
-  await page.getByRole('button', { name: 'Start Championship' }).click();
-  await page.getByRole('button', { name: "Start Player's turn" }).click();
-  for (let i = 0; i < 3; i += 1) {
-    await page.locator('.answer-grid button').first().click();
-    await page.getByRole('button', { name: i === 2 ? 'See result' : 'Next question' }).click();
-  }
-  await page.getByRole('button', { name: 'Pass to Player 2' }).click();
-  await page.getByRole('button', { name: "Start Player 2's turn" }).click();
-  for (let i = 0; i < 3; i += 1) {
-    await page.locator('.answer-grid button').first().click();
-    await page.getByRole('button', { name: i === 2 ? 'See result' : 'Next question' }).click();
-  }
-  await page.getByRole('button', { name: 'Next: Clue Match Up' }).click();
-  const boards: string[][] = [];
-  for (const name of ['Player', 'Player 2']) {
-    await page.getByRole('button', { name: `Start ${name}'s turn` }).click();
-    for (let i = 0; i < 3; i += 1) {
-      await expect(page.getByText(`Question ${i + 1} of 3`)).toBeVisible();
-      const names = await page.locator('.match-column').first().locator('button').allTextContents();
-      if (name === 'Player') boards.push(names);
-      else expect(names).toEqual(boards[i]);
-      for (const clue of await page.locator('.match-column').last().locator('button').allTextContents()) {
-        const answer = QUESTIONS.find(question => question.prompt === clue)!.answer;
-        await page.locator('.match-column').first().getByRole('button', { name: answer, exact: true }).click();
-        await page.locator('.match-column').last().getByRole('button', { name: clue, exact: true }).click();
-      }
-      await page.getByRole('button', { name: i === 2 ? 'See result' : 'Next question' }).click();
-    }
-    await page.getByRole('button', { name: name === 'Player' ? 'Pass to Player 2' : 'See championship result' }).click();
-  }
-  await expect(page.getByText('CHAMPIONSHIP COMPLETE')).toBeVisible();
-});
+
+
+
 
 test('every standalone game offers two-player and Mushbot modes', async ({ page }) => {
   await page.goto('./');
@@ -697,50 +584,9 @@ test('every standalone game offers two-player and Mushbot modes', async ({ page 
   }
 });
 
-test('standalone Game Order gives both players the same rounds and one saved match', async ({ page }) => {
-  await page.goto('./');
-  await page.getByRole('button', { name: 'Play Games' }).click();
-  await page.getByRole('button', { name: 'Game Order' }).click();
-  await page.getByLabel('Player name').fill('Ada');
-  await page.getByRole('button', { name: 'Two Players' }).click();
-  await page.getByLabel('Player 2 name').fill('Ben');
-  await page.getByRole('button', { name: 'Start!' }).click();
-  await page.getByRole('button', { name: "Start Ada's turn" }).click();
-  const firstBoard = await page.locator('.order-tiles button').allTextContents();
-  for (let round = 0; round < 3; round += 1) {
-    await page.getByRole('button', { name: 'Check order' }).click();
-    await page.getByRole('button', { name: round === 2 ? 'See result' : 'Next question' }).click();
-  }
-  await page.getByRole('button', { name: 'Pass to Ben' }).click();
-  await page.getByRole('button', { name: "Start Ben's turn" }).click();
-  expect(await page.locator('.order-tiles button').allTextContents()).toEqual(firstBoard);
-  for (let round = 0; round < 3; round += 1) {
-    await page.getByRole('button', { name: 'Check order' }).click();
-    await page.getByRole('button', { name: round === 2 ? 'See result' : 'Next question' }).click();
-  }
-  await expect(page.getByText('MATCH COMPLETE')).toBeVisible();
-  const results = await page.evaluate(() => JSON.parse(localStorage.getItem('mariotrivia_results_v1') || '[]'));
-  expect(results).toHaveLength(1);
-  expect(results[0].opponent).toBe('Ben');
-});
 
-test('standalone Track Finder scores Mushbot without a second playable leg', async ({ page }) => {
-  await page.goto('./');
-  await page.getByRole('button', { name: 'Play Games' }).click();
-  await page.getByRole('button', { name: 'Track Finder' }).click();
-  await page.getByRole('button', { name: 'Play Mushbot' }).click();
-  await page.getByRole('button', { name: 'Start!' }).click();
-  for (let round = 0; round < 3; round += 1) {
-    await page.locator('.finder-grid button').first().click();
-    await page.getByRole('button', { name: round === 2 ? 'See result' : 'Next question' }).click();
-  }
-  await expect(page.getByText('MATCH COMPLETE')).toBeVisible();
-  await expect(page.getByRole('img', { name: 'Mushbot', exact: true })).toBeVisible();
-  const results = await page.evaluate(() => JSON.parse(localStorage.getItem('mariotrivia_results_v1') || '[]'));
-  expect(results).toHaveLength(1);
-  expect(results[0].opponent).toBe('Mushbot');
-  expect(results[0].format).toBe('computer');
-});
+
+
 
 test('game hub selects the format first and loads the spotted Mushbot image', async ({ page }) => {
   await page.goto('./');

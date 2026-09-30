@@ -1,6 +1,7 @@
 import type { Difficulty } from './questions.ts';
 import { availableModes, createRounds, DEFAULT_PAIR_OPTIONS, type GameMode, type GameRound, type PairMatchOptions, type Section } from './rounds.ts';
 import type { Answer } from './session.ts';
+import type { OrderOptions } from './gameOrder.ts';
 
 export type ChampionshipSize = 'quick' | 'standard' | 'epic';
 export const CHAMPIONSHIP_SIZES: readonly ChampionshipSize[] = ['quick', 'standard', 'epic'];
@@ -19,7 +20,7 @@ export function championshipRoundCount(mode: GameMode, size: ChampionshipSize): 
   return ROUND_COUNTS[mode][size];
 }
 
-export function createChampionshipRounds(mode: GameMode, section: Section, difficulty: Difficulty, size: ChampionshipSize, random = Math.random, pairOptions: PairMatchOptions = DEFAULT_PAIR_OPTIONS): GameRound[] {
+export function createChampionshipRounds(mode: GameMode, section: Section, difficulty: Difficulty, size: ChampionshipSize, random = Math.random, pairOptions: PairMatchOptions = DEFAULT_PAIR_OPTIONS, players = 1, orderOptions?: OrderOptions): GameRound[] {
   if (!availableModes(section).includes(mode)) throw new Error(`${mode} is not available in ${section}.`);
   const atomicCount = ROUND_COUNTS['game-order'][size];
   const options = mode === 'pair-match' ? {
@@ -27,7 +28,7 @@ export function createChampionshipRounds(mode: GameMode, section: Section, diffi
     pairCount: pairOptions.variant === 'time-trial' ? atomicCount * 3 : pairOptions.pairCount,
     trialTarget: pairOptions.variant === 'time-trial' ? atomicCount as 3 | 4 | 5 : pairOptions.trialTarget,
   } : pairOptions;
-  return createRounds(mode, section, difficulty, random, options).slice(0, championshipRoundCount(mode, size));
+  return createRounds(mode, section, difficulty, random, options, championshipRoundCount(mode, size) * players, orderOptions);
 }
 
 export function championshipPoints(games: readonly { correct: number; points?: number }[]): number {

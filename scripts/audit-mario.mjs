@@ -6,14 +6,48 @@ import { availableModes, createRounds, DEFAULT_PAIR_OPTIONS, isCorrect, MARIO_TI
 import { CLUE_SUBJECTS } from '../src/mario/clues.ts';
 import { CATEGORY_ITEMS } from '../src/mario/categoryCatalog.ts';
 import { ICON_PAIRS } from '../src/mario/pairCatalog.ts';
-import { advanceVersusQuiz, answerVersusQuiz, rewindVersusQuiz, startVersusQuiz } from '../src/mario/versus.ts';
-import { advance, rewind, startSession, submit } from '../src/mario/session.ts';
+import { advanceVersusQuiz, answerVersusQuiz, attemptVersusQuiz, rewindVersusQuiz, startVersusQuiz } from '../src/mario/versus.ts';
+import { advance, attemptQuiz, rewind, startSession, submit } from '../src/mario/session.ts';
 import { calculatePoints } from '../src/mario/scoring.ts';
 import { championshipPoints, championshipRoundCount, computerChampionshipAnswers, createChampionshipRounds } from '../src/mario/championship.ts';
+import { newTurnScores, scoreTurn } from '../src/mario/turns.ts';
+import { orderTileOptions } from '../src/mario/gameOrder.ts';
 
 assert.equal(calculatePoints('explorer', true, 0), 12);
 assert.equal(calculatePoints('scientist', true, 3), 50);
 assert.equal(calculatePoints('professor', false, 12), 0);
+for (const [difficulty, retries] of [['explorer', 3], ['scientist', 1], ['professor', 0]]) {
+  let solo = startSession(createRounds('quiz', 'mixed', difficulty), difficulty);
+  let duel = startVersusQuiz('mixed', difficulty, 'human');
+  const soloQuestion = solo.rounds[0].question;
+  const duelQuestion = duel.turns[0].question;
+  for (let index = 0; index < Math.min(retries + 1, 3); index += 1) {
+    const soloWrong = soloQuestion.choices.filter(choice => choice !== soloQuestion.answer)[index];
+    const duelWrong = duelQuestion.choices.filter(choice => choice !== duelQuestion.answer)[index];
+    solo = attemptQuiz(solo, soloWrong);
+    duel = attemptVersusQuiz(duel, duelWrong);
+    assert.equal(!!solo.submission, index >= retries);
+    assert.equal(!!duel.submission, index >= retries);
+    assert.equal(attemptQuiz(solo, soloWrong), solo, 'Duplicate taps cannot consume retries');
+    assert.equal(attemptVersusQuiz(duel, duelWrong), duel);
+    assert.equal(solo.points, 0);
+    assert.deepEqual(duel.points, [0, 0]);
+    if (!solo.submission) assert.equal(advance(solo), solo);
+    if (!duel.submission) assert.equal(advanceVersusQuiz(duel), duel);
+  }
+  if (retries === 3) {
+    solo = attemptQuiz(solo, soloQuestion.answer);
+    duel = attemptVersusQuiz(duel, duelQuestion.answer);
+    assert.ok(solo.submission.correct);
+    assert.ok(duel.submission.correct);
+  }
+  assert.deepEqual(rewind(solo).wrongAnswers, []);
+  assert.deepEqual(rewindVersusQuiz(duel).wrongAnswers, []);
+  assert.deepEqual(advance(solo).wrongAnswers, []);
+  assert.deepEqual(advanceVersusQuiz(duel).wrongAnswers, []);
+  assert.equal(advance(solo).points, solo.submission.points);
+  assert.equal(advanceVersusQuiz(duel).points[0], duel.submission.points);
+}
 assert.equal(championshipPoints([{ correct: 3, points: 36 }, { correct: 2, points: 24 }]), 60);
 for (const size of ['quick', 'standard', 'epic']) assert.equal(championshipRoundCount('pair-match', size), 3);
 const huntComputerRounds = createRounds('pair-match', 'mario', 'explorer');
@@ -74,7 +108,7 @@ for (const pair of ICON_PAIRS.filter(item => item.iconKind === 'svg')) {
   assert.ok(existsSync(new URL(`../public/${pair.icon}`, import.meta.url)), `${pair.name}: missing icon`);
   assert.ok(pair.iconAlt.length > 8, `${pair.name}: missing accessible description`);
 }
-assert.equal(ICON_PAIRS.find(pair => pair.name === 'Daisy').iconKind, 'text');
+assert.equal(ICON_PAIRS.find(pair => pair.name === 'Daisy').iconKind, 'svg');
 for (const section of ['mario', 'kart', 'mixed']) {
   for (const difficulty of ['explorer', 'scientist', 'professor']) {
     for (const pairCount of [12, 16, 20]) {
@@ -125,7 +159,8 @@ for (const difficulty of ['explorer', 'scientist', 'professor']) {
         assert.equal(isCorrect(round, round.tiles.map(tile => tile.id)), false, 'Order must start shuffled');
         assert.equal(isCorrect(round, round.correctIds), true);
       } else if (round.mode === 'track-finder') {
-        assert.equal(round.tiles.length, expected * expected);
+        assert.equal(round.tiles.length, difficulty === 'explorer' ? 4 : difficulty === 'scientist' ? 6 : 9);
+        assert.ok(round.tiles.some(course => course.cup !== round.targetCup), 'Finder needs at least one distractor');
         const valid = round.tiles.filter(course => course.cup === round.targetCup);
         assert.ok(valid.length > 0, 'Finder must show a valid target');
         assert.ok(valid.every(course => isCorrect(round, course.id)));
@@ -257,4 +292,34 @@ assert.equal(game.points, 12);
 assert.equal(game.bestStreak, 1);
 assert.equal(game.complete, true);
 assert.equal(rewind(game), game, 'Rewind is locked after Next');
+
+for (const difficulty of ['explorer', 'scientist', 'professor']) {
+  for (const size of ['quick', 'standard', 'epic']) {
+    for (const mode of availableModes('mixed')) {
+      const rounds = createChampionshipRounds(mode, 'mixed', difficulty, size, Math.random, DEFAULT_PAIR_OPTIONS, 2);
+      assert.equal(rounds.length, championshipRoundCount(mode, size) * 2);
+      assert.equal(new Set(rounds.map(round => round.id)).size, rounds.length, 'Players must get different rounds');
+      if (mode === 'quiz') assert.equal(new Set(rounds.map(round => round.question.knowledgeId)).size, rounds.length);
+      if (mode === 'clue-duel') assert.equal(new Set(rounds.map(round => round.answerId)).size, rounds.length);
+      if (mode === 'match-hunt') {
+        const names = rounds.flatMap(round => round.pairs.map(pair => pair.name));
+        assert.equal(new Set(names).size, names.length, 'Both players need fresh matching clues');
+      }
+    }
+  }
+  for (const tiles of orderTileOptions(difficulty)) for (const challenge of ['easy', 'medium', 'hard']) {
+    const rounds = createRounds('game-order', 'mixed', difficulty, Math.random, DEFAULT_PAIR_OPTIONS, 6, { tiles, challenge });
+    assert.ok(rounds.every(round => round.tiles.length === tiles && !isCorrect(round, round.tiles.map(tile => tile.id))));
+    if (challenge !== 'hard') assert.ok(rounds.every(round => round.tiles.every((tile, index) => tile.id !== round.correctIds[index])));
+  }
+}
+let timedTurns = scoreTurn(newTurnScores(), 0, true, 999, 9000, true);
+assert.deepEqual(timedTurns.points, [0, 0]);
+assert.equal(timedTurns.active, 1);
+timedTurns = scoreTurn(timedTurns, 1, true, 999, 7000, true);
+assert.deepEqual(timedTurns.points, [0, 1], 'Faster player wins, not the player with fewer wrong answers');
+assert.equal(timedTurns.active, 0);
+const bonusWin = scoreTurn({ ...newTurnScores(), active: 1 }, 0, true, 1, 100, false);
+assert.deepEqual(bonusWin.points, [0, 1], 'Clue bonus point belongs to the answering player');
+
 console.log(`Checked ${QUESTIONS.length} questions, 900 generated quizzes, 48 tracks, and the new round/session rules.`);

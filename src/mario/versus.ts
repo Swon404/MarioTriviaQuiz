@@ -1,6 +1,7 @@
 import { createQuiz, shuffled, type Difficulty, type TriviaQuestion } from './questions.ts';
 import type { Section } from './rounds.ts';
 import { calculatePoints } from './scoring.ts';
+import { QUIZ_RETRIES } from './retries.ts';
 
 export type OpponentKind = 'human' | 'computer';
 export type VersusTurn = {
@@ -19,6 +20,7 @@ export type VersusQuiz = {
   streaks: readonly [number, number];
   bestStreaks: readonly [number, number];
   submission: VersusSubmission | null;
+  wrongAnswers: readonly string[];
   complete: boolean;
 };
 
@@ -39,7 +41,16 @@ export function startVersusQuiz(section: Section, difficulty: Difficulty, oppone
     }
     return { id: `${question.id}-player-${playerIndex}`, playerIndex, question, computerAnswer };
   });
-  return { turns, difficulty, index: 0, scores: [0, 0], points: [0, 0], streaks: [0, 0], bestStreaks: [0, 0], submission: null, complete: false };
+  return { turns, difficulty, index: 0, scores: [0, 0], points: [0, 0], streaks: [0, 0], bestStreaks: [0, 0], submission: null, wrongAnswers: [], complete: false };
+}
+
+export function attemptVersusQuiz(game: VersusQuiz, answer: string): VersusQuiz {
+  const turn = game.turns[game.index];
+  if (game.complete || game.submission || !turn || !turn.question.choices.includes(answer) || game.wrongAnswers.includes(answer)) return game;
+  if (turn.computerAnswer !== undefined || answer === turn.question.answer) return answerVersusQuiz(game, answer);
+  const wrongAnswers = [...game.wrongAnswers, answer];
+  const next = { ...game, wrongAnswers };
+  return wrongAnswers.length <= QUIZ_RETRIES[game.difficulty] ? next : answerVersusQuiz(next, answer);
 }
 
 export function answerVersusQuiz(game: VersusQuiz, answer: string): VersusQuiz {
@@ -52,8 +63,8 @@ export function answerVersusQuiz(game: VersusQuiz, answer: string): VersusQuiz {
 }
 
 export function rewindVersusQuiz(game: VersusQuiz): VersusQuiz {
-  if (game.complete || !game.submission) return game;
-  return { ...game, submission: null };
+  if (game.complete || (!game.submission && game.wrongAnswers.length === 0)) return game;
+  return { ...game, submission: null, wrongAnswers: [] };
 }
 
 export function advanceVersusQuiz(game: VersusQuiz): VersusQuiz {
@@ -68,5 +79,5 @@ export function advanceVersusQuiz(game: VersusQuiz): VersusQuiz {
   streaks[player] = game.submission.correct ? streaks[player] + 1 : 0;
   bestStreaks[player] = Math.max(bestStreaks[player], streaks[player]);
   const index = game.index + 1;
-  return { ...game, index, scores, points, streaks, bestStreaks, submission: null, complete: index === game.turns.length };
+  return { ...game, index, scores, points, streaks, bestStreaks, submission: null, wrongAnswers: [], complete: index === game.turns.length };
 }
