@@ -44,10 +44,10 @@ export default function OrderBoard({ round, difficulty, options, player, resultI
       <div className="order-tiles">{tiles.map((id, index) => {
         const tile = round.tiles.find(item => item.id === id)!;
         const state = feedback[index];
-        return <button key={id} disabled={solved} aria-pressed={selected === index} className={`order-color-${round.tiles.findIndex(item => item.id === id) % 5} ${selected === index ? 'selected-tile' : ''} ${options.challenge !== 'hard' || solved ? state === 'correct' ? 'order-correct' : state ? 'order-wrong' : '' : ''}`} onClick={() => {
+        return <button key={id} disabled={solved} aria-pressed={selected === index} className={`${selected === index ? 'selected-tile' : ''} ${options.challenge !== 'hard' || solved ? state === 'correct' ? 'order-correct' : state ? 'order-wrong' : '' : ''}`} onClick={() => {
           if (selected === null) setSelected(index);
           else { const next = [...tiles]; [next[selected], next[index]] = [next[index], next[selected]]; setTiles(next); setSelected(null); setFeedback([]); }
-        }}><span>{tile.title}</span>{(rules.years || solved) && <small>{tile.year}</small>}{state && rules.hints && !solved && <small>{state === 'correct' ? 'Correct position' : state === 'left' ? 'Move left' : 'Move right'}</small>}</button>;
+        }}><span>{tile.title}</span>{solved && <small className="order-year">{tile.year}</small>}{state && (options.challenge !== 'hard' || solved) && <small className="order-position-feedback">{state === 'correct' ? '✓ Correct position' : rules.hints ? state === 'left' ? '← Move left' : 'Move right →' : 'Wrong position'}</small>}</button>;
       })}</div>
       {!solved && <button className="start-btn check-button" onClick={check}>Check order</button>}
       {feedback.length > 0 && <p className="order-feedback" role="status">{solved ? `Solved in ${(elapsed / 1000).toFixed(1)} seconds! ${attempts} ${attempts === 1 ? 'check' : 'checks'}.` : `${feedback.filter(value => value === 'correct').length}/${tiles.length} correct positions. Keep going!${rules.penalty ? ' +1 second.' : ''}`}</p>}

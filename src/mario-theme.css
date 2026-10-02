@@ -40,11 +40,6 @@ body:has(.mario-app) {
 .mario-app .home-stats, .mario-app .result-card { border: 1px solid var(--border); border-top: 5px solid var(--gold); box-shadow: 0 12px 26px rgba(47,22,38,.24); }
 .mario-app .menu-btn, .mario-app .game-mode-btn, .mario-app .choice-btn, .mario-app .round-btn, .mario-app .diff-btn, .mario-app .order-tiles button, .mario-app .finder-grid button, .mario-app .match-column button { box-shadow: 0 4px 0 rgba(48,23,40,.35); }
 .mario-app .order-tiles button { font-size: clamp(1.125rem, 3vw, 1.5rem); font-weight: 800; line-height: 1.2; min-height: 96px; }
-.mario-app .order-tiles button.order-color-0 { background: linear-gradient(145deg, #bf3d50, #872a43); color: #fff; border-color: #ed8691; }
-.mario-app .order-tiles button.order-color-1 { background: linear-gradient(145deg, #3278bc, #1d4b86); color: #fff; border-color: #84b8eb; }
-.mario-app .order-tiles button.order-color-2 { background: linear-gradient(145deg, #ffe17a, #efb94d); color: #302035; border-color: #fff0ad; }
-.mario-app .order-tiles button.order-color-3 { background: linear-gradient(145deg, #348d65, #205e4c); color: #fff; border-color: #86d7ad; }
-.mario-app .order-tiles button.order-color-4 { background: linear-gradient(145deg, #ae5336, #853548); color: #fff; border-color: #ed9b73; }
 .mario-app .order-tiles button.selected-tile { border-color: #fff; outline: 4px solid #ff6f8e; outline-offset: 2px; filter: brightness(1.13); }
 .mario-app .order-tiles button:not(:disabled):hover { filter: brightness(1.1); }
 .mario-app .menu-btn.primary, .mario-app .start-btn { background: linear-gradient(145deg, #ff765e, #d9474f); border-color: #ffad74; color: #fff; }

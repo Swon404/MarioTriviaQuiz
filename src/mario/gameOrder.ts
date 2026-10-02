@@ -3,9 +3,9 @@ import type { Difficulty } from './questions.ts';
 export type OrderChallenge = 'easy' | 'medium' | 'hard';
 export type OrderOptions = { challenge: OrderChallenge; tiles: number };
 export const ORDER_RULES = {
-  easy: { label: 'Easy', description: 'Direction hints and release years. No time penalty.', hints: true, years: true, penalty: 0 },
-  medium: { label: 'Medium', description: 'Position feedback and release years. +1 second per wrong check.', hints: false, years: true, penalty: 1000 },
-  hard: { label: 'Hard', description: 'Only the number of correct positions. Years hidden. +1 second per wrong check.', hints: false, years: false, penalty: 1000 },
+  easy: { label: 'Easy', description: 'Direction hints after checking. Years revealed when solved. No time penalty.', hints: true, penalty: 0 },
+  medium: { label: 'Medium', description: 'Position feedback, no arrows. Years revealed when solved. +1 second per wrong check.', hints: false, penalty: 1000 },
+  hard: { label: 'Hard', description: 'Only the number of correct positions. Years revealed when solved. +1 second per wrong check.', hints: false, penalty: 1000 },
 } as const;
 export const orderTileOptions = (difficulty: Difficulty) => difficulty === 'explorer' ? [3, 4, 5] : difficulty === 'scientist' ? [4, 5, 6] : [5, 6, 8];
 export type OrderTime = { id: string; player: string; difficulty: Difficulty; challenge: OrderChallenge; tiles: number; elapsedMs: number; attempts: number; completedAt: string };

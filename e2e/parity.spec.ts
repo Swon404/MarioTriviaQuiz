@@ -40,6 +40,49 @@ async function answerTrack(page: Page) {
   return prompt;
 }
 
+for (const challenge of ['Easy', 'Medium', 'Hard']) {
+  test(`Game Order ${challenge} uses position feedback instead of decorative colours`, async ({ page }) => {
+    await openGame(page, 'Game Order');
+    await page.getByRole('group', { name: 'Game Order challenge' }).getByRole('button', { name: challenge, exact: false }).click();
+    await page.getByRole('button', { name: 'Start!', exact: true }).click();
+    await page.getByRole('button', { name: 'Start Timer', exact: true }).click();
+    const tiles = page.locator('.order-tiles button');
+    await expect(tiles.locator('small')).toHaveCount(0);
+    const current = await tiles.locator('span').allTextContents();
+    const sorted = [...current].sort((a, b) => MARIO_TIMELINE.find(game => game.title === a)!.year - MARIO_TIMELINE.find(game => game.title === b)!.year);
+    const target = [...sorted];
+    [target[0], target[1]] = [target[1], target[0]];
+    for (let index = 0; index < target.length; index++) {
+      const other = current.indexOf(target[index]);
+      if (other === index) continue;
+      await tiles.nth(index).click();
+      await tiles.nth(other).click();
+      [current[index], current[other]] = [current[other], current[index]];
+    }
+    expect(new Set(await tiles.evaluateAll(nodes => nodes.map(node => getComputedStyle(node).backgroundColor))).size).toBe(1);
+    await expect(page.locator('[class*="order-color-"]')).toHaveCount(0);
+    await page.getByRole('button', { name: 'Check order' }).click();
+    await expect(page.locator('.order-year')).toHaveCount(0);
+    if (challenge === 'Hard') {
+      await expect(page.locator('.order-position-feedback')).toHaveCount(0);
+      await expect(page.locator('.order-correct, .order-wrong')).toHaveCount(0);
+    } else {
+      await expect(tiles.nth(2)).toHaveClass(/order-correct/);
+      await expect(tiles.nth(2)).toContainText('✓ Correct position');
+      await expect(tiles.nth(2)).toHaveCSS('background-color', 'rgb(40, 87, 73)');
+      await expect(tiles.nth(0)).toHaveCSS('background-color', 'rgb(99, 85, 42)');
+      await expect(tiles.nth(0)).toContainText(challenge === 'Easy' ? 'Move right →' : 'Wrong position');
+      await expect(tiles.nth(1)).toContainText(challenge === 'Easy' ? '← Move left' : 'Wrong position');
+    }
+    await tiles.nth(0).click();
+    await tiles.nth(1).click();
+    await expect(page.locator('.order-position-feedback')).toHaveCount(0);
+    await page.getByRole('button', { name: 'Check order' }).click();
+    await expect(page.locator('.order-correct')).toHaveCount(sorted.length);
+    await expect(page.locator('.order-year')).toHaveCount(sorted.length);
+  });
+}
+
 test('Championship is first and setup choices survive reload', async ({ page }) => {
   await openGame(page, 'Championship');
   await page.getByRole('button', { name: 'Two Players', exact: true }).click();
