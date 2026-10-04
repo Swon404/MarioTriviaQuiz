@@ -1,4 +1,5 @@
 import type { Difficulty } from './questions.ts';
+import { fitsCategory } from './categoryCatalog.ts';
 import { availableModes, createRounds, DEFAULT_PAIR_OPTIONS, type GameMode, type GameRound, type PairMatchOptions, type Section } from './rounds.ts';
 import type { Answer } from './session.ts';
 import type { OrderOptions } from './gameOrder.ts';
@@ -20,7 +21,7 @@ export function championshipRoundCount(mode: GameMode, size: ChampionshipSize): 
   return ROUND_COUNTS[mode][size];
 }
 
-export function createChampionshipRounds(mode: GameMode, section: Section, difficulty: Difficulty, size: ChampionshipSize, random = Math.random, pairOptions: PairMatchOptions = DEFAULT_PAIR_OPTIONS, players = 1, orderOptions?: OrderOptions): GameRound[] {
+export function createChampionshipRounds(mode: GameMode, section: Section, difficulty: Difficulty, size: ChampionshipSize, random = Math.random, pairOptions: PairMatchOptions = DEFAULT_PAIR_OPTIONS, players = 1, orderOptions?: OrderOptions, recent: readonly string[] = []): GameRound[] {
   if (!availableModes(section).includes(mode)) throw new Error(`${mode} is not available in ${section}.`);
   const atomicCount = ROUND_COUNTS['game-order'][size];
   const options = mode === 'pair-match' ? {
@@ -28,7 +29,7 @@ export function createChampionshipRounds(mode: GameMode, section: Section, diffi
     pairCount: pairOptions.variant === 'time-trial' ? atomicCount * 3 : pairOptions.pairCount,
     trialTarget: pairOptions.variant === 'time-trial' ? atomicCount as 3 | 4 | 5 : pairOptions.trialTarget,
   } : pairOptions;
-  return createRounds(mode, section, difficulty, random, options, championshipRoundCount(mode, size) * players, orderOptions);
+  return createRounds(mode, section, difficulty, random, options, championshipRoundCount(mode, size) * players, orderOptions, recent, players === 2);
 }
 
 export function championshipPoints(games: readonly { correct: number; points?: number }[]): number {
@@ -41,8 +42,8 @@ export function computerChampionshipAnswers(rounds: readonly GameRound[], diffic
     const right = random() < accuracy;
     if (round.mode === 'quiz') return right ? round.question.answer : round.question.choices.find(choice => choice !== round.question.answer)!;
     if (round.mode === 'game-order') return right ? round.correctIds : [...round.correctIds].reverse();
-    if (round.mode === 'track-finder') return (round.tiles.find(tile => right ? tile.cup === round.targetCup : tile.cup !== round.targetCup) ?? round.tiles[0]).id;
-    if (round.mode === 'category-finder') return (round.tiles.find(tile => right ? tile.category === round.targetCategory : tile.category !== round.targetCategory) ?? round.tiles[0]).id;
+    if (round.mode === 'track-finder') return (round.tiles.find(tile => right ? round.correctIds.includes(tile.id) : !round.correctIds.includes(tile.id)) ?? round.tiles[0]).id;
+    if (round.mode === 'category-finder') return (round.tiles.find(tile => right === fitsCategory(tile, round.targetCategory)) ?? round.tiles[0]).id;
     if (round.mode === 'clue-duel') return right ? round.answerId : round.choices.find(choice => choice.id !== round.answerId)!.id;
     if (round.mode === 'pair-match') return round.completionId;
     // A completed matching board always finds its target.

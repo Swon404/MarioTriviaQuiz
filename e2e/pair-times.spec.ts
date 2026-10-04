@@ -1,0 +1,62 @@
+import { expect, test } from '@playwright/test';
+
+test('Timed Hunt saves the human turn immediately, never the simulated Mushbot time', async ({ page }) => {
+  await page.goto('./');
+  await page.getByRole('button', { name: 'Play Games' }).click();
+  await page.getByRole('button', { name: 'Match & Hunt' }).click();
+  await page.getByRole('button', { name: 'Play Mushbot', exact: true }).click();
+  await page.getByLabel('Player name', { exact: true }).fill('Ada');
+  await page.getByRole('group', { name: 'Hunt timer' }).getByRole('button', { name: 'On' }).click();
+  await page.getByRole('group', { name: 'Hunt target mode' }).getByRole('button', { name: 'Choose' }).click();
+  await page.getByRole('group', { name: 'Target unlock' }).getByRole('button', { name: '0', exact: true }).click();
+  const target = await page.getByLabel('Target name').inputValue();
+  await page.getByRole('button', { name: 'Start!', exact: true }).click();
+  await page.getByRole('button', { name: "Start Ada's turn" }).click();
+  await page.getByRole('button', { name: 'Start Timer', exact: true }).click();
+  await page.locator(`.pair-card[data-pair-id="${target}"][data-kind="icon"]`).click();
+  await page.locator(`.pair-card[data-pair-id="${target}"][data-kind="word"]`).click();
+  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('mariotrivia_pair_times_v1') ?? '[]'));
+  expect(saved).toHaveLength(1);
+  expect(saved[0]).toMatchObject({ player: 'Ada', target, moves: 1, ruleset: 'pairs-v1' });
+  expect(saved[0].replay.target).toBeTruthy();
+  expect(saved[0].replay.frames.map((frame: { event: string }) => frame.event)).toEqual(['Timer started', 'First card revealed', 'Second card revealed — a pair', 'Hunt target found']);
+  await page.locator('.board-replay summary').click();
+  const replay = page.locator('.board-replay');
+  await expect(replay).toContainText(`Hunt target: ${saved[0].replay.target}`);
+  await expect(replay.locator('.replay-hidden')).toHaveCount(24);
+  await replay.getByRole('button', { name: 'Next event' }).click();
+  await expect(replay.locator('.replay-selected')).toHaveCount(1);
+  await replay.getByRole('button', { name: 'Next event' }).click();
+  await expect(replay.locator('.replay-selected')).toHaveCount(2);
+  await replay.getByRole('button', { name: 'Next event' }).click();
+  await expect(replay.locator('.replay-matched')).toHaveCount(2);
+  await expect(replay).toContainText('Replay finished');
+  await page.getByRole('button', { name: 'Next turn' }).click();
+  await page.getByRole('button', { name: "Start Mushbot's turn" }).click();
+  await page.getByRole('button', { name: /Show Mushbot/ }).click();
+  await expect(page.getByText('Mushbot’s simulated time:', { exact: false })).toBeVisible();
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('mariotrivia_pair_times_v1') ?? '[]'))).toEqual(saved);
+  page.once('dialog', dialog => dialog.accept());
+  await page.getByRole('button', { name: '← Games', exact: true }).click();
+  await page.getByRole('button', { name: 'High Scores' }).click();
+  await expect(page.getByRole('heading', { name: 'Match & Hunt · fastest times' })).toBeVisible();
+  await expect(page.locator('.order-leaderboard').filter({ hasText: 'pairs-v1' })).toContainText('Ada');
+  await page.locator('.board-replay summary').click();
+  await expect(page.locator('.board-replay')).toContainText(`Hunt target: ${saved[0].replay.target}`);
+});
+
+test('Matching time storage separates rules and preserves the first completion', async ({ page }) => {
+  await page.goto('./');
+  const result = await page.evaluate(async () => {
+    const path = '/MarioTriviaQuiz/src/mario/pairTimes.ts';
+    const { savePairTime, getPairTimes, pairTimeKey } = await import(path);
+    const item = { id: 'one', player: 'Ada', difficulty: 'explorer', ruleset: 'pairs-v1', variant: 'hunt', pairs: 12, goal: 12, target: 'crown', unlockPairs: 1, elapsedMs: 1234, moves: 3, completedAt: new Date().toISOString() };
+    savePairTime(item, true);
+    savePairTime({ ...item, elapsedMs: 1 }, true);
+    savePairTime({ ...item, id: 'practice' }, false);
+    return { records: getPairTimes(), keys: [item, { ...item, target: null }, { ...item, unlockPairs: 2 }, { ...item, ruleset: 'pairs-v2' }].map(pairTimeKey) };
+  });
+  expect(result.records).toHaveLength(1);
+  expect(result.records[0].elapsedMs).toBe(1234);
+  expect(new Set(result.keys).size).toBe(4);
+});

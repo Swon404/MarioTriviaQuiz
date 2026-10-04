@@ -29,8 +29,8 @@ const COMPUTER_ACCURACY: Record<Difficulty, number> = {
   explorer: 0.55, scientist: 0.7, professor: 0.85,
 };
 
-export function startVersusQuiz(section: Section, difficulty: Difficulty, opponent: OpponentKind, random = Math.random): VersusQuiz {
-  const questions = createQuiz(section, difficulty, QUESTIONS_PER_PLAYER * 2, random);
+export function startVersusQuiz(section: Section, difficulty: Difficulty, opponent: OpponentKind, random = Math.random, recent: readonly string[] = []): VersusQuiz {
+  const questions = createQuiz(section, difficulty, QUESTIONS_PER_PLAYER * 2, random, recent);
   const turns: VersusTurn[] = questions.map((question, index) => {
     const playerIndex = (index % 2) as 0 | 1;
     let computerAnswer: string | undefined;

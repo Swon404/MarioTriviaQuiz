@@ -1,5 +1,6 @@
 import type { Difficulty, Topic } from './questions.ts';
 import type { GameMode, PairVariant } from './rounds.ts';
+import { syncLifetime, progressStorageProblem, reportProgressStorageProblem } from './lifetimeProgress.ts';
 
 const PROFILE_KEY = 'mariotrivia_profile_v1';
 const RESULTS_KEY = 'mariotrivia_results_v1';
@@ -57,8 +58,15 @@ export function getResults(): QuizResult[] {
 
 export function saveResult(result: QuizResult): void {
   const existing = getResults();
-  if (existing.some(item => item.id === result.id)) return;
-  localStorage.setItem(RESULTS_KEY, JSON.stringify([result, ...existing].slice(0, 200)));
+  const lifetime = syncLifetime(existing);
+  if (lifetime.some(item => item.id === result.id)) return;
+  syncLifetime([...existing, result]);
+  try {
+    const updated = [result, ...existing];
+    // If lifetime persistence failed, do not discard older recoverable results.
+    localStorage.setItem(RESULTS_KEY, JSON.stringify(progressStorageProblem() ? updated : updated.slice(0, 200)));
+    reportProgressStorageProblem(false);
+  } catch { reportProgressStorageProblem(); }
 }
 
 export function getChampionshipResults(): ChampionshipResult[] {

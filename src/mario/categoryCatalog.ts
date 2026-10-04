@@ -1,14 +1,20 @@
-export type FinderCategory = 'friend' | 'baddie' | 'power-up' | 'game' | 'system';
+export type BaseCategory = 'friend' | 'baddie' | 'power-up' | 'game' | 'system';
+export type FinderCategory = BaseCategory | 'classic-game' | 'wii-game' | 'switch-game' | 'handheld-game';
 export const CATEGORY_LABELS: Record<FinderCategory, string> = {
   friend: 'friendly character', baddie: 'baddie', 'power-up': 'power-up',
   game: 'Mario game', system: 'Nintendo system',
+  'classic-game': 'Mario game released before 2000',
+  'wii-game': 'Mario game originally released for Wii',
+  'switch-game': 'Mario game originally released for Nintendo Switch',
+  'handheld-game': 'Mario game originally released for Game Boy, DS or 3DS',
 };
 
 export type CategoryItem = {
   id: string;
   number: number;
   name: string;
-  category: FinderCategory;
+  category: BaseCategory;
+  memberships?: readonly FinderCategory[];
   detail: string;
   sourceUrl: string;
 };
@@ -21,7 +27,7 @@ const history = 'https://www.nintendo.com/us/explore/characters/mario/history/';
 const wonder = 'https://supermariobroswonder.nintendo.com/';
 
 type Entry = readonly [name: string, detail: string, sourceUrl: string];
-const groups: Record<FinderCategory, readonly Entry[]> = {
+const groups: Record<BaseCategory, readonly Entry[]> = {
   friend: [
     ['Mario', 'Mario is a plumber and an all-round Mushroom Kingdom hero.', characters],
     ['Luigi', 'Luigi is taller than Mario and can jump higher.', characters],
@@ -74,10 +80,39 @@ const groups: Record<FinderCategory, readonly Entry[]> = {
   ],
 };
 
-const order: readonly FinderCategory[] = ['friend', 'baddie', 'power-up', 'game', 'system'];
-export const CATEGORY_ITEMS: readonly CategoryItem[] = Array.from({ length: 8 }, (_, row) =>
+const order: readonly BaseCategory[] = ['friend', 'baddie', 'power-up', 'game', 'system'];
+const entries = Array.from({ length: 8 }, (_, row) =>
   order.map((category, column) => {
     const [name, detail, sourceUrl] = groups[category][row];
     return { id: `${category}-${row}`, number: row * order.length + column + 1, name, category, detail, sourceUrl };
   }),
 ).flat();
+
+// Stable consecutive catalogue, but not five repeating category columns.
+// Keep entity IDs independent of their display position.
+const CATALOG_ORDER = [6,24,17,0,33,12,29,4,21,15,38,9,26,2,35,19,7,31,14,22,1,36,11,28,5,34,18,3,25,39,10,32,8,27,16,30,23,13,37,20];
+const extraGames = [
+  ['land', 'Super Mario Land', 'Game Boy, 1989.'],
+  ['galaxy2', 'Super Mario Galaxy 2', 'Wii, 2010.'],
+  ['new-ds', 'New Super Mario Bros.', 'Nintendo DS, 2006.'],
+  ['maker2', 'Super Mario Maker 2', 'Nintendo Switch, 2019.'],
+  ['land2', 'Super Mario Land 2: 6 Golden Coins', 'Game Boy, 1992.'],
+  ['land3d', 'Super Mario 3D Land', 'Nintendo 3DS, 2011.'],
+] as const;
+const contextual: Partial<Record<FinderCategory, readonly string[]>> = {
+  'classic-game': ['Super Mario Bros.', 'Super Mario World', 'Super Mario 64', 'Super Mario Land', 'Super Mario Land 2: 6 Golden Coins'],
+  'wii-game': ['Super Mario Galaxy', 'Super Mario Galaxy 2'],
+  'switch-game': ['Super Mario Odyssey', 'Super Mario Bros. Wonder', 'Super Mario Maker 2'],
+  'handheld-game': ['Super Mario Land', 'Super Mario Land 2: 6 Golden Coins', 'New Super Mario Bros.', 'Super Mario 3D Land'],
+};
+export const CATEGORY_ITEMS: readonly CategoryItem[] = [
+  ...CATALOG_ORDER.map(index => entries[index]),
+  ...extraGames.map(([id, name, detail]) => ({ id: `game-${id}`, name, detail: `Nintendo's US timeline lists this game for ${detail}`, category: 'game' as const, sourceUrl: history })),
+].map((item, position) => ({ ...item, number: position + 1,
+  memberships: [item.category, ...Object.entries(contextual).filter(([, names]) => names!.includes(item.name)).map(([category]) => category as FinderCategory)],
+}));
+
+export const categoryMemberships = (item: CategoryItem): readonly FinderCategory[] => item.memberships ?? [item.category];
+export const fitsCategory = (item: CategoryItem, category: string): boolean => categoryMemberships(item).some(value => value === category);
+export const categoryContext = (category: FinderCategory): string => category.endsWith('-game')
+  ? 'Use the original release on Nintendo’s US history timeline, not a later port or collection.' : '';

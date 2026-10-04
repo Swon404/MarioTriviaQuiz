@@ -1,4 +1,5 @@
 .help-copy { color: var(--text-secondary); line-height: 1.45; text-align: center; }
+.review-note { text-align: center; padding: 8px 12px; border: 1px solid var(--gold); border-radius: 10px; background: var(--bg-card); color: var(--text-primary); }
 .order-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(115px, 1fr)); gap: 10px; margin: 24px 0; }
 .order-tiles button, .finder-grid button { border: 2px solid var(--border); border-radius: var(--radius); background: var(--bg-card); color: var(--text-primary); padding: 12px; font-weight: 650; min-height: 76px; overflow-wrap: anywhere; }
 .order-tiles button small { display: block; color: var(--gold); margin-bottom: 5px; }
@@ -27,6 +28,7 @@
 .finder-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .finder-5 { grid-template-columns: repeat(5, minmax(0, 1fr)); }
 .finder-grid button { font-size: clamp(.68rem, 1.6vw, .9rem); padding: 7px; line-height: 1.25; }
+.finder-grid:not(.category-grid) button { font-size: 1rem; padding: 10px 7px; line-height: 1.35; }
 .finder-grid button.right-answer { background: rgba(76,175,80,.2); border-color: var(--correct); }
 .finder-grid button.wrong-answer { background: rgba(239,83,80,.2); border-color: var(--wrong); }
 .category-grid button { min-height: 82px; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 3px; }
@@ -38,7 +40,8 @@
 .match-board { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr); gap: 12px; margin: 20px 0; }
 .match-column { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
 .match-column h2 { font-size: .9rem; text-align: center; color: var(--text-secondary); margin: 0 0 4px; }
-.match-column button { border: 2px solid var(--border); border-radius: var(--radius); background: var(--bg-card); color: var(--text-primary); padding: 10px; min-height: 66px; line-height: 1.3; overflow-wrap: anywhere; font-size: .85rem; }
+.match-column button { border: 2px solid var(--border); border-radius: var(--radius); background: var(--bg-card); color: var(--text-primary); padding: 10px; min-height: 76px; line-height: 1.4; overflow-wrap: anywhere; font-size: 1rem; }
+.match-read { display: block; margin: 8px auto; }
 .match-column button.selected-tile { background: rgba(233,69,96,.2); border-color: var(--accent); }
 .match-column button.matched-tile { background: rgba(76,175,80,.2); border-color: var(--correct); }
 .match-column button:disabled { opacity: 1; cursor: default; }
@@ -70,7 +73,7 @@
   .finder-grid button { padding: 4px; min-height: 70px; font-size: .68rem; }
   .order-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .match-board { gap: 6px; }
-  .match-column button { padding: 6px; font-size: .72rem; }
+  .match-column button { padding: 8px; font-size: 1rem; }
   .pair-card-grid { gap: 6px; }
   .pair-card { min-height: 72px; padding: 4px; }
   .pair-card-svg { height: 58px; }

@@ -118,3 +118,34 @@ body:has(.mario-app) {
   .mario-setup .round-select { justify-content: flex-start; }
   .game-topbar .score-display { font-size: .9rem; }
 }
+/* Learning cards use the same readable surfaces as the game setup. */
+.mario-learning-zone label { display: block; margin: 1rem 0; }
+.mario-learning-zone input, .mario-learning-zone select {
+  display: block; width: 100%; box-sizing: border-box; margin-top: .5rem;
+  min-height: 44px; padding: .65rem; font: inherit;
+}
+.learning-topic-card p { line-height: 1.55; overflow-wrap: anywhere; }
+.learning-feedback { margin: 1rem 0; }
+.learning-feedback summary { cursor: pointer; padding: .75rem 0; }
+.board-replay { flex-basis: 100%; min-width: 0; width: 100%; text-align: left; }
+.board-replay summary { cursor: pointer; padding: .75rem; }
+.order-leaderboard li { flex-wrap: wrap; }
+.replay-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .5rem; }
+.replay-pairs { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.replay-tile { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 70px; padding: .4rem; border: 2px solid #bca0b5; border-radius: 10px; background: #59364a; text-align: center; overflow-wrap: anywhere; }
+.replay-tile img { width: 48px; height: 48px; object-fit: contain; }
+.replay-tile small { display: block; font-size: .8rem; }
+.replay-selected { border: 3px solid #ffe06e; background: #68552b; }
+.replay-correct, .replay-matched { border-color: #79e78a; background: #225344; }
+.replay-wrong { border-color: #ff8178; }
+.replay-controls { display: flex; flex-wrap: wrap; gap: .5rem; margin: .75rem 0; }
+.category-context { text-align: center; line-height: 1.5; }
+.finder-grid.category-grid button { font-size: 1rem; line-height: 1.3; padding: 10px 5px; }
+.category-grid button span { max-width: 100%; overflow-wrap: anywhere; hyphens: auto; }
+@media (max-width: 480px) {
+  .category-grid { gap: 5px; }
+  .category-grid .tile-verdict { font-size: .85rem; overflow-wrap: anywhere; }
+  .finder-grid.category-grid.finder-5 { gap: 3px; }
+  .finder-grid.category-grid.finder-5 button { font: 600 .875rem/1.4 Arial, sans-serif; padding: 8px 1px; }
+}
+@media (max-width: 480px) { .replay-order { grid-template-columns: repeat(2, minmax(0, 1fr)); } .replay-pairs { grid-template-columns: repeat(3, minmax(0, 1fr)); } }

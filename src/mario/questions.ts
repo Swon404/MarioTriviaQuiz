@@ -1,5 +1,7 @@
 import { EXPANDED_QUESTIONS } from './expandedQuestions.ts';
 import { FRESH_QUESTIONS } from './freshQuestions.ts';
+import { GAMEPLAY_QUESTIONS } from './gameplayQuestions.ts';
+import { canonicalKnowledge, normalizeKnowledge } from './knowledge.ts';
 
 export type Difficulty = 'explorer' | 'scientist' | 'professor';
 export type Topic = 'mario' | 'kart';
@@ -8,6 +10,7 @@ export type Category = 'characters' | 'baddies' | 'power-ups' | 'games' | 'conso
 export type TriviaQuestion = {
   id: string;
   knowledgeId: string;
+  review?: boolean;
   topic: Topic;
   difficulty: Difficulty;
   category: Category;
@@ -17,10 +20,11 @@ export type TriviaQuestion = {
   explanation: string;
   funFact: string;
   sourceUrl: string;
+  sourceReview?: { checkedOn: string; status: 'source-checked'; gameVersion: string };
 };
 
 const SOURCES = {
-  characters: 'https://mario.nintendo.com/characters/',
+  characters: 'https://www.nintendo.com/en-ca/explore/characters/mario/friends/',
   history: 'https://www.nintendo.com/us/explore/characters/mario/history/',
   kart: 'https://mariokart8deluxe.nintendo.com/',
   booster: 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/57858/',
@@ -36,28 +40,28 @@ const marioExplorer: readonly Row[] = [
   ['Which character is King of the Koopas?', 'Bowser', 'Wario', 'Donkey Kong', 'Toad', 'Bowser is the Koopa king and Mario’s archrival. He often stands in the way of Mario’s adventures.', 'Bowser Jr. is Bowser’s son.', 'characters'],
   ['Who wears a green hat and shirt?', 'Luigi', 'Mario', 'Waluigi', 'Diddy Kong', 'Green is Luigi’s signature colour. Mario’s familiar hat and shirt are red.', 'Luigi can be nervous around ghosts.', 'characters'],
   ['Which character travels with star-like Lumas?', 'Rosalina', 'Peach', 'Daisy', 'Toad', 'Rosalina cares for the Lumas and is connected with adventures among the stars.', 'Nintendo describes Rosalina as the Lumas’ adoptive mother.', 'characters'],
-  ['Who is Bowser’s son?', 'Bowser Jr.', 'Waluigi', 'Diddy Kong', 'Yoshi', 'Bowser Jr. is the son of Bowser, King of the Koopas. He is a separate character from Baby Bowser.', 'Bowser Jr. appears alongside his father in Mario games.', 'characters'],
+  ['Who wears a face covering with a fearsome mouth drawn on it?', 'Bowser Jr.', 'Shy Guy', 'Wario', 'Bowser', 'The painted mouth belongs to his outfit, not his face. He has inherited his father’s strength despite his small size.', 'His father is the Koopa king.', 'characters'],
   ['Which character is known for a yellow hat and purple overalls?', 'Wario', 'Mario', 'Luigi', 'Waluigi', 'Wario’s yellow and purple outfit makes him easy to spot. He calls himself Mario’s rival.', 'Wario loves garlic, according to Nintendo’s character guide.', 'characters'],
   ['Who is Wario’s pal and Luigi’s self-declared rival?', 'Waluigi', 'Bowser Jr.', 'Toad', 'Diddy Kong', 'Waluigi often teams up with Wario. He tries hard to beat Luigi and Mario in sports.', 'His very long arms and legs help him compete.', 'characters'],
   ['Which character serves Princess Peach?', 'Toad', 'Bowser', 'Wario', 'Donkey Kong', 'Toad is a resident of the Mushroom Kingdom who helps Princess Peach.', 'Toad belongs to a group of Mushroom Kingdom residents also called Toads.', 'characters'],
-  ['Which princess does Nintendo describe as cheerful and energetic?', 'Daisy', 'Peach', 'Rosalina', 'Birdo', 'Daisy brings lots of energy to games and sports with Mario and his friends.', 'Nintendo says Daisy enjoys playing a variety of sports.', 'characters'],
+  ['Who is the princess of Sarasaland?', 'Daisy', 'Peach', 'Rosalina', 'Pauline', 'Sarasaland is her kingdom, rather than Peach’s Mushroom Kingdom. Her outfit uses flowers and yellow as its main themes.', 'She also enjoys competing in sports.', 'characters'],
 ];
 
 const marioScientist: readonly Row[] = [
-  ['Which console first had Super Mario 64 on Nintendo’s timeline?', 'Nintendo 64', 'Wii', 'GameCube', 'Nintendo DS', 'Super Mario 64 appears under Nintendo 64 on Nintendo’s history timeline. It marked a major 3D Mario adventure.', 'The game appears in the 1996 part of that timeline.', 'history'],
-  ['Which system is paired with Super Mario Sunshine on Nintendo’s timeline?', 'GameCube', 'Nintendo 64', 'Wii U', 'Game Boy', 'Super Mario Sunshine is listed as a Nintendo GameCube game.', 'Nintendo places it between Super Mario 64 and New Super Mario Bros. on its timeline.', 'history'],
-  ['Which system did Super Mario Galaxy first appear on in Nintendo’s timeline?', 'Wii', 'Nintendo DS', 'Nintendo 3DS', 'Wii U', 'Super Mario Galaxy is listed for Wii. Its sequel appears later on the same system.', 'Super Mario Galaxy 2 is also a Wii title.', 'history'],
-  ['Which system is listed for Super Mario Odyssey?', 'Nintendo Switch', 'Wii U', 'Nintendo 3DS', 'GameCube', 'Nintendo’s history lists Super Mario Odyssey on Nintendo Switch.', 'It appears in the 2017 part of the timeline.', 'history'],
-  ['Which handheld is listed for Super Mario 3D Land?', 'Nintendo 3DS', 'Game Boy', 'Nintendo DS', 'Game Boy Advance', 'Super Mario 3D Land appears on the Nintendo 3DS part of Nintendo’s timeline.', 'New Super Mario Bros. 2 is another 3DS game on the timeline.', 'history'],
-  ['Which console is listed for the first Super Mario Maker?', 'Wii U', 'Wii', 'Nintendo Switch', 'Nintendo 64', 'Nintendo lists Super Mario Maker as a Wii U title. Super Mario Maker 2 came later on Switch.', 'The first Super Mario Maker appears in the 2015 part of Nintendo’s timeline.', 'history'],
-  ['Which handheld is listed for Super Mario Land?', 'Game Boy', 'Nintendo DS', 'Nintendo 3DS', 'Game Boy Advance', 'Super Mario Land appears on Game Boy in Nintendo’s history.', 'Super Mario Land 2: 6 Golden Coins is also listed for Game Boy.', 'history'],
-  ['Which system is listed for Super Mario World?', 'Super Nintendo', 'Nintendo 64', 'GameCube', 'Wii', 'Nintendo’s timeline places Super Mario World on the Super Nintendo Entertainment System.', 'It follows the NES games on the history timeline.', 'history'],
-  ['Which system is listed for Super Mario Bros. Wonder?', 'Nintendo Switch', 'Wii U', 'Nintendo 3DS', 'Wii', 'Super Mario Bros. Wonder appears in the Nintendo Switch part of Nintendo’s history.', 'Nintendo’s timeline places it in 2023.', 'history'],
-  ['Which platform is listed for Super Mario Run?', 'Mobile', 'Nintendo 3DS', 'Game Boy', 'Wii U', 'Nintendo’s timeline places Super Mario Run in its Mobile category.', 'It appears between Super Mario Maker and Super Mario Odyssey on the timeline.', 'history'],
+  ['Which console originally hosted Super Mario 64?', 'Nintendo 64', 'Wii', 'GameCube', 'Nintendo DS', 'Super Mario 64 appears under Nintendo 64 on Nintendo’s history timeline. It marked a major 3D Mario adventure.', 'The game appears in the 1996 part of that timeline.', 'history'],
+  ['Which console did Super Mario Sunshine first appear on?', 'GameCube', 'Nintendo 64', 'Wii U', 'Game Boy', 'Super Mario Sunshine is listed as a Nintendo GameCube game.', 'Nintendo places it between Super Mario 64 and New Super Mario Bros. on its timeline.', 'history'],
+  ['Which console originally hosted Super Mario Galaxy?', 'Wii', 'Nintendo DS', 'Nintendo 3DS', 'Wii U', 'Super Mario Galaxy is listed for Wii. Its sequel appears later on the same system.', 'Super Mario Galaxy 2 is also a Wii title.', 'history'],
+  ['Which system did Super Mario Odyssey launch on?', 'Nintendo Switch', 'Wii U', 'Nintendo 3DS', 'GameCube', 'Nintendo’s history lists Super Mario Odyssey on Nintendo Switch.', 'It appears in the 2017 part of the timeline.', 'history'],
+  ['Which handheld originally hosted Super Mario 3D Land?', 'Nintendo 3DS', 'Game Boy', 'Nintendo DS', 'Game Boy Advance', 'Super Mario 3D Land appears on the Nintendo 3DS part of Nintendo’s timeline.', 'New Super Mario Bros. 2 is another 3DS game on the timeline.', 'history'],
+  ['Which console did the first Super Mario Maker launch on?', 'Wii U', 'Wii', 'Nintendo Switch', 'Nintendo 64', 'Nintendo lists Super Mario Maker as a Wii U title. Super Mario Maker 2 came later on Switch.', 'The first Super Mario Maker appears in the 2015 part of Nintendo’s timeline.', 'history'],
+  ['Which handheld originally hosted Super Mario Land?', 'Game Boy', 'Nintendo DS', 'Nintendo 3DS', 'Game Boy Advance', 'Super Mario Land appears on Game Boy in Nintendo’s history.', 'Super Mario Land 2: 6 Golden Coins is also listed for Game Boy.', 'history'],
+  ['Which console did Super Mario World first appear on?', 'Super Nintendo', 'Nintendo 64', 'GameCube', 'Wii', 'Nintendo’s timeline places Super Mario World on the Super Nintendo Entertainment System.', 'It follows the NES games on the history timeline.', 'history'],
+  ['Which system did Super Mario Bros. Wonder launch on?', 'Nintendo Switch', 'Wii U', 'Nintendo 3DS', 'Wii', 'Super Mario Bros. Wonder appears in the Nintendo Switch part of Nintendo’s history.', 'Nintendo’s timeline places it in 2023.', 'history'],
+  ['Which platform did Super Mario Run launch on?', 'Mobile', 'Nintendo 3DS', 'Game Boy', 'Wii U', 'Nintendo’s timeline places Super Mario Run in its Mobile category.', 'It appears between Super Mario Maker and Super Mario Odyssey on the timeline.', 'history'],
 ];
 
 const marioProfessor: readonly Row[] = [
-  ['Which came first on Nintendo’s timeline: Super Mario Sunshine or Super Mario Galaxy?', 'Super Mario Sunshine', 'Super Mario Galaxy', 'Super Mario Galaxy 2', 'Super Mario Odyssey', 'Sunshine appears in 2002 and Galaxy in 2007 on Nintendo’s timeline.', 'Sunshine is listed for GameCube, while Galaxy is listed for Wii.', 'history'],
+  ['Which of these games was released first?', 'Super Mario Sunshine', 'Super Mario Galaxy', 'Super Mario Galaxy 2', 'Super Mario Odyssey', 'Sunshine appears in 2002 and Galaxy in 2007 on Nintendo’s timeline.', 'Sunshine is listed for GameCube, while Galaxy is listed for Wii.', 'history'],
   ['Which title came directly after Super Mario 64 among these games on Nintendo’s timeline?', 'Super Mario Sunshine', 'Super Mario Odyssey', 'Super Mario Galaxy 2', 'Super Mario Bros. Wonder', 'Nintendo lists Super Mario 64 in 1996 and Sunshine in 2002, before the other choices.', 'The two games were listed for different consoles: Nintendo 64 and GameCube.', 'history'],
   ['Which 2013 game is listed for Wii U on Nintendo’s Mario timeline?', 'Super Mario 3D World', 'Super Mario 3D Land', 'Super Mario Galaxy', 'Super Mario Odyssey', 'Super Mario 3D World is the 2013 Wii U entry. Super Mario 3D Land was earlier on 3DS.', 'Nintendo later listed Super Mario 3D World + Bowser’s Fury for Switch.', 'history'],
   ['Which game on Nintendo’s timeline arrived between Super Mario Galaxy and Super Mario Galaxy 2?', 'New Super Mario Bros. Wii', 'Super Mario 3D Land', 'Super Mario Maker', 'Super Mario Odyssey', 'New Super Mario Bros. Wii appears in 2009, between Galaxy in 2007 and Galaxy 2 in 2010.', 'All three are listed as Wii games.', 'history'],
@@ -122,9 +126,17 @@ function createRows(topic: Topic, difficulty: Difficulty, rows: readonly Row[], 
     explanation,
     funFact,
     sourceUrl: SOURCES[source],
+    sourceReview: source === 'history' ? { checkedOn: '2026-10-04', status: 'source-checked' as const, gameVersion: 'Nintendo’s US Mario release timeline' } : topic === 'mario' && difficulty === 'explorer'
+      ? { checkedOn: '2026-10-04', status: 'source-checked' as const, gameVersion: 'Super Mario series — Nintendo character guide' }
+      : undefined,
   }));
 }
 
+// These edited records now ask a different fact; do not migrate their old history.
+const KNOWLEDGE_EQUIVALENTS: Readonly<Record<string, string>> = {
+  'mario-explorer-6': 'mario-explorer-6-v2',
+  'mario-explorer-10': 'expanded-14',
+};
 export const QUESTIONS: readonly TriviaQuestion[] = [
   ...createRows('mario', 'explorer', marioExplorer, ['characters','characters','baddies','characters','characters','baddies','characters','characters','characters','characters']),
   ...createRows('mario', 'scientist', marioScientist, ['consoles','consoles','consoles','consoles','consoles','consoles','consoles','consoles','consoles','consoles']),
@@ -134,7 +146,8 @@ export const QUESTIONS: readonly TriviaQuestion[] = [
   ...createRows('kart', 'professor', kartProfessor, ['tracks','tracks','tracks','tracks','tracks','tracks','tracks','games','games','games']),
   ...EXPANDED_QUESTIONS,
   ...FRESH_QUESTIONS,
-];
+  ...GAMEPLAY_QUESTIONS,
+].map(question => ({ ...question, knowledgeId: canonicalKnowledge(KNOWLEDGE_EQUIVALENTS[question.id] ?? question.knowledgeId) }));
 
 export function shuffled<T>(values: readonly T[], random = Math.random): T[] {
   const result = [...values];
@@ -145,9 +158,11 @@ export function shuffled<T>(values: readonly T[], random = Math.random): T[] {
   return result;
 }
 
-export function createQuiz(topic: Topic | 'mixed', difficulty: Difficulty, count: number, random = Math.random): TriviaQuestion[] {
+export function createQuiz(topic: Topic | 'mixed', difficulty: Difficulty, count: number, random = Math.random, recent: readonly string[] = []): TriviaQuestion[] {
+  recent = normalizeKnowledge(recent);
   const pool = QUESTIONS.filter(question => question.difficulty === difficulty && (topic === 'mixed' || question.topic === topic));
-  if (pool.length < count) throw new Error(`Only ${pool.length} questions are available for ${topic}/${difficulty}.`);
+  const uniqueFacts = new Set(pool.map(question => question.knowledgeId)).size;
+  if (uniqueFacts < count) throw new Error(`Only ${uniqueFacts} distinct facts are available for ${topic}/${difficulty}.`);
   const byCategory = new Map<Category, TriviaQuestion[]>();
   for (const question of shuffled(pool, random)) {
     const group = byCategory.get(question.category) ?? [];
@@ -157,8 +172,14 @@ export function createQuiz(topic: Topic | 'mixed', difficulty: Difficulty, count
   const selected: TriviaQuestion[] = [];
   const used = new Map<Category, number>();
   const usedAnswers = new Set<string>();
+  const usedKnowledge = new Set<string>();
   while (selected.length < count) {
-    const available = [...byCategory].filter(([, group]) => group.length > 0);
+    const remaining = [...byCategory].map(([category, group]) => [category, group.filter(question => !usedKnowledge.has(question.knowledgeId))] as const).filter(([, group]) => group.length > 0);
+    const unseen = remaining.flatMap(([, group]) => group).some(question => !recent.includes(question.knowledgeId));
+    // Prefer all unseen knowledge before reviewing. If exhausted, revisit the
+    // least recently seen fact rather than repeatedly favouring thin categories.
+    const oldest = Math.max(...remaining.flatMap(([, group]) => group.map(question => recent.indexOf(question.knowledgeId))));
+    const available = remaining.map(([category, group]) => [category, group.filter(question => unseen ? !recent.includes(question.knowledgeId) : recent.indexOf(question.knowledgeId) === oldest)] as const).filter(([, group]) => group.length > 0);
     const fresh = available.filter(([, group]) => group.some(question => !usedAnswers.has(question.answer)));
     const eligible = fresh.length > 0 ? fresh : available;
     const smallest = Math.min(...eligible.map(([category]) => used.get(category) ?? 0));
@@ -167,8 +188,9 @@ export function createQuiz(topic: Topic | 'mixed', difficulty: Difficulty, count
     const index = group.findLastIndex(question => !usedAnswers.has(question.answer));
     const [question] = group.splice(index < 0 ? group.length - 1 : index, 1);
     selected.push(question);
+    usedKnowledge.add(question.knowledgeId);
     usedAnswers.add(question.answer);
     used.set(category, (used.get(category) ?? 0) + 1);
   }
-  return selected.map(question => ({ ...question, choices: shuffled(question.choices, random) }));
+  return selected.map(question => ({ ...question, review: recent.includes(question.knowledgeId), choices: shuffled(question.choices, random) }));
 }

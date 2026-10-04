@@ -1,5 +1,11 @@
+import { trackLabel } from './mario/trackChallenges.ts';
+import { readCheckpoint, saveCheckpoint, clearCheckpoint } from './mario/checkpoint.ts';
+import { fitsCategory, categoryContext } from './mario/categoryCatalog.ts';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { type Difficulty } from './mario/questions.ts';
+import { chooseMemoryCard, rememberCard, seededBotRandom, type CardMemory } from './mario/memoryBot.ts';
+import { computerRoundTime } from './mario/botTiming.ts';
+import { QUESTIONS, type Difficulty } from './mario/questions.ts';
+import { recentKnowledge, recordSeenKnowledge } from './mario/questionHistory.ts';
 import { getChampionshipResults, getPlayer, getResults, saveChampionshipResult, savePlayer, saveResult, type ChampionshipResult, type QuizResult } from './mario/storage.ts';
 import { CHAMPIONSHIP_SIZES, championshipPoints, championshipRoundCount, computerChampionshipAnswers, createChampionshipRounds, type ChampionshipSize } from './mario/championship.ts';
 import { BOOSTER_COURSES, BOOSTER_SOURCE } from './mario/courses.ts';
@@ -8,12 +14,18 @@ import { ICON_PAIRS } from './mario/pairCatalog.ts';
 import { advance, attemptQuiz, rewind, startSession, submit, type Answer, type GameSession } from './mario/session.ts';
 import { advanceVersusQuiz, answerVersusQuiz, attemptVersusQuiz, rewindVersusQuiz, startVersusQuiz, type VersusQuiz } from './mario/versus.ts';
 import { QUIZ_RETRIES } from './mario/retries.ts';
-import { getNextRank, getRank, MILESTONES, playerProgress } from './mario/scoring.ts';
+import { getNextRank, getRank, MILESTONES } from './mario/scoring.ts';
+import { lifetimeProgress, progressStorageProblem } from './mario/lifetimeProgress.ts';
 import { availableVoices, getSpeechRate, getVoiceName, setSpeechRate, setVoiceName, speakText, speechAvailable, stopSpeaking } from './mario/tts.ts';
 import { useSavedSetting, oneOf, isBoolean, isName } from './mario/settings.ts';
-import { ORDER_RULES, orderTileOptions, getOrderTimes, type OrderChallenge, type OrderOptions } from './mario/gameOrder.ts';
+import { ORDER_RULES, orderTileOptions, markOrderPractice, type OrderChallenge, type OrderOptions } from './mario/gameOrder.ts';
 import { newTurnScores, scoreTurn, type TurnScores } from './mario/turns.ts';
-import OrderBoard from './OrderBoard.tsx';
+import OrderBoard, { type OrderCheckpoint } from './OrderBoard.tsx';
+import LearningCards, { LearningFeedback } from './LearningCards.tsx';
+import PairLeaderboards, { PairTimeList } from './PairLeaderboard.tsx';
+import OrderLeaderboards from './OrderLeaderboards.tsx';
+import type { ReplayFrame } from './mario/replay.ts';
+import { pairConfiguration, pairLeaderboard, savePairTime } from './mario/pairTimes.ts';
 
 type Screen = 'home' | 'hub' | 'setup' | 'championship-setup' | 'championship-handover' | 'game' | 'result' | 'championship-result' | 'versus-game' | 'versus-result' | 'scores' | 'tracks' | 'explore';
 type QuizFormat = 'solo' | 'two-player' | 'computer';
@@ -29,11 +41,11 @@ const MODE_ICONS: Record<GameMode, string> = { quiz: '⚔️', 'game-order': '�
 const MODE_DESCRIPTIONS: Record<GameMode, string> = {
   quiz: 'Four-choice questions about characters, baddies, power-ups, games, consoles, tracks and famous fixed bugs.',
   'game-order': 'Put Mario games in release order.',
-  'track-finder': 'Find a track from the named Mario Kart cup.',
+  'track-finder': 'Find tracks by cup, original console or course features.',
   'match-hunt': 'Match each name with its clue. Three rounds of visible pairs.',
   'pair-match': 'Flip icon and word cards. Switch between Hunt and Time Trial.',
   'clue-duel': 'Guess a character or track from five clues that get clearer. Five rounds.',
-  'category-finder': 'Find one friendly character, baddie, power-up, game or system in a numbered window.',
+  'category-finder': 'Find one character, baddie, power-up, game or system that fits the clue.',
 };
 const modeLabel = (value: string | undefined) => value === 'pair-hunt' ? 'Match & Hunt · Hunt' : MODE_LABELS[(value ?? 'quiz') as GameMode] ?? 'Unknown game';
 const DIFFICULTIES: Difficulty[] = ['explorer', 'scientist', 'professor'];
@@ -42,12 +54,6 @@ const DIFFICULTY_LABELS: Record<Difficulty, string> = {
   scientist: 'Pro',
   professor: 'Legend',
 };
-const LEARNING_TOPICS = [
-  { icon: '👥', title: 'Characters & baddies' },
-  { icon: '🍄', title: 'Power-ups & items' },
-  { icon: '🎮', title: 'Games & consoles' },
-  { icon: '🏁', title: 'Mario Kart tracks' },
-] as const;
 const DIFFICULTY_DESCRIPTIONS: Record<Difficulty, string> = {
   explorer: 'Familiar favourites and smaller boards.',
   scientist: 'More to find and trickier questions.',
@@ -68,6 +74,7 @@ export default function MarioApp() {
   const [orderCounts, setOrderCounts] = useSavedSetting<Record<Difficulty, number>>('order-tiles', { explorer: 3, scientist: 4, professor: 5 }, value => Boolean(value && typeof value === 'object' && DIFFICULTIES.every(level => orderTileOptions(level).includes((value as Record<Difficulty, number>)[level]))));
   const orderOptions: OrderOptions = { challenge: orderChallenge, tiles: orderCounts[difficulty] };
   const [orderReset, setOrderReset] = useState(0);
+  const [orderCheckpoint, setOrderCheckpoint] = useState<OrderCheckpoint | null>(null);
   const [runId, setRunId] = useState(() => crypto.randomUUID());
   const [turnScores, setTurnScores] = useState<TurnScores | null>(null);
   const [clueBonus, setClueBonus] = useState(false);
@@ -114,6 +121,10 @@ export default function MarioApp() {
   const previousRoundMs = useRef(0);
   const pairFlipTimeout = useRef<number | null>(null);
   const pairRoundCompletedMs = useRef<number | null>(null);
+  const practisedRounds = useRef(new Set<string>());
+  const pairFrames = useRef<ReplayFrame[]>([]);
+  const botMemory = useRef<CardMemory>([]);
+  const botRandom = useRef(seededBotRandom('initial'));
 
   useEffect(() => () => {
     if (pairFlipTimeout.current !== null) window.clearTimeout(pairFlipTimeout.current);
@@ -139,8 +150,17 @@ export default function MarioApp() {
 
   const round = session && !session.complete ? session.rounds[session.index] : null;
   const versusTurn = versus && !versus.complete ? versus.turns[versus.index] : null;
+  useEffect(() => {
+    const format = screen === 'versus-game' ? quizFormat : championship?.format ?? standalone?.format ?? 'solo';
+    const viewers = format === 'two-player' ? [player, opponentName] : [player];
+    const privateBot = format === 'computer' && turnScores?.active === 1;
+    if (screen === 'versus-game' && !versusReady && versusTurn) recordSeenKnowledge(viewers, [versusTurn.question.knowledgeId]);
+    if (screen === 'game' && round?.mode === 'quiz') recordSeenKnowledge(viewers, [round.question.knowledgeId]);
+    if (screen === 'game' && round?.mode === 'match-hunt' && !privateBot) recordSeenKnowledge(viewers, round.pairs.map(pair => QUESTIONS.find(question => question.id === pair.id)!.knowledgeId));
+    if (screen === 'game' && (round?.mode === 'clue-duel' || ((round?.mode === 'track-finder' || round?.mode === 'category-finder') && (!privateBot || session?.submission)))) recordSeenKnowledge(viewers, [round.id]);
+  }, [screen, versusReady, versusTurn, round, player, opponentName, quizFormat, championship?.format, standalone?.format, turnScores?.active, session?.submission]);
   const scores = useMemo(() => getResults().sort((a, b) => Math.max(b.points ?? b.correct, b.opponentPoints ?? b.opponentCorrect ?? 0) - Math.max(a.points ?? a.correct, a.opponentPoints ?? a.opponentCorrect ?? 0) || a.elapsedMs - b.elapsedMs), [screen]);
-  const progress = playerProgress(scores, player);
+  const progress = lifetimeProgress(scores, player);
   const rank = getRank(progress.totalEP);
   const nextRank = getNextRank(progress.totalEP);
   const rankProgress = nextRank ? (progress.totalEP - rank.minEP) / (nextRank.minEP - rank.minEP) * 100 : 100;
@@ -150,6 +170,7 @@ export default function MarioApp() {
   const championshipEarned = championship ? [championshipPoints(championship.legs.filter(leg => leg.player === player)), championshipPoints(championship.legs.filter(leg => leg.player === championship.opponent))] : [0, 0];
   const matchRetriesLeft = Math.max(0, MATCH_RETRIES[difficulty] - matchMistakes);
   const sharedHunt = Boolean(turnScores && round?.mode === 'pair-match' && !round.timed);
+  const pairScores = useMemo(() => round?.mode === 'pair-match' && round.timed ? pairLeaderboard(round, difficulty) : [], [round, difficulty, session?.submission]);
   const [sharedAwards, setSharedAwards] = useState<[number, number]>([0, 0]);
   const [sharedMatches, setSharedMatches] = useState<[number, number]>([0, 0]);
   const activePlayer = turnScores?.active ?? 0;
@@ -158,7 +179,63 @@ export default function MarioApp() {
   const gamePointsNow = (turnScores ? turnScores.points[activePlayer] : session?.points ?? 0) + (round?.mode === 'pair-match' && !turnScores ? session?.submission?.points ?? pairScore : session?.submission?.points ?? 0);
   const liveTotals = [0, 1].map(index => championshipEarned[index] + (turnScores ? turnScores.points[index] + (index === activePlayer ? round?.mode === 'pair-match' && !turnScores ? session?.submission?.points ?? pairScore : session?.submission?.points ?? 0 : 0) : championship?.format === 'solo' ? index === 0 ? gamePointsNow : 0 : 0));
   const [botTimes, setBotTimes] = useState<number[]>([]);
-  const [clueWrongId, setClueWrongId] = useState<string | null>(null);
+  const [clueWrongIds, setClueWrongIds] = useState<string[]>([]);
+  const recoveryCheckpoint = { kind: 'game-recovery-v1', orderCheckpoint, player, opponentName, mode, difficulty, quizFormat, timerEnabled,
+    screen, session, versus, versusReady, runId, turnScores, championship, standalone, latestResult,
+    orderChallenge, orderCounts, pairVariant, pairCount, trialTarget, huntTimed, huntTargetMode, huntChosenTarget, huntUnlockPairs,
+    matchedIds, selectedMatchName, selectedMatchClue, matchMessage, matchMistakes,
+    flippedCards, foundPairs, pairMoves, pairLocked, pairMessage, pairScore, pairTimerReady,
+    clueIndex, clueMessage, clueBonus, clueWrongIds, sharedAwards, sharedMatches,
+    pairFrames: pairFrames.current, practisedRounds: [...practisedRounds.current], botMemory: botMemory.current,
+    botTimes, startedAt: startTime.current, previousRoundMs: previousRoundMs.current, completedMs: pairRoundCompletedMs.current };
+  const [pendingResume, setPendingResume] = useState(() => {
+    const saved = readCheckpoint<typeof recoveryCheckpoint>();
+    return saved?.kind === 'game-recovery-v1' && ['game', 'versus-game', 'championship-handover', 'result'].includes(saved.screen) ? saved : null;
+  });
+  const [checkpointWarning, setCheckpointWarning] = useState(false);
+  const lastCheckpoint = useRef('');
+  useEffect(() => {
+    const inProgress = ['game', 'versus-game', 'championship-handover'].includes(screen) || (screen === 'result' && championship !== null);
+    if (!inProgress) return;
+    const payload = JSON.stringify(recoveryCheckpoint);
+    if (payload === lastCheckpoint.current) return;
+    if (saveCheckpoint(recoveryCheckpoint)) { lastCheckpoint.current = payload; setCheckpointWarning(false); }
+    else setCheckpointWarning(true);
+  }, [screen, mode, session, versus, versusReady, runId, turnScores, championship, standalone, latestResult,
+    botTimes, orderCheckpoint, player, opponentName, difficulty, quizFormat, timerEnabled, orderChallenge, orderCounts,
+    pairVariant, pairCount, trialTarget, huntTimed, huntTargetMode, huntChosenTarget, huntUnlockPairs,
+    matchedIds, selectedMatchName, selectedMatchClue, matchMessage, matchMistakes, flippedCards, foundPairs,
+    pairMoves, pairLocked, pairMessage, pairScore, pairTimerReady, clueIndex, clueMessage, clueBonus, clueWrongIds, sharedAwards, sharedMatches]);
+  const resumeGame = () => {
+    if (!pendingResume) return;
+    const saved = pendingResume;
+    setPlayer(saved.player); savePlayer(saved.player); setOpponentName(saved.opponentName);
+    setMode(saved.mode); setDifficulty(saved.difficulty); setQuizFormat(saved.quizFormat); setTimerEnabled(saved.timerEnabled);
+    setSession(saved.session); setVersus(saved.versus); setVersusReady(saved.versusReady);
+    setRunId(saved.runId); setTurnScores(saved.turnScores); setChampionship(saved.championship); setStandalone(saved.standalone);
+    setLatestResult(saved.latestResult); setBotTimes(saved.botTimes);
+    setOrderChallenge(saved.orderChallenge); setOrderCounts(saved.orderCounts);
+    setOrderCheckpoint(saved.orderCheckpoint);
+    if (saved.orderCheckpoint?.practice) markOrderPractice(saved.orderCheckpoint.resultId);
+    setPairVariant(saved.pairVariant); setPairCount(saved.pairCount); setTrialTarget(saved.trialTarget); setHuntTimed(saved.huntTimed);
+    setHuntTargetMode(saved.huntTargetMode); setHuntChosenTarget(saved.huntChosenTarget); setHuntUnlockPairs(saved.huntUnlockPairs);
+    setMatchedIds(saved.matchedIds); setSelectedMatchName(saved.selectedMatchName); setSelectedMatchClue(saved.selectedMatchClue);
+    setMatchMessage(saved.matchMessage); setMatchMistakes(saved.matchMistakes);
+    setFlippedCards(saved.pairLocked ? [] : saved.flippedCards); setFoundPairs(saved.foundPairs); setPairMoves(saved.pairMoves);
+    setPairLocked(false); setPairMessage(saved.pairLocked ? 'Game restored. Continue this turn.' : saved.pairMessage);
+    setPairScore(saved.pairScore); setPairTimerReady(saved.pairTimerReady);
+    setClueIndex(saved.clueIndex); setClueMessage(saved.clueMessage); setClueBonus(saved.clueBonus); setClueWrongIds(saved.clueWrongIds);
+    setSharedAwards(saved.sharedAwards); setSharedMatches(saved.sharedMatches);
+    pairFrames.current = saved.pairFrames; practisedRounds.current = new Set(saved.practisedRounds); botMemory.current = saved.botMemory;
+    botRandom.current = seededBotRandom(`${saved.runId}:resume:${saved.pairMoves}`);
+    const restoredRound = saved.session?.rounds[saved.session.index];
+    if (saved.pairLocked && saved.pairMessage === 'Not a pair — remember where they are!' && saved.turnScores && restoredRound?.mode === 'pair-match' && !restoredRound.timed) {
+      setTurnScores({ ...saved.turnScores, active: (1 - saved.turnScores.active) as 0 | 1 });
+    }
+    startTime.current = saved.startedAt; previousRoundMs.current = saved.previousRoundMs; pairRoundCompletedMs.current = saved.completedMs;
+    setElapsedMs(saved.previousRoundMs + (saved.startedAt ? Date.now() - saved.startedAt : 0));
+    setScreen(saved.screen); setPendingResume(null);
+  };
   const renderTotals = () => championship && <div className="champ-live-total"><span>{player}: {liveTotals[0]} EP</span>{championship.format !== 'solo' && <strong>{opponentName}: {liveTotals[1]} EP</strong>}</div>;
   const availablePairTargets = ICON_PAIRS;
   const pairOptions: PairMatchOptions = {
@@ -180,11 +257,15 @@ export default function MarioApp() {
   };
 
   const prepareRound = (next: GameRound | undefined) => {
+    pairFrames.current = [];
     if (pairFlipTimeout.current !== null) window.clearTimeout(pairFlipTimeout.current);
     pairFlipTimeout.current = null;
+    botMemory.current = [];
+    botRandom.current = seededBotRandom(next?.id ?? 'empty');
     setOrderReset(value => value + 1);
+    setOrderCheckpoint(null);
     setClueBonus(false);
-    setClueWrongId(null);
+    setClueWrongIds([]);
     setMatchedIds([]);
     setSelectedMatchName(null);
     setSelectedMatchClue(null);
@@ -205,31 +286,34 @@ export default function MarioApp() {
   };
 
   const start = () => {
+    clearCheckpoint(); setPendingResume(null); lastCheckpoint.current = '';
     const name = draftName.trim().slice(0, 24) || 'Player';
     savePlayer(name);
     setPlayer(name);
     setDraftName(name);
     if (mode === 'quiz' && quizFormat !== 'solo') {
+      setRunId(crypto.randomUUID());
       const wanted = quizFormat === 'computer' ? MUSHBOT : draftOpponent.trim().slice(0, 24) || 'Player 2';
       const other = wanted.toLowerCase() === name.toLowerCase() ? `${wanted} 2` : wanted;
       setOpponentName(other);
       setStandalone(null);
       setTurnScores(null);
-      setVersus(startVersusQuiz(section, difficulty, quizFormat === 'computer' ? 'computer' : 'human'));
+      setVersus(startVersusQuiz(section, difficulty, quizFormat === 'computer' ? 'computer' : 'human', Math.random, recentKnowledge(quizFormat === 'computer' ? [name] : [name, other])));
       setVersusReady(true);
       setLatestResult(null);
       startTime.current = Date.now();
       setScreen('versus-game');
       return;
     }
-    const onePlayer = createRounds(mode, section, difficulty, Math.random, pairOptions, undefined, orderOptions);
-    const rounds = quizFormat === 'solo' || (mode === 'pair-match' && pairVariant === 'hunt' && !huntTimed) ? onePlayer : createRounds(mode, section, difficulty, Math.random, pairOptions, onePlayer.length * 2, orderOptions);
+    const wanted = quizFormat === 'computer' ? MUSHBOT : draftOpponent.trim().slice(0, 24) || 'Player 2';
+    const other = wanted.toLowerCase() === name.toLowerCase() ? `${wanted} 2` : wanted;
+    const recent = recentKnowledge(quizFormat === 'two-player' ? [name, other] : [name]);
+    const onePlayer = createRounds(mode, section, difficulty, Math.random, pairOptions, undefined, orderOptions, recent);
+    const rounds = quizFormat === 'solo' || (mode === 'pair-match' && pairVariant === 'hunt' && !huntTimed) ? onePlayer : createRounds(mode, section, difficulty, Math.random, pairOptions, onePlayer.length * 2, orderOptions, recent, true);
     const game = startSession(rounds, difficulty);
     setRunId(crypto.randomUUID());
     setTurnScores(quizFormat === 'solo' ? null : newTurnScores());
-    setBotTimes(rounds.map(() => Math.round((8000 + orderOptions.tiles * 2500 + Math.random() * 4000) * (difficulty === 'professor' ? 0.7 : difficulty === 'scientist' ? 0.85 : 1))));
-    const wanted = quizFormat === 'computer' ? MUSHBOT : draftOpponent.trim().slice(0, 24) || 'Player 2';
-    const other = wanted.toLowerCase() === name.toLowerCase() ? `${wanted} 2` : wanted;
+    setBotTimes(rounds.map(item => computerRoundTime(item, difficulty)));
     setOpponentName(other);
     setStandalone(quizFormat === 'solo' ? null : {
       format: quizFormat, opponent: other, turnIndex: 0, rounds: [...game.rounds],
@@ -246,12 +330,12 @@ export default function MarioApp() {
 
   const prepareChampionshipTurn = (run: ChampionshipRun) => {
     const nextMode = run.modes[run.index];
-    const rounds = createChampionshipRounds(nextMode, run.topic, run.difficulty, run.size, Math.random, run.pairOptions, run.format === 'solo' || (nextMode === 'pair-match' && run.pairOptions.variant === 'hunt' && !run.pairOptions.huntTimed) ? 1 : 2, orderOptions);
+    const rounds = createChampionshipRounds(nextMode, run.topic, run.difficulty, run.size, Math.random, run.pairOptions, run.format === 'solo' || (nextMode === 'pair-match' && run.pairOptions.variant === 'hunt' && !run.pairOptions.huntTimed) ? 1 : 2, orderOptions, recentKnowledge(run.format === 'two-player' ? [getPlayer(), run.opponent] : [getPlayer()]));
     const ready = { ...run, turnIndex: 0 as const, rounds, computerAnswers: run.format === 'computer' ? computerChampionshipAnswers(rounds, run.difficulty) : [] };
     setChampionship(ready);
     setRunId(crypto.randomUUID());
     setTurnScores(run.format === 'solo' ? null : newTurnScores());
-    setBotTimes(rounds.map(() => Math.round(8000 + orderOptions.tiles * 2500 + Math.random() * 4000)));
+    setBotTimes(rounds.map(item => computerRoundTime(item, run.difficulty)));
     setMode(nextMode);
     const game = startSession(rounds, run.difficulty);
     setSession(game);
@@ -265,6 +349,7 @@ export default function MarioApp() {
 
   const startChampionship = () => {
     if (chosenChampionshipModes.length < 2) return;
+    clearCheckpoint(); setPendingResume(null); lastCheckpoint.current = '';
     const name = draftName.trim().slice(0, 24) || 'Player';
     savePlayer(name);
     setPlayer(name);
@@ -283,6 +368,7 @@ export default function MarioApp() {
   };
 
   const finishChampionship = (run: ChampionshipRun, legs: QuizResult[]) => {
+    clearCheckpoint();
     const playerLegs = legs.filter(leg => leg.player === player);
     const opponentLegs = legs.filter(leg => leg.player === run.opponent);
     const completed: ChampionshipResult = {
@@ -328,7 +414,7 @@ export default function MarioApp() {
         return;
       }
       const results = [player, opponentName].map((name, index): QuizResult => ({
-        id: crypto.randomUUID(), mode, variant: round.mode === 'pair-match' ? round.variant : undefined,
+        id: `${runId}:player-${index}`, mode, variant: round.mode === 'pair-match' ? round.variant : undefined,
         player: name, topic: section, difficulty, correct: totals.correct[index], total: sharedHunt ? updated.rounds.reduce((sum, item) => sum + (item.mode === 'pair-match' ? item.pairs.length : 0), 0) : mode === 'clue-duel' ? updated.rounds.length : updated.rounds.length / 2,
         points: totals.points[index], bestStreak: totals.bestStreaks[index], elapsedMs: totals.elapsed[index], completedAt: new Date().toISOString(),
       }));
@@ -341,6 +427,7 @@ export default function MarioApp() {
         setLatestResult(combined);
         setScreen('result');
       } else {
+        clearCheckpoint();
         saveResult(combined);
         setLatestResult(combined);
         setScreen('versus-result');
@@ -354,17 +441,19 @@ export default function MarioApp() {
     startTime.current = Date.now();
     if (!updated.complete) return;
     const result: QuizResult = {
-      id: crypto.randomUUID(), mode, variant: round.mode === 'pair-match' ? round.variant : undefined,
+      id: `${runId}:result`, mode, variant: round.mode === 'pair-match' ? round.variant : undefined,
       player, topic: section, difficulty, correct: updated.correct, total: updated.rounds.length,
       points: updated.points, bestStreak: updated.bestStreak, elapsedMs: totalMs, completedAt: new Date().toISOString(),
     };
     saveResult(result);
     setLatestResult(result);
+    if (!championship) clearCheckpoint();
     setScreen('result');
   };
 
   const undo = () => {
     if (!session || !round) return;
+    practisedRounds.current.add(runId + ':' + session.index);
     if (sharedHunt && turnScores) setTurnScores({ ...turnScores, active: (session.index % 2) as 0 | 1, points: [turnScores.points[0] - sharedAwards[0], turnScores.points[1] - sharedAwards[1]], correct: [turnScores.correct[0] - sharedMatches[0], turnScores.correct[1] - sharedMatches[1]] });
     setSession(rewind(session));
     prepareRound(round);
@@ -383,7 +472,7 @@ export default function MarioApp() {
       return;
     }
     const result: QuizResult = {
-      id: crypto.randomUUID(), mode: 'quiz', player, topic: section, difficulty,
+      id: `${runId}:result`, mode: 'quiz', player, topic: section, difficulty,
       correct: updated.scores[0], total: 5, opponent: opponentName,
       points: updated.points[0], bestStreak: updated.bestStreaks[0],
       opponentCorrect: updated.scores[1], opponentPoints: updated.points[1], opponentBestStreak: updated.bestStreaks[1], format: quizFormat,
@@ -391,15 +480,20 @@ export default function MarioApp() {
     };
     saveResult(result);
     setLatestResult(result);
+    clearCheckpoint();
     setScreen('versus-result');
   };
 
   const leaveGame = () => {
+    const unfinished = ['game', 'versus-game', 'championship-handover'].includes(screen) || (screen === 'result' && championship !== null);
+    if (unfinished && !window.confirm('Leave this game? Your unfinished game will be lost. Completed records are kept. Choose Cancel to keep playing.')) return;
+    clearCheckpoint(); setPendingResume(null);
     if (pairFlipTimeout.current !== null) window.clearTimeout(pairFlipTimeout.current);
     pairFlipTimeout.current = null;
     setChampionship(null);
     setStandalone(null);
     setTurnScores(null);
+    stopSpeaking();
     setScreen('hub');
   };
 
@@ -433,16 +527,35 @@ export default function MarioApp() {
     if (nextMatched.length === round.pairs.length) setSession(submit(session, round.targetId));
   };
 
+  const recordPairFrame = (event: string, visible: string[], matched: string[], atMs?: number) => {
+    if (round?.mode !== 'pair-match' || !round.timed || pairFrames.current.length >= 2000) return;
+    pairFrames.current.push({ atMs: Math.max(0, atMs ?? Date.now() - startTime.current), event,
+      tiles: round.cards.map(card => ({ id: card.id,
+        label: card.iconKind === 'svg' ? card.iconAlt ?? card.pairId : card.label,
+        image: card.kind === 'icon' && card.iconKind === 'svg' ? card.label : undefined,
+        state: matched.includes(card.pairId) ? 'matched' : visible.includes(card.id) ? 'selected' : 'hidden' })) });
+  };
+  const observeCard = (position: number) => {
+    if (round?.mode !== 'pair-match') return;
+    const card = round.cards[position];
+    const format = championship?.format ?? standalone?.format ?? quizFormat;
+    recordSeenKnowledge(format === 'two-player' ? [player, opponentName] : [player], [`memory-pair-${card.pairId}`]);
+    botMemory.current = rememberCard(botMemory.current, { position, pairId: card.pairId, kind: card.kind }, difficulty);
+  };
   const flipPairCard = (cardId: string) => {
     if (!session || round?.mode !== 'pair-match' || session.submission || pairLocked || !pairTimerReady || flippedCards.includes(cardId)) return;
     const card = round.cards.find(item => item.id === cardId);
     if (!card || foundPairs.includes(card.pairId)) return;
     if (round.variant === 'hunt' && round.targetPairId === card.pairId && foundPairs.length < round.unlockPairs) {
+      observeCard(round.cards.indexOf(card));
       const remaining = round.unlockPairs - foundPairs.length;
       setPairMessage(`Target locked — find ${remaining} more ${remaining === 1 ? 'pair' : 'pairs'} first.`);
+      recordPairFrame(`Target locked: ${remaining} more pairs needed`, flippedCards, foundPairs);
       return;
     }
     if (flippedCards.length === 0) {
+      recordPairFrame('First card revealed', [cardId], foundPairs);
+      observeCard(round.cards.indexOf(card));
       setFlippedCards([cardId]);
       setPairMessage('');
       return;
@@ -453,14 +566,18 @@ export default function MarioApp() {
     if (!session || round?.mode !== 'pair-match' || session.submission || pairLocked) return;
     const first = round.cards.find(item => item.id === firstId)!;
     const card = round.cards.find(item => item.id === cardId)!;
+    observeCard(round.cards.indexOf(first));
+    observeCard(round.cards.indexOf(card));
     setPairMoves(count => count + 1);
     setFlippedCards([first.id, cardId]);
+    recordPairFrame(first.pairId === card.pairId ? 'Second card revealed — a pair' : 'Second card revealed — not a pair', [first.id, cardId], foundPairs);
     if (first.pairId === card.pairId) {
       const nextFound = [...foundPairs, card.pairId];
       const targetFound = round.variant === 'hunt' && card.pairId === round.targetPairId;
       const gained = targetFound ? 4 : 1;
       const nextScore = pairScore + gained;
       setFoundPairs(nextFound);
+      recordPairFrame(targetFound ? 'Hunt target found' : 'Pair matched', [], nextFound);
       setPairScore(nextScore);
       if (sharedHunt && turnScores) {
         const points: [number, number] = [...turnScores.points];
@@ -475,6 +592,12 @@ export default function MarioApp() {
       setPairMessage(targetFound ? 'Target found! +2 for the pair and +2 Hunt bonus.' : 'Pair found! +1 point.');
       if (targetFound || nextFound.length >= round.goal) {
         pairRoundCompletedMs.current = Math.max(1, Date.now() - startTime.current);
+        if (round.timed && !isBotTurn) {
+          const id = runId + ':' + session.index;
+          const eligible = !practisedRounds.current.has(id);
+          const saved = savePairTime({ id, player: activeName, ...pairConfiguration(round, difficulty), elapsedMs: pairRoundCompletedMs.current, moves: pairMoves + 1, completedAt: new Date().toISOString(), replay: pairFrames.current.length < 2000 ? { version: 1, kind: 'pairs', title: `${activeName} · ${round.variant === 'hunt' ? 'Hunt' : 'Time Trial'}`, target: round.pairs.find(pair => pair.id === round.targetPairId)?.name, frames: pairFrames.current } : undefined }, eligible);
+          setPairMessage(!eligible ? 'Practice complete — restarted boards do not enter the leaderboard.' : saved ? 'Time saved to the leaderboard!' : 'Time could not be saved on this device.');
+        }
         setSession(submit(session, round.completionId, turnScores ? 0 : nextScore));
       }
       return;
@@ -482,6 +605,7 @@ export default function MarioApp() {
     setPairLocked(true);
     setPairMessage('Not a pair — remember where they are!');
     pairFlipTimeout.current = window.setTimeout(() => {
+      recordPairFrame('Unmatched cards hidden', [], foundPairs);
       setFlippedCards([]);
       setPairLocked(false);
       pairFlipTimeout.current = null;
@@ -507,14 +631,14 @@ export default function MarioApp() {
     setClueMessage('');
   };
   const guessClue = (id: string) => {
-    if (!session || round?.mode !== 'clue-duel' || session.submission || id === clueWrongId) return;
+    if (!session || round?.mode !== 'clue-duel' || session.submission || clueWrongIds.includes(id)) return;
     if (!turnScores) {
       if (id === round.answerId || clueIndex === 4) setSession(submit(session, id));
-      else { setClueIndex(value => value + 1); setClueMessage('Not yet — here is another clue.'); }
+      else { setClueWrongIds(ids => [...ids, id]); setClueIndex(value => value + 1); setClueMessage('That answer is ruled out — here is another clue.'); }
       return;
     }
     if (id === round.answerId || clueBonus) { setSession(submit(session, id, 1)); return; }
-    setClueWrongId(id);
+    setClueWrongIds(ids => [...ids, id]);
     setClueBonus(true);
     setClueIndex(value => Math.min(4, value + 2));
     const active = (1 - turnScores.active) as 0 | 1;
@@ -527,10 +651,37 @@ export default function MarioApp() {
     const answers = championship?.computerAnswers ?? standalone?.computerAnswers ?? [];
     if (sharedHunt && round.mode === 'pair-match') {
       if (pairLocked) return;
-      const available = round.pairs.filter(pair => !foundPairs.includes(pair.id) && (pair.id !== round.targetPairId || foundPairs.length >= round.unlockPairs));
-      if (!available.length) return;
-      const succeeds = (pairMoves + session.index) % (difficulty === 'professor' ? 5 : difficulty === 'scientist' ? 4 : 3) !== 0 || available.length === 1;
-      resolvePair(available[0].id + '-icon', available[succeeds ? 0 : 1].id + '-word');
+      const knownLocked = botMemory.current.filter(item => item.pairId === round.targetPairId && foundPairs.length < round.unlockPairs).map(item => item.position);
+      const available = round.cards.map((card, position) => foundPairs.includes(card.pairId) || knownLocked.includes(position) ? -1 : position).filter(position => position >= 0);
+      if (available.length < 2) return;
+      const firstPosition = chooseMemoryCard(available, botMemory.current, botRandom.current);
+      const first = round.cards[firstPosition];
+      observeCard(firstPosition);
+      if (first.pairId === round.targetPairId && foundPairs.length < round.unlockPairs) {
+        setPairMessage('Mushbot found the locked target. It must find other pairs first.');
+        return;
+      }
+      setPairLocked(true);
+      setFlippedCards([first.id]);
+      setPairMessage('Mushbot is remembering the cards it has seen.');
+      pairFlipTimeout.current = window.setTimeout(() => {
+        const secondPosition = chooseMemoryCard(available.filter(position => position !== firstPosition), botMemory.current, botRandom.current, { position: firstPosition, pairId: first.pairId, kind: first.kind });
+        const second = round.cards[secondPosition];
+        observeCard(secondPosition);
+        if (second.pairId === round.targetPairId && foundPairs.length < round.unlockPairs) {
+          setFlippedCards([]);
+          setPairLocked(false);
+          pairFlipTimeout.current = null;
+          setPairMessage('Mushbot found the locked target. It must find other pairs first.');
+          return;
+        }
+        setFlippedCards([first.id, second.id]);
+        pairFlipTimeout.current = window.setTimeout(() => {
+          pairFlipTimeout.current = null;
+          setPairLocked(false);
+          resolvePair(first.id, second.id);
+        }, 650);
+      }, 650);
       return;
     }
     pairRoundCompletedMs.current = botTimes[session.index] ?? 10000;
@@ -571,7 +722,10 @@ export default function MarioApp() {
   };
 
   return <main className="app mario-app">
+    {checkpointWarning && <p className="review-note" role="alert">This game could not be saved for recovery. Keep this tab open; refreshing may lose your current turn.</p>}
+    {progressStorageProblem() && <p className="review-note" role="alert">Some progress could not be saved on this device. Keep this tab open; unsaved progress may be lost if you close or reload it.</p>}
     {screen === 'home' && <section className="home-screen">
+      {pendingResume && <section className="resume-game" aria-label="Unfinished game"><h2>Continue your game?</h2><p>{pendingResume.player} · {MODE_LABELS[pendingResume.mode]}{pendingResume.championship ? ' · Championship' : ''}. Your answers and turn are saved. Any running timer includes time away. Starting a new game replaces this saved game.</p><button className="start-btn" onClick={resumeGame}>Resume game</button><button className="back-btn" onClick={() => { if (window.confirm('Discard this unfinished game? Completed records are kept.')) { if (clearCheckpoint()) setPendingResume(null); else setCheckpointWarning(true); } }}>Discard saved game</button></section>}
       <div className="home-header">
         <h1 className="game-title" aria-label="Mushroom Power Quiz">{['Mushroom', 'Power', 'Quiz'].map(word => <span className="title-word" aria-hidden="true" key={word}>{Array.from(word).map((letter, index) => <span className="title-letter" key={index}>{letter}</span>)}</span>)}</h1>
         <p className="mario-tagline">Unofficial Mario trivia and matching games with original icons, emoji and words.</p>
@@ -587,7 +741,7 @@ export default function MarioApp() {
       </div>
       <nav className="home-menu">
         <button className="menu-btn primary" onClick={() => setScreen('hub')}><span className="menu-icon">🎮</span><span><span className="menu-label">Play Games</span><span className="menu-desc">Choose a game, then pick your challenge.</span></span></button>
-        <button className="menu-btn" aria-label="Explore Learning Zone" onClick={() => setScreen('explore')}><span className="menu-icon">🔍</span><span><span className="menu-label">Explore</span><span className="menu-desc">Visit the Learning Zone. Guides are being prepared.</span></span></button>
+        <button className="menu-btn" aria-label="Explore Learning Zone" onClick={() => setScreen('explore')}><span className="menu-icon">🔍</span><span><span className="menu-label">Explore</span><span className="menu-desc">Search learning cards and explore the track guide.</span></span></button>
         <button className="menu-btn" onClick={() => setScreen('scores')}><span className="menu-icon">🏆</span><span><span className="menu-label">High Scores</span><span className="menu-desc">See your finished games.</span></span></button>
       </nav>
       <button className="voice-settings-toggle" onClick={() => setShowVoiceSettings(value => !value)} aria-expanded={showVoiceSettings}>⚙️ Voice Settings</button>
@@ -654,7 +808,7 @@ export default function MarioApp() {
     </section>}
 
     {screen === 'versus-game' && versus && versusTurn && <section className="quiz-playing mario-game quiz-panel versus-game">
-      <div className="game-topbar"><button className="back-btn" onClick={() => setScreen('hub')}>← Games</button><span className="score-display">{player} {versus.scores[0]} · {opponentName} {versus.scores[1]}</span></div>
+      <div className="game-topbar"><button className="back-btn" onClick={leaveGame}>← Games</button><span className="score-display">{player} {versus.scores[0]} · {opponentName} {versus.scores[1]}</span></div>
       <div className="mario-points-line">{player}: {versus.points[0] + (versusTurn.playerIndex === 0 ? versus.submission?.points ?? 0 : 0)} EP · {opponentName}: {versus.points[1] + (versusTurn.playerIndex === 1 ? versus.submission?.points ?? 0 : 0)} EP</div>
       <div className="quiz-topline"><span>⚔️ Quiz Battle · {DIFFICULTY_LABELS[difficulty]}</span><span>Round {Math.floor(versus.index / 2) + 1} of 5</span></div>
       <div className="progress-track"><div style={{ width: `${(versus.index / versus.turns.length) * 100}%` }} /></div>
@@ -666,6 +820,7 @@ export default function MarioApp() {
       </div> : <>
         <p className="versus-now-playing">Now playing: {versusTurn.playerIndex === 0 ? player : opponentName}</p>
         <h1>{versusTurn.question.prompt}</h1>
+        {versusTurn.question.review && <p className="review-note" role="status">Review question — you’ve seen this fact before.</p>}
         {speechAvailable() && <button className="tts-btn tts-btn-small" title="Read question aloud" aria-label="Read question aloud" onClick={() => speakText(`${versusTurn.question.prompt} ${versusTurn.question.choices.join('. ')}`)}>🔊</button>}
         {versusTurn.computerAnswer !== undefined && !versus.submission
           ? <button className="start-btn" onClick={() => setVersus(answerVersusQuiz(versus, versusTurn.computerAnswer!))}>Reveal Mushbot's answer</button>
@@ -678,6 +833,7 @@ export default function MarioApp() {
           <p className="mario-earned">+{versus.submission.points} EP</p>
           {speechAvailable() && <button className="tts-btn tts-btn-small" title="Read explanation aloud" aria-label="Read explanation aloud" onClick={() => speakText(`${versusTurn.question.explanation} Fun fact: ${versusTurn.question.funFact}`)}>🔊</button>}
           <a href={versusTurn.question.sourceUrl} target="_blank" rel="noreferrer">Check the source ↗</a>
+          <LearningFeedback id={versusTurn.question.id} />
           <div className="feedback-actions"><button className="back-btn" onClick={() => setVersus(rewindVersusQuiz(versus))}>↶ Rewind</button><button className="start-btn" onClick={nextVersus}>{versus.index + 1 === versus.turns.length ? 'See result' : 'Next turn →'}</button></div>
         </div>}
       </>}
@@ -700,7 +856,10 @@ export default function MarioApp() {
       <div className="quiz-topline"><span>{MODE_ICONS[mode]} {MODE_LABELS[mode]}{round.mode === 'pair-match' ? ` · ${round.variant === 'hunt' ? 'Hunt' : 'Time Trial'}` : ` · ${DIFFICULTY_LABELS[difficulty]}`}</span><span>{turnScores && !sharedHunt ? 'Round' : mode === 'pair-match' ? 'Board' : 'Question'} {turnScores && !sharedHunt ? Math.floor(session.index / 2) + 1 : session.index + 1} of {turnScores && !sharedHunt ? session.rounds.length / 2 : session.rounds.length}{turnScores && !sharedHunt ? ' each' : ''}</span>{timed && mode !== 'game-order' && <span aria-label="Elapsed time">{((elapsedMs - (mode === 'pair-match' ? previousRoundMs.current : 0)) / 1000).toFixed(1)}s</span>}</div>
       <div className="progress-track"><div style={{ width: `${(session.index / session.rounds.length) * 100}%` }} /></div>
       <h1>{round.prompt}</h1>
-      {speechAvailable() && <button className="tts-btn tts-btn-small" title="Read question aloud" aria-label="Read question aloud" onClick={() => speakText(round.mode === 'quiz' ? `${round.prompt} ${round.question.choices.join('. ')}` : round.prompt)}>🔊</button>}
+      {round.mode === 'quiz' && round.question.review && <p className="review-note" role="status">Review question — you’ve seen this fact before.</p>}
+      {round.review && <p className="review-note" role="status">Review challenge — you’ve seen this one before.</p>}
+      {!!round.reviewCount && <p className="review-note" role="status">This board includes {round.reviewCount} familiar {round.reviewCount === 1 ? 'match' : 'matches'}.</p>}
+      {speechAvailable() && <button className="tts-btn tts-btn-small" title="Read question aloud" aria-label="Read question aloud" onClick={() => speakText(round.mode === 'quiz' ? `${round.prompt} ${round.question.choices.join('. ')}` : round.mode === 'clue-duel' ? `${round.prompt} ${round.clues.slice(0, clueIndex + 1).join('. ')} Choices: ${round.choices.map(choice => choice.label).join('. ')}` : round.prompt)}>🔊</button>}
       {isBotTurn && !session.submission && <button className="start-btn" disabled={pairLocked} onClick={revealComputerTurn}>Show Mushbot’s turn</button>}
       {(!isBotTurn || sharedHunt || round.mode === 'clue-duel') && <>
       {round.mode === 'quiz' && <>
@@ -708,23 +867,26 @@ export default function MarioApp() {
         <div className="answer-grid">{round.question.choices.map((choice, option) => <button key={choice} disabled={session.submission !== null || session.wrongAnswers.includes(choice)} className={`choice-btn ${session.submission && choice === round.question.answer ? 'correct' : session.wrongAnswers.includes(choice) || session.submission?.answer === choice ? 'wrong' : ''}`} onClick={() => setSession(attemptQuiz(session, choice))}><span className="choice-letter">{String.fromCharCode(65 + option)}</span><span className="choice-text">{choice}</span></button>)}</div>
       </>}
 
-      {round.mode === 'game-order' && <OrderBoard key={round.id + orderReset} round={round} difficulty={difficulty} options={orderOptions} player={turnScores?.active === 1 ? opponentName : player} resultId={runId + ':' + session.index} onNext={next} onRestart={undo} nextLabel={session.index + 1 === session.rounds.length ? 'See result' : turnScores ? 'Next turn' : 'Next round'} resultMessage={timedResultMessage} onSolved={time => { pairRoundCompletedMs.current = time; setSession(submit(session, round.correctIds, turnScores ? 0 : 1)); }} />}
+      {round.mode === 'game-order' && <OrderBoard initialCheckpoint={orderCheckpoint} onCheckpoint={setOrderCheckpoint} key={round.id + orderReset} round={round} difficulty={difficulty} options={orderOptions} player={turnScores?.active === 1 ? opponentName : player} resultId={runId + ':' + session.index} onNext={next} onRestart={undo} nextLabel={session.index + 1 === session.rounds.length ? 'See result' : turnScores ? 'Next turn' : 'Next round'} resultMessage={timedResultMessage} onSolved={time => { pairRoundCompletedMs.current = time; setSession(submit(session, round.correctIds, turnScores ? 0 : 1)); }} />}
 
       {round.mode === 'track-finder' && <>
-        <p className="help-copy">Choose one track from the named cup.</p>
+        <p className="help-copy">Choose one track that fits the clue.</p>
         {session.submission && <div className={session.submission.correct ? 'finder-verdict win' : 'finder-verdict miss'} role="status">{session.submission.correct ? '✓ Correct — you found it!' : '✕ Not this time. The correct tracks are marked below.'}</div>}
-        <div className={`finder-grid finder-${round.width}`}>{round.tiles.map(course => <button key={course.id} disabled={session.submission !== null} className={session.submission ? course.cup === round.targetCup ? 'right-answer' : course.id === session.submission.answer ? 'wrong-answer' : '' : ''} onClick={() => setSession(submit(session, course.id))}>{course.title}{session.submission && (course.cup === round.targetCup ? <strong className="tile-verdict">✓ In this cup</strong> : course.id === session.submission.answer ? <strong className="tile-verdict">✕ Different cup</strong> : null)}</button>)}</div>
+        <div className={`finder-grid finder-${round.width}`}>{round.tiles.map(course => <button key={course.id} disabled={session.submission !== null} className={session.submission ? round.correctIds.includes(course.id) ? 'right-answer' : course.id === session.submission.answer ? 'wrong-answer' : '' : ''} onClick={() => setSession(submit(session, course.id))}>{round.challengeKind === 'system' ? trackLabel(course.title) : course.title}{session.submission && (round.correctIds.includes(course.id) ? <strong className="tile-verdict">✓ Fits the clue</strong> : course.id === session.submission.answer ? <strong className="tile-verdict">✕ Does not fit</strong> : null)}</button>)}</div>
       </>}
 
       {round.mode === 'category-finder' && <>
         <p className="help-copy">Tap one tile that fits. Every tile of the requested type counts.</p>
-        <div className={`finder-grid finder-${round.width} category-grid`}>{round.tiles.map(tile => <button key={tile.id} disabled={session.submission !== null} className={session.submission ? tile.category === round.targetCategory ? 'right-answer' : tile.id === session.submission.answer ? 'wrong-answer' : '' : ''} onClick={() => setSession(submit(session, tile.id))}><small>{tile.number}</small><span>{tile.name}</span></button>)}</div>
+        {session.submission && <div className={session.submission.correct ? 'finder-verdict win' : 'finder-verdict miss'} role="status">{session.submission.correct ? '✓ Correct — that fits!' : '✕ Not this time. The matching tiles are marked below.'}</div>}
+        {categoryContext(round.targetCategory) && <p className="category-context">{categoryContext(round.targetCategory)}</p>}
+        <div className={`finder-grid finder-${round.width} category-grid`}>{round.tiles.map(tile => <button key={tile.id} data-catalog-number={tile.number} disabled={session.submission !== null} className={session.submission ? fitsCategory(tile, round.targetCategory) ? 'right-answer' : tile.id === session.submission.answer ? 'wrong-answer' : '' : ''} onClick={() => setSession(submit(session, tile.id))}><span>{tile.name}</span>{session.submission && (fitsCategory(tile, round.targetCategory) ? <strong className="tile-verdict">✓ Fits</strong> : tile.id === session.submission.answer ? <strong className="tile-verdict">✕ Different type</strong> : null)}</button>)}</div>
       </>}
 
       {round.mode === 'match-hunt' && <>
         <p className="help-copy">Tap a name and its matching clue. Find every pair.</p>
         <p className="match-retries" aria-live="polite">{matchRetriesLeft === 0 ? 'No retries left — the next wrong pair ends this round.' : `${matchRetriesLeft} ${matchRetriesLeft === 1 ? 'retry' : 'retries'} left.`}</p>
         <p className="match-progress" aria-live="polite">{matchedIds.length}/{round.pairs.length} pairs found</p>
+        {speechAvailable() && selectedMatchClue && <button className="back-btn match-read" onClick={() => speakText(round.pairs.find(pair => pair.id === selectedMatchClue)!.clue)}>🔊 Read selected clue</button>}
         {!session.submission && <button className="back-btn match-restart" onClick={undo}>↶ Restart go</button>}
         <div className="match-board">
           <div className="match-column" aria-label="Names"><h2>Names</h2>{round.nameIds.map(id => {
@@ -744,12 +906,13 @@ export default function MarioApp() {
         {round.variant === 'hunt' && round.targetPairId && <p className="hunt-target-banner">🎯 <strong>{round.pairs.find(pair => pair.id === round.targetPairId)?.name}</strong>{round.unlockPairs > 0 && <> · {foundPairs.length >= round.unlockPairs ? 'Unlocked!' : `Unlocks after ${round.unlockPairs} other pairs (${foundPairs.length}/${round.unlockPairs})`}</>}</p>}
         <p className="match-progress" aria-live="polite">{foundPairs.length}/{round.goal} pairs found · {pairMoves} {pairMoves === 1 ? 'move' : 'moves'} · {pairScore} points</p>
         {!session.submission && pairTimerReady && <button className="back-btn match-restart" onClick={undo}>↶ Restart go</button>}
-        {!pairTimerReady ? <div className="pair-timer-ready"><p>The cards appear when the timer starts.</p><button className="start-btn" onClick={() => { startTime.current = Date.now(); setElapsedMs(previousRoundMs.current); setPairTimerReady(true); }}>Start Timer</button></div> : <div className="pair-card-grid" aria-label="Face-down pair cards">{round.cards.map((card, index) => {
+        {!pairTimerReady ? <div className="pair-timer-ready"><p>The cards appear when the timer starts.</p><button className="start-btn" onClick={() => { startTime.current = Date.now(); pairFrames.current = []; recordPairFrame('Timer started', [], [], 0); setElapsedMs(previousRoundMs.current); setPairTimerReady(true); }}>Start Timer</button></div> : <div className="pair-card-grid" aria-label="Face-down pair cards">{round.cards.map((card, index) => {
           const visible = flippedCards.includes(card.id) || foundPairs.includes(card.pairId);
           const matched = foundPairs.includes(card.pairId);
           return <button key={card.id} type="button" data-pair-id={card.pairId} data-kind={card.kind} disabled={matched || pairLocked || isBotTurn || session.submission !== null} className={`pair-card ${visible ? 'pair-card-face' : 'pair-card-back'} ${matched ? 'pair-card-found' : ''}`} aria-label={visible ? card.kind === 'word' ? `Word: ${card.label}` : `Icon: ${card.iconAlt ?? card.label}` : `Hidden card ${index + 1}`} aria-pressed={visible} onClick={() => flipPairCard(card.id)}>{visible ? card.kind === 'word' ? <span className="pair-card-word">{card.label}</span> : card.iconKind === 'svg' ? <img className="pair-card-svg" src={`${import.meta.env.BASE_URL}${card.label}`} alt="" aria-hidden="true" /> : <span className={card.iconKind === 'text' ? 'pair-card-text-icon' : 'pair-card-icon'}>{card.label}</span> : <span className="pair-card-mark" aria-hidden="true">?</span>}</button>;
         })}</div>}
         {pairMessage && <p className="match-message" aria-live="polite">{pairMessage}</p>}
+        {round.timed && <section className="order-leaderboard"><h3>Match &amp; Hunt Top 10</h3><p>Same settings · human first attempts only. Restarting this board makes it practice.</p><PairTimeList records={pairScores} /></section>}
       </>}
 
       {round.mode === 'clue-duel' && <>
@@ -758,18 +921,20 @@ export default function MarioApp() {
         <ol className="clue-list">{round.clues.slice(0, clueIndex + 1).map((clue, index) => <li key={index}>{clue}</li>)}</ol>
         {clueMessage && !session.submission && <p className="match-message" aria-live="polite">{clueMessage}</p>}
         {!session.submission && (turnScores || clueIndex < 4) && <button className="back-btn clue-reveal" disabled={isBotTurn} onClick={passClue}>{turnScores ? clueBonus ? 'Skip bonus — reveal answer' : clueIndex < 4 ? 'Next clue — pass to ' + (activePlayer === 0 ? opponentName : player) : 'Reveal answer' : 'Show next clue'}</button>}
-        <div className="answer-grid">{round.choices.map((choice, option) => <button key={choice.id} disabled={session.submission !== null || isBotTurn || choice.id === clueWrongId} className={`choice-btn ${session.submission ? choice.id === round.answerId ? 'correct' : choice.id === session.submission.answer ? 'wrong' : '' : ''}`} onClick={() => guessClue(choice.id)}><span className="choice-letter">{String.fromCharCode(65 + option)}</span><span className="choice-text">{choice.label}</span></button>)}</div>
+        <div className="answer-grid">{round.choices.map((choice, option) => <button key={choice.id} disabled={session.submission !== null || isBotTurn || clueWrongIds.includes(choice.id)} className={`choice-btn ${session.submission ? choice.id === round.answerId ? 'correct' : choice.id === session.submission.answer ? 'wrong' : '' : clueWrongIds.includes(choice.id) ? 'wrong' : ''}`} onClick={() => guessClue(choice.id)}><span className="choice-letter">{String.fromCharCode(65 + option)}</span><span className="choice-text">{choice.label}</span></button>)}</div>
       </>}
 
       </>}
       {session.submission && (round.mode !== 'game-order' || isBotTurn) && <div className="quiz-explanation feedback" aria-live="polite">
         <h2>{session.submission.correct ? 'Correct!' : round.mode === 'match-hunt' ? 'Round over' : `Answer: ${session.submission.correctLabel}`}</h2>
         {(round.mode === 'game-order' || (round.mode === 'pair-match' && round.timed)) && <p className="order-feedback">{timedResultMessage}</p>}
+        {isBotTurn && (round.mode === 'game-order' || (round.mode === 'pair-match' && round.timed)) && <p>Mushbot’s simulated time: {((pairRoundCompletedMs.current ?? 0) / 1000).toFixed(1)} seconds.</p>}
         <p>{round.explanation}</p>
         <p><strong>Fun fact:</strong> {round.funFact}</p>
         <p className="mario-earned">+{session.submission.points} EP</p>
         {speechAvailable() && <button className="tts-btn tts-btn-small" title="Read explanation aloud" aria-label="Read explanation aloud" onClick={() => speakText(`${round.explanation} Fun fact: ${round.funFact}`)}>🔊</button>}
         <a href={round.sourceUrl} target="_blank" rel="noreferrer">Check the source ↗</a>
+        <LearningFeedback id={round.id} />
         <div className="feedback-actions"><button className="back-btn" onClick={undo}>↶ Rewind</button><button className="start-btn" onClick={next}>{session.index + 1 === session.rounds.length ? 'See result' : turnScores ? 'Next turn →' : mode === 'pair-match' ? 'Next board →' : 'Next question →'}</button></div>
       </div>}
     </section>}
@@ -795,8 +960,8 @@ export default function MarioApp() {
     {screen === 'scores' && <section className="high-scores-screen">
       <div className="high-scores-header"><button className="back-btn" onClick={() => setScreen('hub')}>← Back to games</button><div><h2>🏆 High Scores</h2><p>Your finished games</p></div></div>
       {scores.length === 0 ? <p>No completed games yet.</p> : <ol className="score-list">{scores.slice(0, 20).map(result => <li key={result.id}><span><strong>{result.opponent ? `${result.player} vs ${result.opponent}` : result.player}</strong><small>{modeLabel(result.mode)}{result.variant ? ` · ${result.variant === 'hunt' ? 'Hunt' : 'Time Trial'}` : ''} · {LABELS[result.topic]} · {DIFFICULTY_LABELS[result.difficulty]} · {result.opponent ? `${result.correct}–${result.opponentCorrect}` : `${result.correct}/${result.total}`} correct</small></span><strong>{result.opponent ? `${result.points ?? result.correct}–${result.opponentPoints ?? result.opponentCorrect} EP` : `${result.points ?? result.correct} EP`}</strong></li>)}</ol>}
-      <h3>Game Order · fastest times</h3><p>Times are grouped by level, challenge and tile count.</p>
-      {[...new Set(getOrderTimes().map(item => item.difficulty + '/' + item.challenge + '/' + item.tiles))].map(key => <section className="order-leaderboard" key={key}><h4>{DIFFICULTY_LABELS[key.split('/')[0] as Difficulty]} · {ORDER_RULES[key.split('/')[1] as OrderChallenge].label} · {key.split('/')[2]} tiles</h4><ol>{getOrderTimes().filter(item => item.difficulty + '/' + item.challenge + '/' + item.tiles === key).sort((a, b) => a.elapsedMs - b.elapsedMs).slice(0, 10).map(item => <li key={item.id}><span>{item.player} · {item.attempts} checks</span><strong>{(item.elapsedMs / 1000).toFixed(1)}s</strong></li>)}</ol></section>)}
+      <PairLeaderboards />
+      <OrderLeaderboards />
       <h3>Championships</h3>{championshipScores.length === 0 ? <p>No completed championships yet.</p> : <ol className="score-list">{championshipScores.slice(0, 20).map(result => <li key={result.id}><span><strong>{result.opponent ? `${result.player} vs ${result.opponent}` : result.player}</strong><small>{result.size} · {LABELS[result.topic]} · {DIFFICULTY_LABELS[result.difficulty]} · {result.games.length} games</small></span><strong>{result.opponent ? `${result.points}–${result.opponentPoints} EP` : `${result.points} EP`}</strong></li>)}</ol>}
     </section>}
 
@@ -804,9 +969,9 @@ export default function MarioApp() {
       <button className="back-btn" onClick={() => setScreen('home')}>← Home</button>
       <p className="eyebrow">EXPLORE</p>
       <h1>Learning Zone</h1>
-      <p className="intro-copy">A place to learn before you play. We’re preparing short, clear guides and will add them after checking the information.</p>
-      <div className="learning-topic-grid">{LEARNING_TOPICS.map(topic => <article className="learning-topic-card" key={topic.title}><span className="learning-topic-icon" aria-hidden="true">{topic.icon}</span><h2>{topic.title}</h2>{topic.title === 'Mario Kart tracks' ? <><p>Browse the reviewed Booster Course Pass cup list.</p><button className="round-btn learning-topic-action" onClick={() => setScreen('tracks')}>Open track guide →</button></> : <p>Information to be confirmed.</p>}</article>)}</div>
-      <p className="learning-zone-note">The track list is available now. The other learning guides are planned; no unconfirmed facts are shown in them yet.</p>
+      <p className="intro-copy">Read at your own pace, then try what you have learned in a game.</p>
+      <button className="round-btn learning-topic-action" onClick={() => setScreen('tracks')}>Open track guide →</button>
+      <LearningCards />
     </section>}
 
     {screen === 'tracks' && <section className="mario-tracks">

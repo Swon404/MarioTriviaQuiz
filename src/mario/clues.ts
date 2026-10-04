@@ -12,6 +12,29 @@ export type ClueSubject = {
 
 const characters = 'https://mario.nintendo.com/characters/';
 const courses = 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/57858/';
+const friends = 'https://www.nintendo.com/en-ca/explore/characters/mario/friends/';
+const wave3 = 'https://www.nintendo.com/us/whatsnew/mario-kart-8-deluxe-booster-course-pass-wave-3-brings-merry-mountain-mayhem-with-eight-additional-courses-on-dec-7/';
+const wave2 = 'https://www.nintendo.com/us/whatsnew/mario-kart-8-deluxe-booster-course-pass-wave-2-approaches-the-starting-line-on-aug-4/';
+
+// Editorial similarity groups, not extra facts shown to players. Prefer related
+// alternatives so a broad opening clue does not leave one obvious candidate.
+export const CLUE_CHOICE_GROUPS: readonly (readonly string[])[] = [
+  ['char-mario', 'char-luigi', 'char-wario', 'char-waluigi'], // caps/overalls
+  ['char-peach', 'char-daisy', 'char-rosalina'], // princess characters
+  ['char-bowser', 'char-junior', 'char-dk', 'char-wario'], // powerful rivals
+  ['char-bowser', 'char-junior', 'char-wario', 'char-waluigi', 'char-boo'], // troublemakers
+  ['char-mario', 'char-luigi', 'char-yoshi', 'char-peach', 'char-rosalina'], // adventuring allies
+  ['track-coconut', 'track-maple', 'track-daisy'], // home-console origins
+  ['track-waluigi', 'track-gardens', 'track-boo-lake', 'track-rock'], // handheld origins
+  ['track-rome', 'track-ninja', 'track-piranha', 'track-merry'], // mobile origins
+  ['track-maple', 'track-gardens', 'track-merry', 'track-rock', 'track-boo-lake'], // outdoor scenery
+  ['track-coconut', 'track-waluigi', 'track-daisy', 'track-ninja'], // built environments
+  ['track-sundae', 'track-waluigi', 'track-merry'], // outsized/playful settings
+];
+
+export function clueSimilarity(subjectId: string, candidateId: string): number {
+  return CLUE_CHOICE_GROUPS.filter(group => group.includes(subjectId) && group.includes(candidateId)).length;
+}
 
 // Clues move from shared traits to distinctive details. The first two must not
 // contain words from the answer, so a multiple-choice label cannot give them away.
@@ -73,15 +96,15 @@ export const CLUE_SUBJECTS: readonly ClueSubject[] = [
   },
   {
     id: 'track-waluigi', topic: 'kart', answer: 'Waluigi Pinball',
-    clues: ['I returned as an extra course.', 'My first version was on a handheld console.', 'That handheld was the Nintendo DS.', 'I finish the Turnip Cup.', 'My name pairs Mario\'s purple-clad rival with a bouncing arcade game.'],
+    clues: ['I turn indoor entertainment into a racetrack.', 'Lights and sound effects surround the racing line.', 'My first version was on Nintendo DS.', 'I finish the Turnip Cup.', 'My name pairs Luigi\'s purple-clad rival with a bouncing arcade game.'],
     explanation: 'Waluigi Pinball is the fourth Turnip Cup course in the Booster Course Pass.',
-    funFact: 'The Turnip Cup also contains Kalimari Desert.', sourceUrl: courses,
+    funFact: 'The Turnip Cup also contains Kalimari Desert.', sourceUrl: wave2,
   },
   {
     id: 'track-maple', topic: 'kart', answer: 'Maple Treeway',
-    clues: ['A later cup brought me back as an extra course.', 'My first version was on a home console.', 'That console was the Wii.', 'I finish the Rock Cup.', 'My name pairs an autumn tree with a route through it.'],
+    clues: ['I take racers into a landscape filled with plants.', 'The season gives my scenery warm colours.', 'Huge trees form part of the route.', 'Watch out for the large Wigglers.', 'My name pairs an autumn tree with a route through it.'],
     explanation: 'Maple Treeway is a returning Wii track and the fourth course in the Rock Cup.',
-    funFact: 'London Loop opens the Rock Cup.', sourceUrl: courses,
+    funFact: 'London Loop opens the Rock Cup.', sourceUrl: wave3,
   },
   {
     id: 'track-rome', topic: 'kart', answer: 'Rome Avanti',
@@ -112,5 +135,53 @@ export const CLUE_SUBJECTS: readonly ClueSubject[] = [
     clues: ['I appear in a cup of extra courses.', 'My cup came late in the pass.', 'My cup opens with Rome Avanti.', 'I close the Acorn Cup.', 'My name combines a toothy plant with a sheltered stretch of water.'],
     explanation: 'Piranha Plant Cove is the last Acorn Cup course in the Booster Course Pass.',
     funFact: 'The Acorn Cup is part of the sixth and final pass wave.', sourceUrl: courses,
+  },
+  {
+    id: 'char-waluigi', topic: 'mario', answer: 'Waluigi',
+    clues: ['I enjoy competing against familiar heroes.', 'I put effort into annoying my opponents.', 'My long limbs help in sports.', 'I often team up with Wario.', 'I call myself Luigi’s rival.'],
+    explanation: 'Waluigi competes with Luigi; Wario claims Mario as his rival.',
+    funFact: 'His reach helps him stay competitive.', sourceUrl: friends,
+  },
+  {
+    id: 'char-junior', topic: 'mario', answer: 'Bowser Jr.',
+    clues: ['I cause trouble for the heroes.', 'Strength runs in my family.', 'I am small but powerful.', 'My mask has a mouth drawn on it.', 'My father is the Koopa king.'],
+    explanation: 'Bowser Jr. inherited his father’s strength.',
+    funFact: 'He gets cross when plans fail.', sourceUrl: friends,
+  },
+  {
+    id: 'char-dk', topic: 'mario', answer: 'Donkey Kong',
+    clues: ['I have plenty of strength.', 'I keep food at home.', 'I can throw huge barrels.', 'My red tie carries my initials.', 'I hoard bananas in a treehouse.'],
+    explanation: 'Donkey Kong is a powerful jungle resident.',
+    funFact: 'His ground-pounding can shake the earth.', sourceUrl: friends,
+  },
+  {
+    id: 'char-boo', topic: 'mario', answer: 'Boo',
+    clues: ['I can cause mischief.', 'I prefer gloomy, deserted places.', 'Being watched makes me shy.', 'I freeze and hide my eyes.', 'I am a bashful ghost.'],
+    explanation: 'Boos stop when watched directly.',
+    funFact: 'These spooky enemies are surprisingly shy.', sourceUrl: friends,
+  },
+  {
+    id: 'track-gardens', topic: 'kart', answer: 'Peach Gardens',
+    clues: ['I returned from a handheld game.', 'My scenery includes flowers and birds.', 'Chain Chomps move around here.', 'I surround a princess’s castle.', 'My name links that princess with planted grounds.'],
+    explanation: 'Peach Gardens began on Nintendo DS.',
+    funFact: 'Look for the shaped bushes!', sourceUrl: wave3,
+  },
+  {
+    id: 'track-boo-lake', topic: 'kart', answer: 'Boo Lake',
+    clues: ['My first game was on a handheld.', 'My setting mixes water and spooks.', 'I returned in the Rock Cup.', 'I began in Mario Kart: Super Circuit.', 'My name joins a ghost and inland water.'],
+    explanation: 'Boo Lake is a haunted-water course.',
+    funFact: 'Its original system was Game Boy Advance.', sourceUrl: wave3,
+  },
+  {
+    id: 'track-merry', topic: 'kart', answer: 'Merry Mountain',
+    clues: ['My first game was on phones.', 'Pine trees line snowy slopes.', 'Racers can ride a halfpipe.', 'Wrapped presents decorate the route.', 'A flying sleigh train adds festive cheer.'],
+    explanation: 'Merry Mountain has a holiday theme.',
+    funFact: 'Giant candy canes decorate the course.', sourceUrl: wave3,
+  },
+  {
+    id: 'track-rock', topic: 'kart', answer: 'Rock Rock Mountain',
+    clues: ['I returned from a handheld game.', 'My route has sharp bends.', 'Bouncing boulders threaten racers.', 'A warp-pipe ramp launches you airborne.', 'My name repeats a word for stone.'],
+    explanation: 'Rock Rock Mountain began on Nintendo 3DS.',
+    funFact: 'Gliding breaks up the rocky driving sections.', sourceUrl: wave3,
   },
 ];

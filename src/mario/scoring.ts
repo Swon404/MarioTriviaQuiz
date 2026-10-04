@@ -34,11 +34,13 @@ export function calculatePoints(difficulty: Difficulty, correct: boolean, streak
   return points + Math.floor(points * 0.25);
 }
 
-export function playerProgress(results: readonly QuizResult[], player: string) {
+export type ProgressResult = Pick<QuizResult, 'id' | 'player' | 'correct' | 'total' | 'points' | 'bestStreak' | 'opponent' | 'opponentCorrect' | 'opponentPoints' | 'opponentBestStreak' | 'format'>;
+
+export function playerProgress(results: readonly ProgressResult[], player: string) {
   const games = results.filter(result => result.player === player || result.opponent === player);
   const totalEP = games.reduce((sum, result) => sum + (result.player === player ? result.points ?? result.correct : result.opponentPoints ?? result.opponentCorrect ?? 0), 0);
   const bestStreak = Math.max(0, ...games.map(result => result.player === player ? result.bestStreak ?? 0 : result.opponentBestStreak ?? 0));
-  const perfect = games.some(result => result.player === player && result.correct === result.total && result.total > 0);
+  const perfect = games.some(result => (result.player === player ? result.correct : result.opponentCorrect) === result.total && result.total > 0);
   const milestoneUnlocks = [games.length >= 1, games.length >= 5, games.length >= 10, bestStreak >= 3, bestStreak >= 5, totalEP >= 500, totalEP >= 2000, perfect];
   return { totalEP, bestStreak, milestones: milestoneUnlocks.filter(Boolean).length, milestoneCount: MILESTONES.length, milestoneUnlocks, gamesPlayed: games.length };
 }
