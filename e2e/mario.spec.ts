@@ -616,8 +616,11 @@ test('voice settings persist and EP rank progress appears on the home screen', a
   await page.evaluate(() => {
     window.speechSynthesis.speak = utterance => { (window as typeof window & { spokenText?: string }).spokenText = utterance.text; };
   });
+  const welcome = page.locator('.shroomer-home-speech');
+  await expect(welcome).toContainText('Shroomer');
+  const displayedWelcome = await welcome.innerText();
   await page.getByRole('button', { name: 'Read welcome aloud' }).click();
-  expect(await page.evaluate(() => (window as typeof window & { spokenText?: string }).spokenText)).toContain('Mario challenge');
+  expect(await page.evaluate(() => (window as typeof window & { spokenText?: string }).spokenText)).toBe(displayedWelcome);
 });
 
 
