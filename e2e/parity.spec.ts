@@ -152,16 +152,16 @@ test('Category Finder has explicit feedback without arbitrary visible numbers', 
   expect(await page.locator('.right-answer .tile-verdict').count()).toBeGreaterThan(0);
 });
 
-test('Restart cancels a pending Mushbot memory turn and clears its board', async ({ page }) => {
+test('Restart cancels a pending Shroomer memory turn and clears its board', async ({ page }) => {
   await openGame(page, 'Match & Hunt');
-  await page.getByRole('button', { name: 'Play Mushbot', exact: true }).click();
+  await page.getByRole('button', { name: 'Play Shroomer', exact: true }).click();
   await page.getByLabel('Player name', { exact: true }).fill('Ada');
   await page.getByRole('button', { name: 'Start!', exact: true }).click();
   await page.getByRole('button', { name: "Start Ada's turn" }).click();
   const ids = [...new Set(await page.locator('.pair-card').evaluateAll(cards => cards.map(card => card.getAttribute('data-pair-id'))))];
   await page.locator(`.pair-card[data-pair-id="${ids[0]}"][data-kind="icon"]`).click();
   await page.locator(`.pair-card[data-pair-id="${ids[1]}"][data-kind="word"]`).click();
-  await page.getByRole('button', { name: /Show Mushbot/ }).click();
+  await page.getByRole('button', { name: /Show Shroomer/ }).click();
   await expect(page.locator('.pair-card-face')).toHaveCount(1);
   await page.getByRole('button', { name: 'Restart go' }).click();
   await expect(page.locator('.versus-now-playing')).toContainText("Ada's turn");
@@ -332,17 +332,17 @@ for (const [level, count] of [['Rookie', 4], ['Pro', 6], ['Legend', 9]] as const
   });
 }
 
-test('Mushbot takes individual championship turns including timed Game Order', async ({ page }) => {
+test('Shroomer takes individual championship turns including timed Game Order', async ({ page }) => {
   await openGame(page, 'Championship');
-  await page.getByRole('button', { name: 'Play Mushbot', exact: true }).click();
+  await page.getByRole('button', { name: 'Play Shroomer', exact: true }).click();
   await page.getByLabel('Player name', { exact: true }).fill('Ada');
   await page.getByRole('button', { name: 'Quick', exact: true }).click();
   for (const game of ['Track Finder', 'Clue Match Up', 'Match & Hunt', 'Clue Duel', 'Category Finder']) await page.locator('.champ-game-toggle').filter({ hasText: game }).click();
   await page.getByRole('button', { name: 'Start Championship', exact: true }).click();
   for (const game of ['quiz', 'order']) {
     for (let turn = 0; turn < 6; turn += 1) {
-      await page.getByRole('button', { name: turn % 2 ? "Start Mushbot's turn" : "Start Ada's turn" }).click();
-      if (turn % 2) await page.getByRole('button', { name: /Show Mushbot/ }).click();
+      await page.getByRole('button', { name: turn % 2 ? "Start Shroomer's turn" : "Start Ada's turn" }).click();
+      if (turn % 2) await page.getByRole('button', { name: /Show Shroomer/ }).click();
       else if (game === 'quiz') await answerQuiz(page);
       else await solveOrder(page);
       await page.getByRole('button', { name: turn === 5 ? 'See result' : 'Next turn' }).click();
@@ -376,24 +376,24 @@ test('Hunt and Time Trial options are remembered along with player format', asyn
   await expect(page.getByRole('group', { name: 'Matches to find' }).getByRole('button', { name: '8', exact: true })).toHaveAttribute('aria-pressed', 'true');
 });
 
-test('Mushbot shares relaxed Hunt and human controls are locked during its move', async ({ page }) => {
+test('Shroomer shares relaxed Hunt and human controls are locked during its move', async ({ page }) => {
   await openGame(page, 'Match & Hunt');
-  await page.getByRole('button', { name: 'Play Mushbot', exact: true }).click();
+  await page.getByRole('button', { name: 'Play Shroomer', exact: true }).click();
   await page.getByLabel('Player name', { exact: true }).fill('Ada');
   await page.getByRole('button', { name: 'Start!', exact: true }).click();
   await page.getByRole('button', { name: "Start Ada's turn" }).click();
   const ids = [...new Set(await page.locator('.pair-card').evaluateAll(cards => cards.map(card => card.getAttribute('data-pair-id'))))];
   await page.locator(`.pair-card[data-pair-id="${ids[0]}"][data-kind="icon"]`).click();
   await page.locator(`.pair-card[data-pair-id="${ids[1]}"][data-kind="word"]`).click();
-  await expect(page.locator('.versus-now-playing')).toContainText("Mushbot's turn");
+  await expect(page.locator('.versus-now-playing')).toContainText("Shroomer's turn");
   await expect(page.locator('.pair-card:enabled')).toHaveCount(0);
-  await page.getByRole('button', { name: /Show Mushbot/ }).click();
+  await page.getByRole('button', { name: /Show Shroomer/ }).click();
   // A bot must reveal cards rather than instantly locating an unseen pair.
   await expect(page.locator('.pair-card-face')).toHaveCount(1);
-  await expect(page.getByRole('button', { name: /Show Mushbot/ })).toBeDisabled();
+  await expect(page.getByRole('button', { name: /Show Shroomer/ })).toBeDisabled();
   await expect(page.locator('.pair-card-face')).toHaveCount(2);
   await expect.poll(async () => {
-    const button = page.getByRole('button', { name: /Show Mushbot/ });
+    const button = page.getByRole('button', { name: /Show Shroomer/ });
     return await button.count() === 0 || await button.isEnabled();
   }).toBe(true);
   // It may legitimately match or miss; do not encode a guaranteed bot success.

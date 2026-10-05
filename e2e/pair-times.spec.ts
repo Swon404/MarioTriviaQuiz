@@ -1,10 +1,12 @@
 import { expect, test } from '@playwright/test';
 
-test('Timed Hunt saves the human turn immediately, never the simulated Mushbot time', async ({ page }) => {
+test('Timed Hunt saves the human turn immediately while Shroomer plays visibly without entering human scores', async ({ page }) => {
+  await page.clock.install();
   await page.goto('./');
   await page.getByRole('button', { name: 'Play Games' }).click();
   await page.getByRole('button', { name: 'Match & Hunt' }).click();
-  await page.getByRole('button', { name: 'Play Mushbot', exact: true }).click();
+  await page.getByRole('button', { name: 'Play Shroomer', exact: true }).click();
+  await page.getByRole('button', { name: 'Legend', exact: false }).click();
   await page.getByLabel('Player name', { exact: true }).fill('Ada');
   await page.getByRole('group', { name: 'Hunt timer' }).getByRole('button', { name: 'On' }).click();
   await page.getByRole('group', { name: 'Hunt target mode' }).getByRole('button', { name: 'Choose' }).click();
@@ -32,9 +34,14 @@ test('Timed Hunt saves the human turn immediately, never the simulated Mushbot t
   await expect(replay.locator('.replay-matched')).toHaveCount(2);
   await expect(replay).toContainText('Replay finished');
   await page.getByRole('button', { name: 'Next turn' }).click();
-  await page.getByRole('button', { name: "Start Mushbot's turn" }).click();
-  await page.getByRole('button', { name: /Show Mushbot/ }).click();
-  await expect(page.getByText('Mushbot’s simulated time:', { exact: false })).toBeVisible();
+  await page.getByRole('button', { name: "Start Shroomer's turn" }).click();
+  await page.getByRole('button', { name: 'Start Timer', exact: true }).click();
+  await page.clock.runFor(500);
+  await expect(page.locator('.pair-card-face')).toHaveCount(1);
+  await expect(page.locator('.feedback')).toHaveCount(0);
+  for (let step = 0; step < 180 && await page.locator('.feedback').count() === 0; step++) await page.clock.runFor(2500);
+  await expect(page.getByText('Shroomer’s time:', { exact: false })).toBeVisible();
+  await expect(page.locator('.pair-card-found')).not.toHaveCount(0);
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem('mariotrivia_pair_times_v1') ?? '[]'))).toEqual(saved);
   page.once('dialog', dialog => dialog.accept());
   await page.getByRole('button', { name: '← Games', exact: true }).click();

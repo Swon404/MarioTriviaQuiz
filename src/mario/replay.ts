@@ -14,6 +14,6 @@ export function validReplay(value: unknown): value is BoardReplay {
       && Array.isArray(frame.tiles) && frame.tiles.length > 0 && frame.tiles.length <= 80
       && frame.tiles.every(tile => tile && typeof tile.id === 'string' && typeof tile.label === 'string'
         && (tile.detail === undefined || typeof tile.detail === 'string')
-        && (tile.image === undefined || /^match-icons\/[a-z0-9-]+\.svg$/.test(tile.image))
+        && (tile.image === undefined || /^match-icons\/[a-z0-9-]+\.(?:svg|png|jpe?g|webp)$/.test(tile.image))
         && ['hidden', 'shown', 'selected', 'matched', 'correct', 'wrong'].includes(tile.state)));
 }

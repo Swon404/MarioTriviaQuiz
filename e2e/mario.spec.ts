@@ -186,7 +186,7 @@ test('Match & Hunt relaxed mode keeps cards hidden and scores every pair on one 
   expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(false);
 });
 
-test('Match & Hunt renders its original icon art on a revealed card', async ({ page }) => {
+test('Match & Hunt renders web console artwork on a revealed card', async ({ page }) => {
   await page.goto('./');
   await page.getByRole('button', { name: 'Play Games' }).click();
   await page.getByRole('button', { name: 'Match & Hunt' }).click();
@@ -195,9 +195,10 @@ test('Match & Hunt renders its original icon art on a revealed card', async ({ p
   await page.getByRole('button', { name: 'Start!' }).click();
   const consoleCard = page.locator('.pair-card[data-pair-id="mario-Wii"][data-kind="icon"]');
   await consoleCard.click();
-  await expect(consoleCard).toHaveAttribute('aria-label', 'Icon: white home console and controller');
+  await expect(consoleCard).toHaveAttribute('aria-label', 'Icon: Wii — game artwork or photograph');
   const image = consoleCard.locator('img.pair-card-svg');
   await expect(image).toBeVisible();
+  await expect(image).toHaveAttribute('src', /web-wii\.png$/);
   expect(await image.evaluate((element: HTMLImageElement) => element.naturalWidth)).toBeGreaterThan(0);
   for (const name of ['rainbow-road', 'carnivorous-flower', 'ninja-hideaway', 'blue-squid']) {
     expect((await page.request.get(`./match-icons/${name}.svg`)).ok()).toBe(true);
@@ -526,26 +527,26 @@ test('two-player Quiz Battle alternates hidden turns and saves both scores', asy
   await expect(page.locator('.score-list')).toContainText('Ada vs Ben');
 });
 
-test('Mushbot Quiz Battle reveals a prechosen answer after its handover', async ({ page }) => {
+test('Shroomer Quiz Battle reveals a prechosen answer after its handover', async ({ page }) => {
   await page.setViewportSize({ width: 360, height: 740 });
   await page.goto('./');
   await page.getByRole('button', { name: 'Play Games' }).click();
   await page.getByRole('button', { name: 'Quiz Battle' }).click();
-  await page.getByRole('button', { name: 'Play Mushbot' }).click();
+  await page.getByRole('button', { name: 'Play Shroomer' }).click();
   await page.getByRole('button', { name: 'Start!' }).click();
   await page.locator('.versus-handover .start-btn').click();
   await answerQuizCorrectly(page);
   await page.getByRole('button', { name: 'Next turn' }).click();
-  await expect(page.getByRole('heading', { name: "Mushbot's turn" })).toBeVisible();
-  await expect(page.getByRole('img', { name: 'Mushbot', exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: "Shroomer's turn" })).toBeVisible();
+  await expect(page.getByRole('img', { name: 'Shroomer', exact: true })).toBeVisible();
   await page.locator('.versus-handover .start-btn').click();
-  await expect(page.getByRole('button', { name: "Reveal Mushbot's answer" })).toBeVisible();
-  await page.getByRole('button', { name: "Reveal Mushbot's answer" }).click();
+  await expect(page.getByRole('button', { name: "Reveal Shroomer's answer" })).toBeVisible();
+  await page.getByRole('button', { name: "Reveal Shroomer's answer" }).click();
   const selected = await page.locator('.answer-grid button.wrong, .answer-grid button.correct').count();
   expect(selected).toBeGreaterThan(0);
   await page.getByRole('button', { name: '↶ Rewind', exact: true }).click();
-  await expect(page.getByRole('button', { name: "Reveal Mushbot's answer" })).toBeVisible();
-  await page.getByRole('button', { name: "Reveal Mushbot's answer" }).click();
+  await expect(page.getByRole('button', { name: "Reveal Shroomer's answer" })).toBeVisible();
+  await page.getByRole('button', { name: "Reveal Shroomer's answer" }).click();
   await expect(page.getByText('Fun fact:')).toBeVisible();
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth > innerWidth);
   expect(overflow).toBe(false);
@@ -625,14 +626,14 @@ test('voice settings persist and EP rank progress appears on the home screen', a
 
 
 
-test('every standalone game offers two-player and Mushbot modes', async ({ page }) => {
+test('every standalone game offers two-player and Shroomer modes', async ({ page }) => {
   await page.goto('./');
   await page.getByRole('button', { name: 'Play Games' }).click();
   for (const game of ['Quiz Battle', 'Game Order', 'Track Finder', 'Clue Match Up', 'Match & Hunt', 'Clue Duel', 'Category Finder']) {
     await page.getByRole('button', { name: game, exact: false }).first().click();
     await expect(page.getByRole('button', { name: 'Two Players' })).toBeVisible();
-    await page.getByRole('button', { name: 'Play Mushbot' }).click();
-    await expect(page.getByRole('img', { name: 'Mushbot, a friendly mushroom-shaped robot' })).toBeVisible();
+    await page.getByRole('button', { name: 'Play Shroomer' }).click();
+    await expect(page.getByRole('img', { name: 'Shroomer, a friendly red mushroom with white spots and a face' })).toBeVisible();
     await page.getByRole('button', { name: '← Back to games' }).click();
   }
 });
@@ -641,10 +642,10 @@ test('every standalone game offers two-player and Mushbot modes', async ({ page 
 
 
 
-test('game hub selects the format first and loads the spotted Mushbot image', async ({ page }) => {
+test('game hub selects the format first and loads the spotted Shroomer image', async ({ page }) => {
   await page.goto('./');
   await page.getByRole('button', { name: 'Play Games' }).click();
-  const mushbotCard = page.locator('.play-format-card').filter({ hasText: 'Play Mushbot' });
+  const mushbotCard = page.locator('.play-format-card').filter({ hasText: 'Play Shroomer' });
   await expect(mushbotCard).toBeVisible();
   const image = mushbotCard.locator('img');
   await expect(image).toBeVisible();
@@ -652,8 +653,8 @@ test('game hub selects the format first and loads the spotted Mushbot image', as
   await mushbotCard.click();
   await expect(mushbotCard).toHaveAttribute('aria-pressed', 'true');
   await page.getByRole('button', { name: 'Game Order' }).click();
-  await expect(page.getByRole('button', { name: 'Play Mushbot' })).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByRole('button', { name: 'Play Shroomer' })).toHaveAttribute('aria-pressed', 'true');
   await page.getByRole('button', { name: '← Back to games' }).click();
   await page.getByRole('button', { name: 'Championship', exact: false }).click();
-  await expect(page.getByRole('heading', { name: 'Mushbot Championship' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Shroomer Championship' })).toBeVisible();
 });

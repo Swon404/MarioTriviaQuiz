@@ -11,7 +11,7 @@ export function rememberCard(memory: CardMemory, card: SeenCard, difficulty: Dif
 // Deliberately receives only positions and previously seen cards, never the
 // hidden board. Card IDs in the UI contain answers and must not be passed here.
 export function chooseMemoryCard(available: readonly number[], memory: CardMemory, random: () => number, first?: SeenCard): number {
-  if (!available.length) throw new Error('No available card for Mushbot');
+  if (!available.length) throw new Error('No available card for Shroomer');
   const known = memory.filter(item => available.includes(item.position));
   if (first) {
     const partner = known.find(item => item.pairId === first.pairId && item.kind !== first.kind);

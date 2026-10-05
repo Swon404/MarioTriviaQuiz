@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 160" role="img" aria-label="Shroomer, a friendly smiling red mushroom with white spots, bright eyes and rosy cheeks">
+  <defs>
+    <radialGradient id="cap" cx="35%" cy="20%" r="85%"><stop stop-color="#ff7872"/><stop offset=".55" stop-color="#f34251"/><stop offset="1" stop-color="#ce2941"/></radialGradient>
+    <radialGradient id="face" cx="42%" cy="25%" r="85%"><stop stop-color="#fff8e6"/><stop offset="1" stop-color="#ffdfa9"/></radialGradient>
+  </defs>
+  <ellipse cx="80" cy="148" rx="42" ry="6" fill="#342039" opacity=".16"/>
+  <!-- A soft, plump stem gives the face room to read even at avatar size. -->
+  <path d="M43 76Q32 109 43 131Q51 147 80 147T117 131Q128 109 117 76Z" fill="url(#face)" stroke="#814b48" stroke-width="3"/>
+  <path d="M13 80C4 51 32 10 76 9C121 6 154 44 147 77Q145 89 126 89Q80 77 35 90Q16 93 13 80Z" fill="url(#cap)" stroke="#a43a49" stroke-width="3"/>
+  <ellipse cx="79" cy="39" rx="21" ry="22" fill="#fffaf3" transform="rotate(-8 79 39)"/>
+  <ellipse cx="29" cy="65" rx="11" ry="17" fill="#fffaf3" transform="rotate(24 29 65)"/>
+  <ellipse cx="130" cy="60" rx="11" ry="17" fill="#fffaf3" transform="rotate(-25 130 60)"/>
+  <path d="M39 31Q46 23 54 21" fill="none" stroke="#ffc9bb" stroke-width="5" stroke-linecap="round" opacity=".8"/>
+  <!-- Large sparkling eyes, a little button nose, and an open happy smile. -->
+  <ellipse cx="61" cy="106" rx="9" ry="12" fill="#452b3f"/>
+  <ellipse cx="99" cy="106" rx="9" ry="12" fill="#452b3f"/>
+  <ellipse cx="58" cy="101" rx="3.5" ry="4" fill="white"/>
+  <ellipse cx="96" cy="101" rx="3.5" ry="4" fill="white"/>
+  <circle cx="64" cy="111" r="1.8" fill="#fbd9b7"/><circle cx="102" cy="111" r="1.8" fill="#fbd9b7"/>
+  <ellipse cx="47" cy="120" rx="10" ry="6" fill="#f49b98" opacity=".8"/>
+  <ellipse cx="113" cy="120" rx="10" ry="6" fill="#f49b98" opacity=".8"/>
+  <ellipse cx="80" cy="116" rx="4" ry="3" fill="#e9ae83"/>
+  <path d="M66 124Q80 131 94 124Q92 139 80 139T66 124Z" fill="#713c4c"/>
+  <path d="M72 135Q80 129 88 135Q80 143 72 135" fill="#fa909a"/>
+</svg>

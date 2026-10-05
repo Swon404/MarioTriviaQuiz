@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-for (const format of ['Solo', 'Two Players', 'Play Mushbot']) {
+for (const format of ['Solo', 'Two Players', 'Play Shroomer']) {
   test(`${format} accidental exit can be cancelled without losing the question`, async ({ page }) => {
     await page.goto('./');
     await page.getByRole('button', { name: 'Play Games' }).click();

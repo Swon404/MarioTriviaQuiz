@@ -74,6 +74,11 @@ body:has(.mario-app) {
 .mushbot-intro img { width: 68px; height: 68px; object-fit: contain; }
 .mushbot-result { display: block; width: 96px; height: 96px; object-fit: contain; margin: 0 auto 8px; }
 .mushbot-hub-avatar { display: block; width: 52px; height: 52px; object-fit: contain; }
+.shroomer-home { display: flex; flex-direction: column; align-items: center; margin: 8px auto 20px; }
+.shroomer-home-portrait { display: block; width: 144px; height: 144px; object-fit: contain; filter: drop-shadow(0 5px 12px rgba(255, 207, 114, .2)); }
+.shroomer-home-speech { position: relative; max-width: 340px; margin: 8px 0; padding: 14px 18px; border: 2px solid #e9bb76; border-radius: 18px; background: #65404f; color: #fff9e9; font-size: 16px; line-height: 1.5; text-align: center; }
+.shroomer-home-speech::before { content: ''; position: absolute; top: -9px; left: calc(50% - 7px); width: 12px; height: 12px; border-top: 2px solid #e9bb76; border-left: 2px solid #e9bb76; background: #65404f; transform: rotate(45deg); }
+@media (max-width: 480px) { .shroomer-home-portrait { width: 116px; height: 116px; } .shroomer-home-speech { max-width: 100%; padding: 12px 14px; } }
 .mario-game { display: flex; flex-direction: column; gap: 14px; }
 .game-topbar, .quiz-topline { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
 .quiz-topline { color: var(--text-secondary); font-size: .85rem; }

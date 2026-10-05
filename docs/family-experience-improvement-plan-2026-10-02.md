@@ -12,11 +12,22 @@ This is a quick overview of the detailed checklist below, not a separate backlog
 - [ ] Finish linking overlapping knowledge across Clue Duel and Finder modes, building on the implemented quiz/matching history protection.
 - [ ] Broaden Track Finder with landmark/gameplay questions, level-appropriate knowledge and tracks beyond the current 48-course selection.
 - [ ] Improve Clue Duel openings and plausible choices; review Clue Match Up for ambiguity and harder same-type alternatives.
-- [ ] Tidy Match & Hunt target/turn information and implement visible Mushbot play during private timed turns, replacing the currently labelled simulation.
+- [ ] Continue tidying Match & Hunt target/turn information. Visible private timed matching is implemented for Shroomer; further family readability feedback remains.
 - [ ] Test more championship combinations and interrupted bot turns, including restart, rewind, Next and storage failures.
 - [ ] Test on physical iPhone and Android devices: voice, larger text, backgrounding and returning to play. Gather both players' fairness/readability feedback; these require devices and family input.
 
 Already implemented and tested: remembered settings, same-device reload recovery, lifetime progress, timed leaderboards, replays and substantial repetition protection. Broader validation remains as listed below. These changes are not necessarily committed or deployed.
+
+## Shroomer and matching update — 4 October 2026
+
+- [x] Remove all nine track scenery cards from new Match & Hunt boards, replacing them with nine distinctive character/racer images. Keep the 40-pair catalogue and existing board sizes; keep Track Finder and quiz questions unchanged. Retain old images for historical replays and let invalid saved Hunt target choices fall back to a valid current target.
+- [x] Follow-up: replace the rejected hand-drawn matching icons with 38 web-sourced images, including real console photos, character/item art, course screenshots and cup emblems. Keep source-file links in `matching-artwork-sources.md` and retain old SVGs for existing replays. Grand Prix/Time Trials still use trophy/stopwatch symbols; Shroomer's portrait is unchanged.
+- [x] Rename the live computer UI to Shroomer and replace the robot portrait with a smiling red mushroom, white spots and a face.
+- [x] Add recognisable locally drawn character/power-up SVGs to Match & Hunt, replacing the misleading generic images. This user-requested icon refresh supersedes the earlier generic-art-only decision; it is not a rights-clearance claim.
+- [x] Make shared-board versus separate-timed-turn selection explicit. Preserve three private rounds per player, full-board Time Trial via All, Hunt targets/unlock rules and distinct boards.
+- [x] Show actual private matching moves using observed-card memory, with real elapsed time rather than a generated result. Exclude computer times from human records.
+- [x] Verify timed Hunt completion, Time Trial flips, restart cancellation, reload continuation and no stale moves after Next. Game Order's simulated computer turn is unchanged; this implementation concerns Match & Hunt.
+- [x] Content/rules audit passed. Full browser run: 99/100 passed, with one obsolete robot-description assertion; after updating it, all 29 affected game/character tests passed. The earlier focused matching/parity/recovery run passed 38 tests. Inspected Shroomer's hub portrait and the rendered icon contact sheet. Production build and whitespace checks passed.
 
 ## Keep these decisions
 
@@ -148,7 +159,7 @@ The earlier 540-item ambition remains a long-term content goal, **not a quota or
 | Game Order | Expanded from 11 to 22 titles using Nintendo's US history timeline. Multiplayer and championship puzzles now pair distinct titles from the same chronological neighbourhoods, with equal minimum swaps and starting correct-position counts. Familiarity with a particular title remains personal; family fairness testing is still required. |
 | Track Finder | Initial console/setting/hazard batch, shuffled balanced boards and history protection are done. Add deeper landmark/gameplay tasks and level-appropriate knowledge selection. Expand beyond the 48-course Booster subset, title by title. |
 | Clue Match Up | Playtest the new clues for ambiguity and trivial elimination. Improve same-type distractors at higher levels without using reading length as difficulty. |
-| Match & Hunt | Human recognisability review of generic icons; reduce header clutter; keep target/turn clear. Build visible private timed-bot play. |
+| Match & Hunt | Family recognisability review of the new character/item icons; reduce remaining header clutter and keep target/turn clear. Shroomer's private timed play is now visible, using actual flips and elapsed time. |
 | Clue Duel | Now 24 subjects, related-choice selection, rejected-guess tracking and subject history. Continue replacing repetitive openings; review which choices remain plausible after each clue. |
 | Category Finder | Expanded to 46 entities and nine groups. Pro/Legend add original-platform and pre-2000 questions; shared membership checks accept every valid group in human scoring, bot choices and feedback. Rookie retains basic recognition. Phone text increased from roughly 11px to 14px for Legend and 16px for other boards, preserving 3×3/4×4/5×5 windows. Long names still wrap on a 360px phone; family/large-text review remains. |
 

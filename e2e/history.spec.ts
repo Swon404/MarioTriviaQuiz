@@ -101,10 +101,10 @@ async function currentKnowledge(page: Page) {
   return QUESTIONS.find(item => item.prompt === prompt)!.knowledgeId;
 }
 
-test('Mushbot finder history waits until its hidden answer is revealed', async ({ page }) => {
+test('Shroomer finder history waits until its hidden answer is revealed', async ({ page }) => {
   await page.goto('./');
   await open(page, 'Category Finder');
-  await page.getByRole('button', { name: 'Play Mushbot', exact: true }).click();
+  await page.getByRole('button', { name: 'Play Shroomer', exact: true }).click();
   await page.getByLabel('Player name', { exact: true }).fill('Ada');
   await page.getByRole('button', { name: 'Start!', exact: true }).click();
   await page.getByRole('button', { name: "Start Ada's turn" }).click();
@@ -114,15 +114,15 @@ test('Mushbot finder history waits until its hidden answer is revealed', async (
   await page.locator('.category-grid').getByText(answer.name, { exact: true }).click();
   const seen = await history(page);
   await page.getByRole('button', { name: 'Next turn' }).click();
-  await page.getByRole('button', { name: "Start Mushbot's turn" }).click();
+  await page.getByRole('button', { name: "Start Shroomer's turn" }).click();
   await expect(page.locator('.category-grid')).toHaveCount(0);
   expect(await history(page)).toEqual(seen);
-  await page.getByRole('button', { name: /Show Mushbot/ }).click();
+  await page.getByRole('button', { name: /Show Shroomer/ }).click();
   await expect.poll(async () => (await history(page)).ada.length).toBe(2);
   expect((await history(page)).mushbot).toBeUndefined();
 });
 
-for (const format of ['Solo', 'Two Players', 'Play Mushbot']) {
+for (const format of ['Solo', 'Two Players', 'Play Shroomer']) {
   test(`Memory ${format} records revealed pairs only and avoids them on a fresh board`, async ({ page }) => {
     await page.goto('./');
     await open(page, 'Match & Hunt');

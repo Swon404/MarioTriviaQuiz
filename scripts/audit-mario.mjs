@@ -237,12 +237,19 @@ assert.equal(new Set(MARIO_TIMELINE.map(game => game.id)).size, MARIO_TIMELINE.l
 assert.equal(ICON_PAIRS.length, 40);
 assert.equal(new Set(ICON_PAIRS.map(pair => pair.id)).size, ICON_PAIRS.length);
 assert.ok(ICON_PAIRS.every(pair => pair.icon && pair.name === pair.question.answer));
-assert.ok(ICON_PAIRS.every(pair => ['emoji', 'svg', 'text'].includes(pair.iconKind)));
-for (const pair of ICON_PAIRS.filter(item => item.iconKind === 'svg')) {
+assert.ok(ICON_PAIRS.every(pair => ['emoji', 'svg', 'image', 'text'].includes(pair.iconKind)));
+for (const pair of ICON_PAIRS.filter(item => item.iconKind === 'svg' || item.iconKind === 'image')) {
   assert.ok(existsSync(new URL(`../public/${pair.icon}`, import.meta.url)), `${pair.name}: missing icon`);
   assert.ok(pair.iconAlt.length > 8, `${pair.name}: missing accessible description`);
 }
-assert.equal(ICON_PAIRS.find(pair => pair.name === 'Daisy').iconKind, 'svg');
+assert.equal(ICON_PAIRS.filter(pair => pair.iconKind === 'image').length, 38);
+for (const name of ['Coconut Mall', 'Choco Mountain', 'Rainbow Road', 'Merry Mountain', 'Sky-High Sundae', 'Ninja Hideaway', 'Boo Cinema', 'Starview Peak', 'Crown City']) {
+  assert.ok(!ICON_PAIRS.some(pair => pair.name === name), `${name}: track scenery must not return to matching`);
+}
+for (const name of ['Luigi', 'Wario', 'Waluigi', 'Bowser Jr.', 'Dry Bones', 'Cow', 'Birdo', 'Funky Kong', 'Kamek']) {
+  assert.equal(ICON_PAIRS.find(pair => pair.name === name)?.iconKind, 'image', `${name}: missing replacement artwork`);
+}
+assert.equal(ICON_PAIRS.find(pair => pair.name === 'Daisy').iconKind, 'image');
 for (const section of ['mario', 'kart', 'mixed']) {
   for (const difficulty of ['explorer', 'scientist', 'professor']) {
     for (const pairCount of [12, 16, 20]) {
