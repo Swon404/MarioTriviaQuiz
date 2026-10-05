@@ -126,7 +126,7 @@ test('Explore opens searchable source-checked Learning Zone cards', async ({ pag
   expect(await page.locator('.title-word').first().locator('.title-letter').evaluateAll(letters => letters.slice(0, 4).map(letter => getComputedStyle(letter).color))).toEqual([
     'rgb(255, 106, 99)', 'rgb(255, 230, 109)', 'rgb(99, 190, 255)', 'rgb(121, 231, 138)',
   ]);
-  await expect(page.getByText('Unofficial Mario trivia and matching games with original icons, emoji and words.')).toBeVisible();
+  await expect(page.getByText('Unofficial Mario trivia and matching games.')).toBeVisible();
   expect(await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--bg-primary').trim())).toBe('#49334f');
   await page.getByRole('button', { name: 'Explore Learning Zone' }).click();
   await expect(page.getByRole('heading', { name: 'Learning Zone' })).toBeVisible();
