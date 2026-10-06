@@ -161,12 +161,17 @@ test('Restart cancels a pending Shroomer memory turn and clears its board', asyn
   const ids = [...new Set(await page.locator('.pair-card').evaluateAll(cards => cards.map(card => card.getAttribute('data-pair-id'))))];
   await page.locator(`.pair-card[data-pair-id="${ids[0]}"][data-kind="icon"]`).click();
   await page.locator(`.pair-card[data-pair-id="${ids[1]}"][data-kind="word"]`).click();
+  await expect(page.getByRole('button', { name: /Show Shroomer/ })).toBeVisible();
+  // Hold the first flip steady: real-time polling can miss its 650 ms window
+  // on a busy runner, without indicating a gameplay failure.
+  await page.clock.install({ time: new Date('2026-10-06T12:00:00Z') });
+  await page.clock.pauseAt(new Date('2026-10-06T12:00:01Z'));
   await page.getByRole('button', { name: /Show Shroomer/ }).click();
   await expect(page.locator('.pair-card-face')).toHaveCount(1);
   await page.getByRole('button', { name: 'Restart go' }).click();
   await expect(page.locator('.versus-now-playing')).toContainText("Ada's turn");
   await expect(page.locator('.pair-card-back')).toHaveCount(24);
-  await page.waitForTimeout(1600); // Both scheduled flip callbacks must stay cancelled.
+  await page.clock.runFor(3000); // Both scheduled flip callbacks must stay cancelled.
   await expect(page.locator('.pair-card-back')).toHaveCount(24);
   await expect(page.locator('.match-progress')).toContainText('0 moves');
 });

@@ -449,6 +449,15 @@ for (const topic of ['mario', 'kart']) {
     }
   }
 }
+const characterOpenings = CLUE_SUBJECTS.filter(subject => subject.topic === 'mario').map(subject => subject.clues[0]);
+const trackSubjects = CLUE_SUBJECTS.filter(subject => subject.topic === 'kart');
+assert.equal(new Set(trackSubjects.map(subject => subject.clues[0])).size, trackSubjects.length, 'Track opening clues must not repeat');
+assert.ok(trackSubjects.every(subject => !/extra.course|cup of extra/i.test(subject.clues[0])), 'Track openers need more than membership of the course pass');
+for (const subject of trackSubjects) {
+  assert.ok(!subject.clues.includes(subject.funFact), `${subject.id}: the fun fact must not repeat a clue verbatim`);
+}
+assert.equal(new Set(characterOpenings).size, characterOpenings.length, 'Character opening clues must not repeat');
+assert.ok(characterOpenings.every(clue => !/\b(adventures|races|games)\b/i.test(clue)), 'Character openers should describe a trait, not just participation in games');
 for (const subject of CLUE_SUBJECTS) {
   assert.equal(subject.clues.length, 5, `${subject.id}: five clues required`);
   assert.equal(new Set(subject.clues).size, 5, `${subject.id}: clues should add new information`);

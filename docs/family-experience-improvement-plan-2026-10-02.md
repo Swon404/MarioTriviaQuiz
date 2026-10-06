@@ -8,7 +8,7 @@ This is a quick overview of the detailed checklist below, not a separate backlog
 
 - [ ] Review the remaining **94 of 138 original questions** for accuracy, wording giveaways, plausible choices and useful explanations. Forty-four are reviewed.
 - [ ] Expand the genuinely new, reviewed question batch from **28 to roughly 60**, covering a wider range of subjects without filler.
-- [ ] Add relevant fun-fact pools and repetition protection for the extra facts shown with answers.
+- [ ] Expand relevant fun-fact pools: six Quiz Battle questions now have a reviewed pilot, with within-quiz selection protection. Cross-game fact history and the rest of the bank remain outstanding.
 - [ ] Finish linking overlapping knowledge across Clue Duel and Finder modes, building on the implemented quiz/matching history protection.
 - [ ] Broaden Track Finder with landmark/gameplay questions, level-appropriate knowledge and tracks beyond the current 48-course selection.
 - [ ] Improve Clue Duel openings and plausible choices; review Clue Match Up for ambiguity and harder same-type alternatives.
@@ -144,7 +144,7 @@ Sources reviewed on 4 October: [Nintendo character profiles](https://www.nintend
 - [ ] Review all 138 original quiz records: prompts, four choices, explanations, facts and supporting evidence. Forty-four records reviewed in the [original question audit](original-question-audit-2026-10-04.md); 94 remain. Reviewed records automatically enter the Learning Zone, now 72 cards including the pilot.
 - [ ] Remove wording giveaways and implausible distractors; use plausible answers of the same type and specify game/version where needed.
 - [ ] Finish linking reworded facts. Extend history-aware selection to matching, clues and finder tasks without starving their pools.
-- [ ] Add relevant, non-repeating fun-fact pools. Explain why/how rather than echoing the answer; retain useful detail instead of imposing a rigid sentence count.
+- [ ] Expand relevant, non-repeating fun-fact pools beyond the six-question character pilot. Explain why/how rather than echoing the answer; retain useful detail instead of imposing a rigid sentence count. Cross-game fact history remains outstanding.
 - [ ] Complete the initial reviewed batch of roughly 60 genuinely new knowledge items across enemies, power-ups, locations, mechanics, consoles and track features. First 28 quiz records added; family playtesting remains pending.
 - [ ] Research from official manuals, game pages and patch notes where appropriate. Store sources, game/version and review status; independently verify obscure or changing claims.
 - [x] All four existing glitch questions name their fixed version and have source-review metadata. They remain outside Rookie. Apply this rule to future additions too.
@@ -160,7 +160,7 @@ The earlier 540-item ambition remains a long-term content goal, **not a quota or
 | Track Finder | Initial console/setting/hazard batch, shuffled balanced boards and history protection are done. Add deeper landmark/gameplay tasks and level-appropriate knowledge selection. Expand beyond the 48-course Booster subset, title by title. |
 | Clue Match Up | Playtest the new clues for ambiguity and trivial elimination. Improve same-type distractors at higher levels without using reading length as difficulty. |
 | Match & Hunt | Family recognisability review of the new character/item icons; reduce remaining header clutter and keep target/turn clear. Shroomer's private timed play is now visible, using actual flips and elapsed time. |
-| Clue Duel | Now 24 subjects, related-choice selection, rejected-guess tracking and subject history. Continue replacing repetitive openings; review which choices remain plausible after each clue. |
+| Clue Duel | Now 24 subjects, related-choice selection, rejected-guess tracking and subject history. Eight character sets and eight track sets have revised openings; every subject now has a distinct first clue. Track clues use more route/scenery details, with stronger hints later. A clue-by-clue distractor plausibility review and family difficulty testing remain unfinished. |
 | Category Finder | Expanded to 46 entities and nine groups. Pro/Legend add original-platform and pre-2000 questions; shared membership checks accept every valid group in human scoring, bot choices and feedback. Rookie retains basic recognition. Phone text increased from roughly 11px to 14px for Legend and 16px for other boards, preserving 3×3/4×4/5×5 windows. Long names still wrap on a 360px phone; family/large-text review remains. |
 
 ### 3. Protect progress and improve replay value
@@ -210,3 +210,47 @@ The earlier 540-item ambition remains a long-term content goal, **not a quota or
 - [ ] Ask both players what felt unfair/confusing and whether they want another round. Record knowledge difficulty separately from reading time.
 
 Next content batch: review the weakest existing questions and broaden Track Finder/Clue Duel. Do not restart work already checked off above.
+
+### 5 October continuation: character clue openings
+
+- [x] Rewrite the eight generic character openings, keeping five clues, existing scoring and related-choice selection. Delay Yoshi's distinctive colour clue until clue three. Avoid early answer-name hints.
+- [x] Check revised character details against [Nintendo's character guide](https://www.nintendo.com/en-ca/explore/characters/mario/friends/); replace the failing older character-source link with this working official page.
+- [x] Add audit checks for unique character openings and reject generic adventures/races/games participation openers. These structural checks do not prove difficulty or distractor plausibility.
+- [x] Final `npm run test:all` passed: 166-question content/rules audit, all 101 browser tests and production/PWA build. `git diff --check` passed. Browserslist reported outdated compatibility data (non-blocking).
+- [x] Rewrite repetitive track openings (6 October batch below).
+- [ ] Review candidate plausibility after each clue and playtest with the family. These editorial batches do not claim the whole Clue Duel audit is finished.
+
+### 6 October continuation: track clue variety
+
+- [x] Revise eight track sets: Coconut Mall, Rome Avanti, Daisy Cruiser, Ninja Hideaway, Sky-High Sundae, Piranha Plant Cove, Peach Gardens and Rock Rock Mountain. Preserve five clues, answer IDs, subject history, choice counts and scoring.
+- [x] Replace vague extra-course openings with route, setting or original-platform clues. Keep obvious answer-name descriptions for clue five. All 12 track opening strings are distinct; this is not a claim that every early clue has equal difficulty.
+- [x] Improve feedback for Coconut Mall, Daisy Cruiser, Sky-High Sundae and Piranha Plant Cove. Replace the duplicate Ninja Hideaway and Sundae fun facts with related information not repeated in their clues.
+- [x] Check additions against Nintendo's [Wii shortcut guide](https://www.nintendo.com/en-za/Support/Legacy-system/Shave-seconds-off-your-time-in-Mario-Kart-Wii-613215.html), [Ninja Tour](https://www.nintendo.com/us/whatsnew/race-under-the-cover-of-darkness-in-new-course-ninja-hideaway/), [Ocean Tour](https://www.nintendo.com/us/whatsnew/mobilenews-enjoy-maritime-mayhem-aboard-gcn-daisy-cruiser-in-the-ocean-tour/), [Exploration Tour](https://www.nintendo.com/us/whatsnew/mobilenews-discover-the-all-new-course-piranha-plant-cove-with-the-exploration-tour/), Wave 2/Wave 3 announcements and the official course listing. Historical Tour events are described in the past tense, not as currently available events.
+- [x] Add track opening uniqueness, non-generic opening and exact fun-fact/clue duplication assertions. Semantic overlap still needs editorial review; these checks are not a substitute.
+- [ ] Complete candidate plausibility review, particularly narrow course-origin clues with a small answer pool. No new subjects were added in this batch; quiz-bank review and expansion counts are unchanged.
+- [x] Content/rules audit and separate production/PWA build passed on 6 October. Whitespace check passed.
+- [x] Investigate initial release-check failures and obtain a clean full run (see timeout investigation below). Historical runs: 91 passes/ten timeouts with six workers, then 99 passes/two timeouts with two workers. Neither was counted as a full pass. No commit or push made.
+
+### 6 October continuation: timeout investigation
+
+- [x] Repeat both outstanding cases three times with one worker. Memory history passed all three; the championship passed once and exceeded the overall 30-second budget twice. One failure snapshot had already reached CHAMPIONSHIP COMPLETE.
+- [x] Inspect the saved trace: the championship advanced through matching boards, with many successful actions taking roughly 1–2 seconds. No consistently blocked selector was identified. This supports an insufficient whole-workflow budget on this machine, not a proven game-logic fix.
+- [x] Separate time budgets: 60 seconds per end-to-end test, 10 seconds per action, 30 seconds per navigation, unchanged five-second assertions and two workers. No retries, removed assertions or forced clicks were added. Game timers and scoring are unchanged.
+- [x] First full run with the new workflow budget: 100 passed, including both matching regressions; one initial-page navigation exceeded the initially selected 15-second cap. Corrected that navigation budget to 30 seconds. This intermediate run was not a full pass.
+- [x] Final `npm run test:all` passed on 6 October: 166-question content/rules audit, all 101 browser tests (4.3 minutes), and production/PWA build (88 precached assets). No test retries. Whitespace check passed. Browserslist's outdated compatibility-data warning remains non-blocking. This verifies the current local changes; GitHub has not run these unpushed changes.
+
+### 6 October continuation: fun-fact pool pilot
+
+- [x] Add question-specific pools for six Rookie character questions (two Luigi questions, Peach, Bowser, Wario and Toad): 13 pool entries, 11 distinct fact texts. Checked against [Nintendo's character guide](https://www.nintendo.com/en-ca/explore/characters/mario/friends/); question source links cover the alternatives.
+- [x] Select exactly one fact when generating the quiz, prefer facts not already selected in that quiz, and preserve the chosen text in the existing round/checkpoint. This applies to solo, versus and championship Quiz Battle through their shared generator. Rewind/reload does not reroll facts. Unreviewed questions keep their existing fact.
+- [x] Add selection, deterministic RNG, non-mutation, pool exhaustion, source association and browser rewind/reload regression tests. Repeats are allowed only when no unused candidate exists for the current question; this is not global semantic duplicate detection.
+- [ ] Expand to other questions/modes, add per-player cross-game fact history, and review semantic overlap with other questions. This pilot adds feedback variety, not new tested knowledge: the quiz bank stays at 166 and the new-question pilot at 28.
+- [ ] Full release verification for this pilot is NOT complete. Focused fact tests passed; the complete run had 102 passes and a Resume click timeout in an existing Hunt recovery test. That recovery test passed three isolated repeats unchanged. A second full attempt stalled on several unrelated clicks (including the new fact rewind check) and was stopped. No limits or assertions were relaxed, and no commit/push was made. Local execution stalls remain suspected, not proven; a clean full run is still required before publishing this pilot.
+- [x] Separate production/PWA build and content audit passed; final whitespace check passed. Build reported non-blocking plugin timing and outdated Browserslist-data warnings.
+
+### 6 October release preparation
+
+- [x] Isolate the test server's Vite dependency cache from the interactive dev server and disable test hot reload after observing an unexpected navigation during a history assertion. This prevents that source of interference, without claiming it explains every timeout.
+- [x] Replace real-time polling of Shroomer's 650 ms first-card window with a paused test clock. Assert one revealed card, restart, then advance three seconds and verify callbacks remain cancelled. Three isolated repeats passed; gameplay timing is unchanged.
+- [x] Run the complete final-code local gate: content audit passed; browser result was 101 passed and two 60-second whole-test timeouts in long matching workflows (10.8 minutes total). No full local pass claimed. No additional limits were relaxed.
+- [ ] Confirm the pushed revision's GitHub `test:all` and deployment jobs. Publication is gated by `deploy.needs: test`; a successful push alone is not verification. This release attempt uses the clean CI runner to verify the complete change after the slow local run.

@@ -10,11 +10,15 @@ export type ClueSubject = {
   sourceUrl: string;
 };
 
-const characters = 'https://mario.nintendo.com/characters/';
+const characters = 'https://www.nintendo.com/en-ca/explore/characters/mario/friends/';
 const courses = 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/57858/';
 const friends = 'https://www.nintendo.com/en-ca/explore/characters/mario/friends/';
 const wave3 = 'https://www.nintendo.com/us/whatsnew/mario-kart-8-deluxe-booster-course-pass-wave-3-brings-merry-mountain-mayhem-with-eight-additional-courses-on-dec-7/';
 const wave2 = 'https://www.nintendo.com/us/whatsnew/mario-kart-8-deluxe-booster-course-pass-wave-2-approaches-the-starting-line-on-aug-4/';
+const coconutTips = 'https://www.nintendo.com/en-za/Support/Legacy-system/Shave-seconds-off-your-time-in-Mario-Kart-Wii-613215.html';
+const ninjaTour = 'https://www.nintendo.com/us/whatsnew/race-under-the-cover-of-darkness-in-new-course-ninja-hideaway/';
+const oceanTour = 'https://www.nintendo.com/us/whatsnew/mobilenews-enjoy-maritime-mayhem-aboard-gcn-daisy-cruiser-in-the-ocean-tour/';
+const explorationTour = 'https://www.nintendo.com/us/whatsnew/mobilenews-discover-the-all-new-course-piranha-plant-cove-with-the-exploration-tour/';
 
 // Editorial similarity groups, not extra facts shown to players. Prefer related
 // alternatives so a broad opening clue does not leave one obvious candidate.
@@ -41,58 +45,58 @@ export function clueSimilarity(subjectId: string, candidateId: string): number {
 export const CLUE_SUBJECTS: readonly ClueSubject[] = [
   {
     id: 'char-mario', topic: 'mario', answer: 'Mario',
-    clues: ['I have starred in adventures and joined races.', 'I often help friends in a kingdom.', 'I wear overalls and a cap.', 'My cap is red and my overalls are blue.', 'My brother is Luigi.'],
+    clues: ['Helping friends keeps me busy.', 'Jumping is one of my strengths.', 'I wear overalls and a cap.', 'My cap is red and my overalls are blue.', 'My brother is Luigi.'],
     explanation: 'Mario is the Mushroom Kingdom hero and Luigi\'s brother. His jumping skills help him through many adventures.',
     funFact: 'Nintendo says Mario is a plumber, but also a jack of all trades.', sourceUrl: characters,
   },
   {
     id: 'char-luigi', topic: 'mario', answer: 'Luigi',
-    clues: ['I have joined adventures and races.', 'I often help a family member.', 'Ghosts can make me nervous.', 'I dress in green and can jump high.', 'My brother is Mario.'],
+    clues: ['I can be cautious, but I still help others.', 'I share adventures with someone in my family.', 'Ghosts can make me nervous.', 'I dress in green and can jump high.', 'My brother is Mario.'],
     explanation: 'Luigi is Mario\'s brother. He is taller, wears green and can jump higher than Mario.',
     funFact: 'Nintendo points out that Luigi\'s moustache has a different shape from Mario\'s.', sourceUrl: characters,
   },
   {
     id: 'char-peach', topic: 'mario', answer: 'Princess Peach',
-    clues: ['I join adventures and sports.', 'I look after a kingdom.', 'I also enjoy baking.', 'I often wear pink.', 'I am the princess of the Mushroom Kingdom.'],
+    clues: ['I like both sport and cooking.', 'I want people to live happily together.', 'I look after a kingdom.', 'I often wear pink.', 'I am the princess of the Mushroom Kingdom.'],
     explanation: 'Princess Peach looks after the Mushroom Kingdom. She also joins Mario in adventures and sports.',
     funFact: 'Peach and Mario are good friends who help each other.', sourceUrl: characters,
   },
   {
     id: 'char-yoshi', topic: 'mario', answer: 'Yoshi',
-    clues: ['I join adventures and races.', 'Members of my kind come in several colours.', 'I come from an island named after my kind.', 'I use my long tongue to turn food and enemies into eggs.', 'I am the egg-making friend whose name begins with Y.'],
+    clues: ['A friend can depend on me for help.', 'Fruit is on my menu.', 'Members of my kind come in several colours.', 'I use my long tongue to turn food and enemies into eggs.', 'I am the egg-making friend whose name begins with Y.'],
     explanation: 'Yoshi uses his tongue to grab fruit and enemies, then can make eggs to throw.',
     funFact: 'Nintendo lists red, blue, pink and yellow Yoshis as well as green ones.', sourceUrl: characters,
   },
   {
     id: 'char-bowser', topic: 'mario', answer: 'Bowser',
-    clues: ['I join adventures and races.', 'A family member sometimes joins the action too.', 'Many familiar enemies work for me.', 'I am strong and can breathe fire.', 'I am King of the Koopas.'],
+    clues: ['My plans do not always work out.', 'Strength helps me challenge my rivals.', 'Many familiar enemies work for me.', 'I am strong and can breathe fire.', 'I am King of the Koopas.'],
     explanation: 'Bowser leads the Koopas and repeatedly challenges Mario in the Mushroom Kingdom.',
     funFact: 'Bowser Jr. is Bowser\'s only son, according to Nintendo\'s character guide.', sourceUrl: characters,
   },
   {
     id: 'char-daisy', topic: 'mario', answer: 'Daisy',
-    clues: ['I join sports and races.', 'People describe me as energetic.', 'I often wear yellow.', 'Flowers decorate my outfit.', 'I am the princess of Sarasaland.'],
+    clues: ['I bring plenty of energy to a competition.', 'Sport is something I enjoy with friends.', 'I often wear yellow.', 'Flowers decorate my outfit.', 'I am the princess of Sarasaland.'],
     explanation: 'Daisy is the princess of Sarasaland. She brings lots of energy to Mario\'s sports games.',
     funFact: 'Sarasaland is not the same kingdom as Peach\'s Mushroom Kingdom.', sourceUrl: characters,
   },
   {
     id: 'char-wario', topic: 'mario', answer: 'Wario',
-    clues: ['I turn up in races and other games.', 'I have known another racer since we were young.', 'I like garlic almost as much as money.', 'I wear purple overalls and a yellow hat.', 'I call myself Mario\'s rival and have a zigzag moustache.'],
+    clues: ['Small problems do not worry me much.', 'I have known another racer since we were young.', 'I like garlic almost as much as money.', 'I wear purple overalls and a yellow hat.', 'I call myself Mario\'s rival and have a zigzag moustache.'],
     explanation: 'Wario styles himself as Mario\'s rival. His yellow hat and purple overalls stand out.',
     funFact: 'Nintendo says Wario and Mario have known each other since they were babies.', sourceUrl: characters,
   },
   {
     id: 'char-rosalina', topic: 'mario', answer: 'Rosalina',
-    clues: ['I join adventures and races.', 'I care for a family.', 'My home is far from the usual kingdom.', 'I travel through space with small star-like creatures.', 'Those creatures are the Lumas, and I am their adoptive mother.'],
+    clues: ['There is more kindness in me than you might first guess.', 'Looking after my family matters to me.', 'My home is far from the usual kingdom.', 'I travel through space with small star-like creatures.', 'Those creatures are the Lumas, and I am their adoptive mother.'],
     explanation: 'Rosalina cares for the Lumas. Nintendo describes her as mysterious but kind-hearted.',
     funFact: 'Rosalina travels across the galaxy with her Luma family.', sourceUrl: characters,
   },
 
   {
     id: 'track-coconut', topic: 'kart', answer: 'Coconut Mall',
-    clues: ['I returned as an extra course.', 'My first version was on a home console.', 'That console was the Wii.', 'I finish the Golden Dash Cup.', 'My name combines a tropical fruit with a shopping centre.'],
-    explanation: 'Coconut Mall is the fourth Golden Dash Cup course in the Booster Course Pass.',
-    funFact: 'The same cup begins with Paris Promenade.', sourceUrl: courses,
+    clues: ['Choosing your route matters here.', 'Some of the surfaces carrying racers move too.', 'I first appeared on Wii.', 'My escalators lead racers between floors.', 'My name combines a tropical fruit with a shopping centre.'],
+    explanation: 'Coconut Mall turns a shopping trip into a race. Choosing the escalator moving your way helps you keep going instead of fighting against it.',
+    funFact: 'In the Wii version, a Mushroom lets you cut through an open shop for a shortcut.', sourceUrl: coconutTips,
   },
   {
     id: 'track-waluigi', topic: 'kart', answer: 'Waluigi Pinball',
@@ -108,33 +112,33 @@ export const CLUE_SUBJECTS: readonly ClueSubject[] = [
   },
   {
     id: 'track-rome', topic: 'kart', answer: 'Rome Avanti',
-    clues: ['I joined an extra-course cup.', 'My original version was made for phones.', 'The place in my name is a real city.', 'I open the Acorn Cup.', 'That city is Italy\'s capital.'],
+    clues: ['My racing history began on a phone.', 'I arrived in the final wave of the Booster Course Pass.', 'The place in my name is a real city.', 'I open the Acorn Cup.', 'That city is Italy\'s capital.'],
     explanation: 'Rome Avanti opens the Acorn Cup in the final Booster Course Pass wave.',
     funFact: 'The Acorn Cup ends with Piranha Plant Cove.', sourceUrl: courses,
   },
   {
     id: 'track-daisy', topic: 'kart', answer: 'Daisy Cruiser',
-    clues: ['I returned as an extra course.', 'My first version was on a home console.', 'That console was the GameCube.', 'I am second in the Feather Cup.', 'My name combines a yellow-clad princess with a ship.'],
-    explanation: 'Daisy Cruiser is a GameCube track placed second in the Feather Cup.',
-    funFact: 'Wii Moonview Highway follows Daisy Cruiser in that cup.', sourceUrl: courses,
+    clues: ['Water surrounds the setting for this race.', 'I began on a home console, before returning on phones and Switch.', 'My first console was the GameCube.', 'Racers drive aboard a ship rather than along a seaside road.', 'My name combines a yellow-clad princess with a ship.'],
+    explanation: 'Daisy Cruiser takes the race aboard a ship. The GameCube course later returned in Mario Kart Tour and the Feather Cup in Mario Kart 8 Deluxe.',
+    funFact: 'Its Ocean Tour appearance also introduced a sailor outfit for Daisy.', sourceUrl: oceanTour,
   },
   {
     id: 'track-ninja', topic: 'kart', answer: 'Ninja Hideaway',
-    clues: ['I returned as an extra course.', 'My original version was made for phones.', 'The same cup begins with Tokyo Blur.', 'I finish the Lucky Cat Cup.', 'My name suggests a secret place for a stealthy warrior.'],
+    clues: ['Darkness is part of my atmosphere.', 'My first race took place in a phone game.', 'Moonlight lights the route through my setting.', 'I finish the Lucky Cat Cup.', 'My name suggests a secret place for a stealthy warrior.'],
     explanation: 'Ninja Hideaway closes the Lucky Cat Cup in the Booster Course Pass.',
-    funFact: 'Tokyo Blur opens the Lucky Cat Cup.', sourceUrl: courses,
+    funFact: 'The event that introduced this course also put Shy Guy in a ninja outfit.', sourceUrl: ninjaTour,
   },
   {
     id: 'track-sundae', topic: 'kart', answer: 'Sky-High Sundae',
-    clues: ['I appear in a cup of extra courses.', 'My cup arrived before the final waves of the pass.', 'My cup also includes Mushroom Gorge.', 'I finish the Propeller Cup.', 'My name sounds like a dessert served high above the ground.'],
-    explanation: 'Sky-High Sundae is the fourth course in the Propeller Cup.',
-    funFact: 'The same cup also contains Mushroom Gorge.', sourceUrl: courses,
+    clues: ['Everyday things look enormous around my racers.', 'I made my series debut in the second Booster Course Pass wave.', 'The oversized scenery includes sweet treats.', 'I finish the Propeller Cup.', 'My name sounds like a dessert served high above the ground.'],
+    explanation: 'Sky-High Sundae makes desserts into giant racing scenery. It closes the Propeller Cup, after Mushroom Gorge.',
+    funFact: 'The same cup starts with Sydney Sprint, swapping giant desserts for Australian city sights.', sourceUrl: wave2,
   },
   {
     id: 'track-piranha', topic: 'kart', answer: 'Piranha Plant Cove',
-    clues: ['I appear in a cup of extra courses.', 'My cup came late in the pass.', 'My cup opens with Rome Avanti.', 'I close the Acorn Cup.', 'My name combines a toothy plant with a sheltered stretch of water.'],
-    explanation: 'Piranha Plant Cove is the last Acorn Cup course in the Booster Course Pass.',
-    funFact: 'The Acorn Cup is part of the sixth and final pass wave.', sourceUrl: courses,
+    clues: ['Water is an important part of my setting.', 'Some of my structures have seen better days.', 'My island has temples beneath the water.', 'I close the Acorn Cup.', 'My name combines a toothy plant with a sheltered stretch of water.'],
+    explanation: 'Piranha Plant Cove mixes underwater temples, caves and jungle ruins. Its setting is a sinking island, not just a road beside the sea.',
+    funFact: 'This course debuted in the Exploration Tour, with explorer outfits for light-blue and yellow Shy Guys.', sourceUrl: explorationTour,
   },
   {
     id: 'char-waluigi', topic: 'mario', answer: 'Waluigi',
@@ -162,7 +166,7 @@ export const CLUE_SUBJECTS: readonly ClueSubject[] = [
   },
   {
     id: 'track-gardens', topic: 'kart', answer: 'Peach Gardens',
-    clues: ['I returned from a handheld game.', 'My scenery includes flowers and birds.', 'Chain Chomps move around here.', 'I surround a princess’s castle.', 'My name links that princess with planted grounds.'],
+    clues: ['Plants help shape the scenery around my route.', 'My first racers played on a two-screen handheld.', 'Chain Chomps move around here.', 'I surround a princess’s castle.', 'My name links that princess with planted grounds.'],
     explanation: 'Peach Gardens began on Nintendo DS.',
     funFact: 'Look for the shaped bushes!', sourceUrl: wave3,
   },
@@ -180,7 +184,7 @@ export const CLUE_SUBJECTS: readonly ClueSubject[] = [
   },
   {
     id: 'track-rock', topic: 'kart', answer: 'Rock Rock Mountain',
-    clues: ['I returned from a handheld game.', 'My route has sharp bends.', 'Bouncing boulders threaten racers.', 'A warp-pipe ramp launches you airborne.', 'My name repeats a word for stone.'],
+    clues: ['My route takes racers high above the lowlands.', 'Tight bends test your steering.', 'Bouncing boulders threaten racers.', 'A warp-pipe ramp launches you airborne.', 'My name repeats a word for stone.'],
     explanation: 'Rock Rock Mountain began on Nintendo 3DS.',
     funFact: 'Gliding breaks up the rocky driving sections.', sourceUrl: wave3,
   },

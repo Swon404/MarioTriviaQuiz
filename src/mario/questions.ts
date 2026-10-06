@@ -2,6 +2,7 @@ import { EXPANDED_QUESTIONS } from './expandedQuestions.ts';
 import { FRESH_QUESTIONS } from './freshQuestions.ts';
 import { GAMEPLAY_QUESTIONS } from './gameplayQuestions.ts';
 import { canonicalKnowledge, normalizeKnowledge } from './knowledge.ts';
+import { withVariedFunFacts } from './funFacts.ts';
 
 export type Difficulty = 'explorer' | 'scientist' | 'professor';
 export type Topic = 'mario' | 'kart';
@@ -192,5 +193,5 @@ export function createQuiz(topic: Topic | 'mixed', difficulty: Difficulty, count
     usedAnswers.add(question.answer);
     used.set(category, (used.get(category) ?? 0) + 1);
   }
-  return selected.map(question => ({ ...question, review: recent.includes(question.knowledgeId), choices: shuffled(question.choices, random) }));
+  return withVariedFunFacts(selected.map(question => ({ ...question, review: recent.includes(question.knowledgeId), choices: shuffled(question.choices, random) })), random);
 }
