@@ -1,0 +1,58 @@
+/* Phone-first playing surfaces. Keep the artwork around, not behind, reading text. */
+.mario-app .game-help { font-size: 1rem; line-height: 1.4; }
+.mario-app .game-help p { margin: 0; }
+.mario-app .game-help summary { cursor: pointer; min-height: 44px; display: flex; align-items: center; justify-content: center; }
+.mario-app .game-help details[open] { padding: 8px; background: #493248; border-radius: 12px; }
+.mario-app .game-help details[open] summary { font-weight: bold; }
+.mario-app .game-help details > div { padding: 8px; }
+.mario-app .mobile-round-focus:focus { outline: none; }
+.mario-app .game-question { display: flex; align-items: center; gap: 8px; }
+.mario-app .game-question h1 { flex: 1; min-width: 0; }
+.mario-app .game-question .tts-btn { flex-shrink: 0; }
+@media (max-width: 600px) {
+  .mario-app { padding: 8px; padding-bottom: calc(96px + env(safe-area-inset-bottom)); gap: 8px; }
+  .mario-app button, .mario-app summary, .mario-app select { min-height: 44px; min-width: 44px; touch-action: manipulation; }
+  .mario-app .tts-btn-small { width: 44px; height: 44px; margin: 0; }
+  .mario-app .mario-game { gap: 6px; padding: 10px; border-radius: 16px; background: #493248; }
+  .mario-app .mario-game h1 { margin: 4px 0; font-size: 1.2rem; }
+  .mario-app .game-topbar, .mario-app .quiz-topline { gap: 4px; }
+  .mario-app .score-display { font-size: .8rem; }
+  .mario-app .versus-now-playing, .mario-app .champ-game-banner, .mario-app .champ-live-total { margin: 0; padding: 6px; }
+  .mario-app .progress-track { height: 4px; }
+  .mario-app .answer-grid { margin: 4px 0; gap: 8px; }
+  .mario-app .choice-btn { font-size: 1rem; padding: 10px; }
+  .mario-app .clue-list { margin: 4px 0; }
+  .mario-app .clue-count, .mario-app .match-progress, .mario-app .match-retries, .mario-app .quiz-retries, .mario-app .hunt-target-banner { margin: 2px 0; }
+  .mario-app .game-help { font-size: .95rem; }
+  .mario-app .game-help > .help-copy { display: none; }
+  .mario-app .pair-card { height: 80px; min-height: 80px; }
+  .mario-app .pair-card-svg { height: 54px; }
+  .mario-app .pair-card-word { font-size: .875rem; }
+  .mario-app .game-help summary { font-size: .85rem; }
+  .mario-app .feedback-actions { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; margin: 0; padding: 8px 12px calc(8px + env(safe-area-inset-bottom)); background: #382538; border-top: 1px solid #ba8b9e; }
+  .mario-app .feedback-actions .start-btn { min-height: 48px; margin: 0; }
+  .mario-app .quiz-explanation { padding: 12px; }
+  .mario-app .mario-setup { padding: 10px; background: #493248; border-radius: 16px; }
+  .mario-app .mario-setup .setup-title { margin: 8px 0; }
+  .mario-app .mario-setup .setup-intro { margin: 6px 0; font-size: 1rem; }
+  .mario-app .mario-setup .difficulty-select { display: flex; gap: 6px; margin: 10px 0; }
+  .mario-app .mario-setup .diff-btn { flex: 1; padding: 8px 4px; min-width: 0; }
+  .mario-app .mario-setup .diff-desc, .mario-app .mario-setup .diff-btn > span:not(.diff-label) { display: none; }
+  .mario-app .mario-setup .difficulty-select + .selected-setting-help { font-size: .9rem; margin: 4px 0; text-align: center; }
+  .mario-app .order-tiles, .mario-app .finder-grid, .mario-app .match-board { margin-top: 8px; margin-bottom: 8px; }
+  .mario-app .clue-reveal { margin-bottom: 4px; }
+  .mario-app .order-leaderboard { margin: 8px auto; padding: 8px; width: 100%; }
+  .mario-app .order-leaderboard > details > summary { display: flex; align-items: center; cursor: pointer; }
+  .mario-app .mario-setup fieldset { padding: 0; margin: 8px 0; }
+  .mario-app .mario-setup .round-select { margin: 4px 0; gap: 6px; flex-wrap: wrap; }
+  .mario-app .mario-setup .round-btn { min-width: 44px; padding: 8px 10px; }
+  .mario-app .champ-setting-row { grid-template-columns: 76px minmax(0, 1fr); gap: 6px; }
+  .mario-app .champ-options-group { margin: 8px 0; padding: 10px; }
+  .mario-app .champ-setting-help { font-size: .9rem; }
+  .mario-app .mario-setup > .start-btn { position: sticky; bottom: calc(8px + env(safe-area-inset-bottom)); width: 100%; z-index: 5; }
+  .mario-app .home-header { margin-bottom: 8px; }
+  .mario-app .shroomer-home { margin-bottom: 8px; }
+  .mario-app .shroomer-home-portrait { width: 90px; height: 90px; }
+  .mario-app .play-format-description { display: none; }
+  .mario-app .order-big-timer { font-size: 2.5rem; margin: 4px; }
+}

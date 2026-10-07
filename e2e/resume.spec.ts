@@ -96,6 +96,7 @@ test('Game Order restores selected tiles, running time and a solved board withou
   await openBoard(page, 'Game Order');
   await page.getByRole('button', { name: 'Start!', exact: true }).click();
   await page.getByRole('button', { name: 'Start Timer' }).click();
+  await expect(page.locator('.order-tiles button, .pair-card').first()).toBeVisible();
   const tiles = page.locator('.order-tiles button');
   const original = await tiles.locator('span').allTextContents();
   await tiles.first().click();
@@ -128,6 +129,7 @@ test('Timed matching restores found pairs and a first flip without restarting th
   await page.getByRole('button', { name: 'Time Trial', exact: false }).click();
   await page.getByRole('button', { name: 'Start!', exact: true }).click();
   await page.getByRole('button', { name: 'Start Timer' }).click();
+  await expect(page.locator('.order-tiles button, .pair-card').first()).toBeVisible();
   const first = await page.locator('.pair-card').first().getAttribute('data-pair-id');
   await page.locator(`.pair-card[data-pair-id="${first}"]`).first().click();
   await page.locator(`.pair-card[data-pair-id="${first}"]`).last().click();

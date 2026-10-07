@@ -21,6 +21,9 @@ import { useSavedSetting, oneOf, isBoolean, isName } from './mario/settings.ts';
 import { ORDER_RULES, orderTileOptions, markOrderPractice, type OrderChallenge, type OrderOptions } from './mario/gameOrder.ts';
 import { newTurnScores, scoreTurn, type TurnScores } from './mario/turns.ts';
 import OrderBoard, { type OrderCheckpoint } from './OrderBoard.tsx';
+import TimerCountdown from './TimerCountdown.tsx';
+import GameHelp from './GameHelp.tsx';
+import './phone.css';
 import LearningCards, { LearningFeedback } from './LearningCards.tsx';
 import PairLeaderboards, { PairTimeList } from './PairLeaderboard.tsx';
 import OrderLeaderboards from './OrderLeaderboards.tsx';
@@ -89,6 +92,25 @@ export default function MarioApp() {
   const [session, setSession] = useState<GameSession | null>(null);
   const [versus, setVersus] = useState<VersusQuiz | null>(null);
   const [versusReady, setVersusReady] = useState(false);
+  useEffect(() => {
+    if (!(screen === 'game' && session?.submission) && !(screen === 'versus-game' && versus?.submission)) return;
+    const heading = document.querySelector<HTMLElement>('.feedback h2, .order-feedback');
+    if (heading) {
+      heading.tabIndex = -1;
+      heading.focus({ preventScroll: true });
+      heading.scrollIntoView({ block: 'start', behavior: 'instant' });
+    }
+  }, [screen, session?.submission, versus?.submission]);
+  useEffect(() => {
+    stopSpeaking();
+    const heading = document.querySelector<HTMLElement>('.mario-app h1, .mario-app h2');
+    if (heading) {
+      heading.tabIndex = -1;
+      heading.classList.add('mobile-round-focus');
+      heading.focus({ preventScroll: true });
+    }
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }, [screen, session?.index, versus?.index, versusReady]);
   const timed = mode === 'game-order' || (mode === 'pair-match' ? pairVariant === 'time-trial' || huntTimed : timerEnabled);
   const [matchedIds, setMatchedIds] = useState<string[]>([]);
   const [selectedMatchName, setSelectedMatchName] = useState<string | null>(null);
@@ -712,7 +734,7 @@ export default function MarioApp() {
     <h3>Game Order · race the clock</h3>
     <div className="round-select" role="group" aria-label="Game Order tile count"><span>Tiles:</span>{orderTileOptions(difficulty).map(count => <button key={count} className={orderCounts[difficulty] === count ? 'round-btn selected' : 'round-btn'} aria-pressed={orderCounts[difficulty] === count} onClick={() => setOrderCounts(previous => ({ ...previous, [difficulty]: count }))}>{count}</button>)}</div>
     <div className="difficulty-select" role="group" aria-label="Game Order challenge">{(Object.keys(ORDER_RULES) as OrderChallenge[]).map(level => <button key={level} className={orderChallenge === level ? 'diff-btn selected' : 'diff-btn'} aria-pressed={orderChallenge === level} onClick={() => setOrderChallenge(level)}><strong>{ORDER_RULES[level].label}</strong><span>{ORDER_RULES[level].description}</span></button>)}</div>
-    <p>Unlimited checks. Fastest time wins each two-player round.</p>
+    <p className="selected-setting-help">{ORDER_RULES[orderChallenge].description}</p>
   </section>;
 
   const renderPairSettings = (inChampionship: boolean) => {
@@ -721,7 +743,7 @@ export default function MarioApp() {
       <div className="champ-options-heading"><div><strong>🎴 Match & Hunt options</strong><span>{pairVariant === 'hunt' ? (huntTimed ? 'Three timed Hunt rounds' : inChampionship ? 'Three relaxed Hunt rounds' : 'One relaxed Hunt board') : 'Three timed Time Trial rounds'}</span></div></div>
       <div className="champ-setting-row" role="group" aria-label="Matching mode"><span>Mode:</span><div className="champ-setting-controls">{(['hunt', 'time-trial'] as PairVariant[]).map(item => <button key={item} className={`round-btn ${pairVariant === item ? 'selected' : ''}`} aria-pressed={pairVariant === item} onClick={() => setPairVariant(item)}>{item === 'hunt' ? '🏹 Hunt' : '⏱️ Time Trial'}</button>)}</div></div>
       {(inChampionship ? championshipFormat : quizFormat) !== 'solo' && <div className="champ-setting-row" role="group" aria-label="Matching turns"><span>Turns:</span><div className="champ-setting-controls"><button className={`round-btn ${pairVariant === 'hunt' && !huntTimed ? 'selected' : ''}`} aria-pressed={pairVariant === 'hunt' && !huntTimed} onClick={() => { setPairVariant('hunt'); setHuntTimed(false); }}>Shared board</button><button className={`round-btn ${pairVariant === 'time-trial' || huntTimed ? 'selected' : ''}`} aria-pressed={pairVariant === 'time-trial' || huntTimed} onClick={() => setHuntTimed(true)}>Separate timed turns</button></div></div>}
-      <p className="champ-setting-help">{pairVariant === 'time-trial' || huntTimed ? 'Three rounds each. Finish your own board or Hunt, then pass the device. Fastest time wins each round. Choose All to match the whole Time Trial board.' : 'Share one board. Find a pair to keep your turn; a miss passes to the other player.'}</p>
+      <details className="game-help"><summary>How to play</summary><p>{pairVariant === 'time-trial' || huntTimed ? 'Three timed rounds. Fastest time wins. Choose All to match the whole Time Trial board.' : (inChampionship ? championshipFormat : quizFormat) === 'solo' ? 'Match pictures with names. Find the target, or every pair.' : 'Share one board. A match keeps your turn; a miss passes it.'}</p></details>
       {pairVariant === 'hunt' && <div className="champ-setting-row" role="group" aria-label="Hunt timer"><span>Timer:</span><div className="champ-setting-controls"><button className={`round-btn ${!huntTimed ? 'selected' : ''}`} aria-pressed={!huntTimed} onClick={() => setHuntTimed(false)}>Off</button><button className={`round-btn ${huntTimed ? 'selected' : ''}`} aria-pressed={huntTimed} onClick={() => setHuntTimed(true)}>On</button></div></div>}
       {pairVariant === 'time-trial' && inChampionship ? <p className="champ-setting-help">Find {atomicCount} pairs on a {atomicCount * 3}-pair board in each round.</p> : <div className="champ-setting-row" role="group" aria-label="Board pairs"><span>Pairs:</span><div className="champ-setting-controls">{[12, 16, 20].map(count => <button key={count} className={`round-btn ${pairCount === count ? 'selected' : ''}`} aria-pressed={pairCount === count} onClick={() => setPairCount(count)}>{count}</button>)}</div></div>}
       {pairVariant === 'time-trial' ? !inChampionship && <div className="champ-setting-row" role="group" aria-label="Matches to find"><span>Find:</span><div className="champ-setting-controls">{([3, 5, 8, 'all'] as TrialTarget[]).map(count => <button key={count} className={`round-btn ${trialTarget === count ? 'selected' : ''}`} aria-pressed={trialTarget === count} onClick={() => setTrialTarget(count)}>{count === 'all' ? 'All' : count}</button>)}</div></div> : <>
@@ -801,7 +823,7 @@ export default function MarioApp() {
       {championship && <p className="eyebrow">🏆 {championship.size} Championship · Game {championship.index + 1}/{championship.modes.length}</p>}{renderTotals()}
       <h1>{MODE_LABELS[mode]}</h1>
       <h2>{activeName}'s turn</h2>
-      <p>{isBotTurn ? "Watch Shroomer take its turn." : "Pass the device before revealing this player's next puzzle."}</p>
+      <p>{isBotTurn ? "Ready to watch Shroomer?" : `Pass to ${activeName}.`}</p>
       <button className="start-btn" onClick={() => { startTime.current = mode === 'pair-match' && round?.mode === 'pair-match' && round.timed ? 0 : Date.now(); setScreen('game'); }}>Start {activeName}'s turn</button>
     </section>}
 
@@ -833,9 +855,10 @@ export default function MarioApp() {
         <button className="start-btn" onClick={() => setVersusReady(false)}>Start {versusTurn.playerIndex === 0 ? player : opponentName}'s turn</button>
       </div> : <>
         <p className="versus-now-playing">Now playing: {versusTurn.playerIndex === 0 ? player : opponentName}</p>
-        <h1>{versusTurn.question.prompt}</h1>
+        <div className="game-question"><h1>{versusTurn.question.prompt}</h1>
+{speechAvailable() && <button className="tts-btn tts-btn-small" title="Read question aloud" aria-label="Read question aloud" onClick={() => speakText(`${versusTurn.question.prompt} ${versusTurn.question.choices.join('. ')}`)}>🔊</button>}
+        </div>
         {versusTurn.question.review && <p className="review-note" role="status">Review question — you’ve seen this fact before.</p>}
-        {speechAvailable() && <button className="tts-btn tts-btn-small" title="Read question aloud" aria-label="Read question aloud" onClick={() => speakText(`${versusTurn.question.prompt} ${versusTurn.question.choices.join('. ')}`)}>🔊</button>}
         {versusTurn.computerAnswer !== undefined && !versus.submission
           ? <button className="start-btn" onClick={() => setVersus(answerVersusQuiz(versus, versusTurn.computerAnswer!))}>Reveal Shroomer's answer</button>
           : <div className="answer-grid">{versusTurn.question.choices.map((choice, option) => <button key={choice} disabled={versus.submission !== null || versusTurn.computerAnswer !== undefined || versus.wrongAnswers.includes(choice)} className={`choice-btn ${versus.submission && choice === versusTurn.question.answer ? 'correct' : versus.wrongAnswers.includes(choice) || versus.submission?.answer === choice ? 'wrong' : ''}`} onClick={() => setVersus(attemptVersusQuiz(versus, choice))}><span className="choice-letter">{String.fromCharCode(65 + option)}</span><span className="choice-text">{choice}</span></button>)}</div>}
@@ -869,35 +892,38 @@ export default function MarioApp() {
       {turnScores && <div className="versus-now-playing" role="status">{activeName}'s turn · {player}: {turnScores.points[0]} EP · {opponentName}: {turnScores.points[1]} EP</div>}
       <div className="quiz-topline"><span>{MODE_ICONS[mode]} {MODE_LABELS[mode]}{round.mode === 'pair-match' ? ` · ${round.variant === 'hunt' ? 'Hunt' : 'Time Trial'}` : ` · ${DIFFICULTY_LABELS[difficulty]}`}</span><span>{turnScores && !sharedHunt ? 'Round' : mode === 'pair-match' ? 'Board' : 'Question'} {turnScores && !sharedHunt ? Math.floor(session.index / 2) + 1 : session.index + 1} of {turnScores && !sharedHunt ? session.rounds.length / 2 : session.rounds.length}{turnScores && !sharedHunt ? ' each' : ''}</span>{timed && mode !== 'game-order' && <span aria-label="Elapsed time">{((elapsedMs - (mode === 'pair-match' ? previousRoundMs.current : 0)) / 1000).toFixed(1)}s</span>}</div>
       <div className="progress-track"><div style={{ width: `${(session.index / session.rounds.length) * 100}%` }} /></div>
-      <h1>{round.prompt}</h1>
+      <div className="game-question"><h1>{round.prompt}</h1>
+      {speechAvailable() && <button className="tts-btn tts-btn-small" title="Read question aloud" aria-label="Read question aloud" onClick={() => speakText(round.mode === 'quiz' ? `${round.prompt} ${round.question.choices.join('. ')}` : round.mode === 'clue-duel' ? `${round.prompt} ${round.clues.slice(0, clueIndex + 1).join('. ')} Choices: ${round.choices.map(choice => choice.label).join('. ')}` : round.prompt)}>🔊</button>}
+      </div>
       {round.mode === 'quiz' && round.question.review && <p className="review-note" role="status">Review question — you’ve seen this fact before.</p>}
       {round.review && <p className="review-note" role="status">Review challenge — you’ve seen this one before.</p>}
       {!!round.reviewCount && <p className="review-note" role="status">This board includes {round.reviewCount} familiar {round.reviewCount === 1 ? 'match' : 'matches'}.</p>}
-      {speechAvailable() && <button className="tts-btn tts-btn-small" title="Read question aloud" aria-label="Read question aloud" onClick={() => speakText(round.mode === 'quiz' ? `${round.prompt} ${round.question.choices.join('. ')}` : round.mode === 'clue-duel' ? `${round.prompt} ${round.clues.slice(0, clueIndex + 1).join('. ')} Choices: ${round.choices.map(choice => choice.label).join('. ')}` : round.prompt)}>🔊</button>}
-      {isBotTurn && !session.submission && !(round.mode === 'pair-match' && round.timed) && <button className="start-btn" disabled={pairLocked} onClick={revealComputerTurn}>Show Shroomer’s turn</button>}
+      {isBotTurn && !session.submission && !(round.mode === 'pair-match' && round.timed) && (round.mode === 'game-order'
+        ? <TimerCountdown key={round.id} ready onGo={revealComputerTurn} label="Show Shroomer’s turn" />
+        : <button className="start-btn" disabled={pairLocked} onClick={revealComputerTurn}>Show Shroomer’s turn</button>)}
       {(!isBotTurn || round.mode === 'pair-match' || round.mode === 'clue-duel') && <>
       {round.mode === 'quiz' && <>
         <p className="quiz-retries" aria-live="polite">{!session.submission && <>{session.wrongAnswers.length > 0 ? 'Not quite. Try again! ' : ''}Attempts left: {1 + QUIZ_RETRIES[session.difficulty] - session.wrongAnswers.length}</>}</p>
         <div className="answer-grid">{round.question.choices.map((choice, option) => <button key={choice} disabled={session.submission !== null || session.wrongAnswers.includes(choice)} className={`choice-btn ${session.submission && choice === round.question.answer ? 'correct' : session.wrongAnswers.includes(choice) || session.submission?.answer === choice ? 'wrong' : ''}`} onClick={() => setSession(attemptQuiz(session, choice))}><span className="choice-letter">{String.fromCharCode(65 + option)}</span><span className="choice-text">{choice}</span></button>)}</div>
       </>}
 
-      {round.mode === 'game-order' && <OrderBoard initialCheckpoint={orderCheckpoint} onCheckpoint={setOrderCheckpoint} key={round.id + orderReset} round={round} difficulty={difficulty} options={orderOptions} player={turnScores?.active === 1 ? opponentName : player} resultId={runId + ':' + session.index} onNext={next} onRestart={undo} nextLabel={session.index + 1 === session.rounds.length ? 'See result' : turnScores ? 'Next turn' : 'Next round'} resultMessage={timedResultMessage} onSolved={time => { pairRoundCompletedMs.current = time; setSession(submit(session, round.correctIds, turnScores ? 0 : 1)); }} />}
+      {round.mode === 'game-order' && <OrderBoard firstRound={session.index === 0} initialCheckpoint={orderCheckpoint} onCheckpoint={setOrderCheckpoint} key={round.id + orderReset} round={round} difficulty={difficulty} options={orderOptions} player={turnScores?.active === 1 ? opponentName : player} resultId={runId + ':' + session.index} onNext={next} onRestart={undo} nextLabel={session.index + 1 === session.rounds.length ? 'See result' : turnScores ? 'Next turn' : 'Next round'} resultMessage={timedResultMessage} onSolved={time => { pairRoundCompletedMs.current = time; setSession(submit(session, round.correctIds, turnScores ? 0 : 1)); }} />}
 
       {round.mode === 'track-finder' && <>
-        <p className="help-copy">Choose one track that fits the clue.</p>
+        <GameHelp key={round.id} first={session.index === 0} hint="Choose one track that fits." />
         {session.submission && <div className={session.submission.correct ? 'finder-verdict win' : 'finder-verdict miss'} role="status">{session.submission.correct ? '✓ Correct — you found it!' : '✕ Not this time. The correct tracks are marked below.'}</div>}
         <div className={`finder-grid finder-${round.width}`}>{round.tiles.map(course => <button key={course.id} disabled={session.submission !== null} className={session.submission ? round.correctIds.includes(course.id) ? 'right-answer' : course.id === session.submission.answer ? 'wrong-answer' : '' : ''} onClick={() => setSession(submit(session, course.id))}>{round.challengeKind === 'system' ? trackLabel(course.title) : course.title}{session.submission && (round.correctIds.includes(course.id) ? <strong className="tile-verdict">✓ Fits the clue</strong> : course.id === session.submission.answer ? <strong className="tile-verdict">✕ Does not fit</strong> : null)}</button>)}</div>
       </>}
 
       {round.mode === 'category-finder' && <>
-        <p className="help-copy">Tap one tile that fits. Every tile of the requested type counts.</p>
+        <GameHelp key={round.id} first={session.index === 0} hint="Tap one tile that fits.">Any tile in the requested category counts.</GameHelp>
         {session.submission && <div className={session.submission.correct ? 'finder-verdict win' : 'finder-verdict miss'} role="status">{session.submission.correct ? '✓ Correct — that fits!' : '✕ Not this time. The matching tiles are marked below.'}</div>}
         {categoryContext(round.targetCategory) && <p className="category-context">{categoryContext(round.targetCategory)}</p>}
         <div className={`finder-grid finder-${round.width} category-grid`}>{round.tiles.map(tile => <button key={tile.id} data-catalog-number={tile.number} disabled={session.submission !== null} className={session.submission ? fitsCategory(tile, round.targetCategory) ? 'right-answer' : tile.id === session.submission.answer ? 'wrong-answer' : '' : ''} onClick={() => setSession(submit(session, tile.id))}><span>{tile.name}</span>{session.submission && (fitsCategory(tile, round.targetCategory) ? <strong className="tile-verdict">✓ Fits</strong> : tile.id === session.submission.answer ? <strong className="tile-verdict">✕ Different type</strong> : null)}</button>)}</div>
       </>}
 
       {round.mode === 'match-hunt' && <>
-        <p className="help-copy">Tap a name and its matching clue. Find every pair.</p>
+        <GameHelp key={round.id} first={session.index === 0} hint="Tap a name, then its matching clue." />
         <p className="match-retries" aria-live="polite">{matchRetriesLeft === 0 ? 'No retries left — the next wrong pair ends this round.' : `${matchRetriesLeft} ${matchRetriesLeft === 1 ? 'retry' : 'retries'} left.`}</p>
         <p className="match-progress" aria-live="polite">{matchedIds.length}/{round.pairs.length} pairs found</p>
         {speechAvailable() && selectedMatchClue && <button className="back-btn match-read" onClick={() => speakText(round.pairs.find(pair => pair.id === selectedMatchClue)!.clue)}>🔊 Read selected clue</button>}
@@ -916,21 +942,28 @@ export default function MarioApp() {
       </>}
 
       {round.mode === 'pair-match' && <>
-        <p className="help-copy">Flip two cards. An icon and its matching word make a pair. {sharedHunt && 'A match keeps your turn; a miss passes it.'} {round.variant === 'time-trial' ? `Find ${round.goal} pairs as fast as you can.` : round.targetPairId ? `Hunt target: ${round.pairs.find(pair => pair.id === round.targetPairId)?.name}.` : 'Find every pair.'}</p>
+        <GameHelp key={'help-' + round.id} first={session.index === 0} hint="Match each picture with its name.">
+          {sharedHunt ? 'A match keeps your turn; a miss passes it. ' : ''}
+          {round.variant === 'time-trial' ? `Find ${round.goal} pairs as fast as you can.` : round.targetPairId ? 'Find the target pair after unlocking it.' : 'Find every pair.'}
+        </GameHelp>
         {round.variant === 'hunt' && round.targetPairId && <p className="hunt-target-banner">🎯 <strong>{round.pairs.find(pair => pair.id === round.targetPairId)?.name}</strong>{round.unlockPairs > 0 && <> · {foundPairs.length >= round.unlockPairs ? 'Unlocked!' : `Unlocks after ${round.unlockPairs} other pairs (${foundPairs.length}/${round.unlockPairs})`}</>}</p>}
         <p className="match-progress" aria-live="polite">{foundPairs.length}/{round.goal} pairs found · {pairMoves} {pairMoves === 1 ? 'move' : 'moves'} · {pairScore} points</p>
         {!session.submission && pairTimerReady && <button className="back-btn match-restart" onClick={undo}>↶ Restart go</button>}
-        {!pairTimerReady ? <div className="pair-timer-ready"><p>The cards appear when the timer starts.</p><button className="start-btn" onClick={() => { startTime.current = Date.now(); pairFrames.current = []; recordPairFrame('Timer started', [], [], 0); setElapsedMs(previousRoundMs.current); setPairTimerReady(true); }}>Start Timer</button></div> : <div className="pair-card-grid" aria-label="Face-down pair cards">{round.cards.map((card, index) => {
+        {!pairTimerReady && <p className="help-copy">Ready? The cards appear on Go!</p>}
+        {round.timed && <TimerCountdown key={round.id} ready={!pairTimerReady} onGo={() => { startTime.current = Date.now(); pairFrames.current = []; recordPairFrame('Timer started', [], [], 0); setElapsedMs(previousRoundMs.current); setPairTimerReady(true); }} />}
+        {pairTimerReady && <div className="pair-card-grid" aria-label="Face-down pair cards">{round.cards.map((card, index) => {
           const visible = flippedCards.includes(card.id) || foundPairs.includes(card.pairId);
           const matched = foundPairs.includes(card.pairId);
           return <button key={card.id} type="button" data-pair-id={card.pairId} data-kind={card.kind} disabled={matched || pairLocked || isBotTurn || session.submission !== null} className={`pair-card ${visible ? 'pair-card-face' : 'pair-card-back'} ${matched ? 'pair-card-found' : ''}`} aria-label={visible ? card.kind === 'word' ? `Word: ${card.label}` : `Icon: ${card.iconAlt ?? card.label}` : `Hidden card ${index + 1}`} aria-pressed={visible} onClick={() => flipPairCard(card.id)}>{visible ? card.kind === 'word' ? <span className="pair-card-word">{card.label}</span> : (card.iconKind === 'svg' || card.iconKind === 'image') ? <img className="pair-card-svg" src={`${import.meta.env.BASE_URL}${card.label}`} alt="" aria-hidden="true" /> : <span className={card.iconKind === 'text' ? 'pair-card-text-icon' : 'pair-card-icon'}>{card.label}</span> : <span className="pair-card-mark" aria-hidden="true">?</span>}</button>;
         })}</div>}
         {pairMessage && <p className="match-message" aria-live="polite">{pairMessage}</p>}
-        {round.timed && <section className="order-leaderboard"><h3>Match &amp; Hunt Top 10</h3><p>Same settings · human first attempts only. Restarting this board makes it practice.</p><PairTimeList records={pairScores} /></section>}
+        {round.timed && <section className="order-leaderboard"><details open={!!session.submission}><summary>Match &amp; Hunt Top 10</summary><p>Same settings · human first attempts only. Restarting this board makes it practice.</p><PairTimeList records={pairScores} /></details></section>}
       </>}
 
       {round.mode === 'clue-duel' && <>
-        <p className="help-copy">Guess when you are ready. In multiplayer, asking for a clue passes the turn. A wrong guess gives your opponent one bonus chance.</p>
+        <GameHelp key={round.id} first={session.index === 0} hint={turnScores ? 'Guess, or pass for another clue.' : 'Guess now, or ask for another clue.'}>
+          {turnScores ? 'Asking for a clue passes the turn. A wrong guess gives your opponent one bonus chance.' : 'Each new clue makes the answer clearer. Earlier guesses earn more points.'}
+        </GameHelp>
         <p className="clue-count">Clue {clueIndex + 1} of 5</p>
         <ol className="clue-list">{round.clues.slice(0, clueIndex + 1).map((clue, index) => <li key={index}>{clue}</li>)}</ol>
         {clueMessage && !session.submission && <p className="match-message" aria-live="polite">{clueMessage}</p>}

@@ -15,6 +15,7 @@ async function openGame(page: Page, name: string, versus = false) {
 }
 async function solveOrder(page: Page, startTimer = true) {
   if (startTimer) await page.getByRole('button', { name: 'Start Timer', exact: true }).click();
+  await expect(page.locator('.order-tiles button, .pair-card').first()).toBeVisible();
   const tiles = page.locator('.order-tiles button');
   const current = await tiles.locator('span').allTextContents();
   const sorted = [...current].sort((a, b) => MARIO_TIMELINE.find(game => game.title === a)!.year - MARIO_TIMELINE.find(game => game.title === b)!.year);
@@ -35,11 +36,13 @@ test('Two-player Game Order gives comparable but different timed boards', async 
   await page.getByRole('button', { name: 'Start!', exact: true }).click();
   await page.getByRole('button', { name: "Start Ada's turn" }).click();
   await page.getByRole('button', { name: 'Start Timer', exact: true }).click();
+  await expect(page.locator('.order-tiles button, .pair-card').first()).toBeVisible();
   const first = await page.locator('.order-tiles button span').allTextContents();
   await solveOrder(page, false);
   await page.getByRole('button', { name: 'Next turn', exact: true }).click();
   await page.getByRole('button', { name: "Start Ben's turn" }).click();
   await page.getByRole('button', { name: 'Start Timer', exact: true }).click();
+  await expect(page.locator('.order-tiles button, .pair-card').first()).toBeVisible();
   const second = await page.locator('.order-tiles button span').allTextContents();
   expect(first.every(title => !second.includes(title))).toBe(true);
   const profile = (titles: string[]) => titles.map(title => Math.floor(MARIO_TIMELINE.findIndex(game => game.title === title) / 2)).sort((a, b) => a - b);
@@ -68,6 +71,7 @@ for (const challenge of ['Easy', 'Medium', 'Hard']) {
     await page.getByRole('group', { name: 'Game Order challenge' }).getByRole('button', { name: challenge, exact: false }).click();
     await page.getByRole('button', { name: 'Start!', exact: true }).click();
     await page.getByRole('button', { name: 'Start Timer', exact: true }).click();
+    await expect(page.locator('.order-tiles button, .pair-card').first()).toBeVisible();
     const tiles = page.locator('.order-tiles button');
     await expect(tiles.locator('small')).toHaveCount(0);
     const current = await tiles.locator('span').allTextContents();
@@ -205,6 +209,7 @@ test('Game Order keeps timing through wrong checks and saves a solved round imme
   await page.getByRole('button', { name: 'Start!', exact: true }).click();
   await expect(page.locator('.order-tiles button')).toHaveCount(0);
   await page.getByRole('button', { name: 'Start Timer', exact: true }).click();
+  await expect(page.locator('.order-tiles button, .pair-card').first()).toBeVisible();
   await expect(page.locator('.order-tiles small')).toHaveCount(0);
   await page.getByRole('button', { name: 'Check order' }).click();
   await expect(page.locator('.feedback')).toHaveCount(0);
@@ -459,6 +464,7 @@ test('timed Hunt alternates three private boards per player', async ({ page }) =
   for (let turn = 0; turn < 6; turn += 1) {
     await page.getByRole('button', { name: turn % 2 ? "Start Ben's turn" : "Start Ada's turn" }).click();
     await page.getByRole('button', { name: 'Start Timer' }).click();
+    await expect(page.locator('.order-tiles button, .pair-card').first()).toBeVisible();
     const ids = [...new Set(await page.locator('.pair-card').evaluateAll(cards => cards.map(card => card.getAttribute('data-pair-id'))))];
     boards.add(ids.join(','));
     for (const id of ids.slice(0, 5)) {

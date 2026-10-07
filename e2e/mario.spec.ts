@@ -227,6 +227,7 @@ test('Match & Hunt Time Trial uses three timed championship boards sized from Ga
   for (let board = 0; board < 3; board += 1) {
     await expect(page.locator('.pair-card')).toHaveCount(0);
     await page.getByRole('button', { name: 'Start Timer' }).click();
+    await expect(page.locator('.order-tiles button, .pair-card').first()).toBeVisible();
     await expect(page.locator('.pair-card')).toHaveCount(18);
     const ids = [...new Set(await page.locator('.pair-card').evaluateAll(cards => cards.map(card => card.getAttribute('data-pair-id'))))];
     for (const id of ids.slice(0, 3)) {
@@ -285,11 +286,13 @@ test('chosen timed Hunt keeps its target through three boards and rewind restart
     await expect(page.getByText(`Board ${board + 1} of 3`)).toBeVisible();
     await expect(page.locator('.pair-card')).toHaveCount(0);
     await page.getByRole('button', { name: 'Start Timer' }).click();
+    await expect(page.locator('.order-tiles button, .pair-card').first()).toBeVisible();
     await expect(page.locator(`.pair-card[data-pair-id="${targetId}"]`)).toHaveCount(2);
     if (board === 0) {
       await page.getByRole('button', { name: 'Restart go' }).click();
       await expect(page.locator('.pair-card')).toHaveCount(0);
       await page.getByRole('button', { name: 'Start Timer' }).click();
+      await expect(page.locator('.order-tiles button, .pair-card').first()).toBeVisible();
     }
     const ids = [...new Set(await page.locator('.pair-card').evaluateAll(cards => cards.map(card => card.getAttribute('data-pair-id'))))] as string[];
     const other = ids.find(id => id !== targetId)!;

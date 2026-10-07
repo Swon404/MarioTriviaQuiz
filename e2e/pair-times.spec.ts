@@ -15,6 +15,8 @@ test('Timed Hunt saves the human turn immediately while Shroomer plays visibly w
   await page.getByRole('button', { name: 'Start!', exact: true }).click();
   await page.getByRole('button', { name: "Start Ada's turn" }).click();
   await page.getByRole('button', { name: 'Start Timer', exact: true }).click();
+  await page.clock.runFor(3000);
+  await expect(page.locator('.order-tiles button, .pair-card').first()).toBeVisible();
   await page.locator(`.pair-card[data-pair-id="${target}"][data-kind="icon"]`).click();
   await page.locator(`.pair-card[data-pair-id="${target}"][data-kind="word"]`).click();
   const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('mariotrivia_pair_times_v1') ?? '[]'));
@@ -36,6 +38,8 @@ test('Timed Hunt saves the human turn immediately while Shroomer plays visibly w
   await page.getByRole('button', { name: 'Next turn' }).click();
   await page.getByRole('button', { name: "Start Shroomer's turn" }).click();
   await page.getByRole('button', { name: 'Start Timer', exact: true }).click();
+  await page.clock.runFor(3000);
+  await expect(page.locator('.order-tiles button, .pair-card').first()).toBeVisible();
   await page.clock.runFor(500);
   await expect(page.locator('.pair-card-face')).toHaveCount(1);
   await expect(page.locator('.feedback')).toHaveCount(0);

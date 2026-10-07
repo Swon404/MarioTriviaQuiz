@@ -1,0 +1,5 @@
+.timer-countdown { text-align: center; color: #ffe36b; margin: 1rem auto; }
+.timer-countdown strong { display: block; font-size: clamp(3.5rem, 14vw, 5rem); line-height: 1.15; }
+.timer-countdown-caption { display: block; font-size: 1.1rem; font-weight: 700; }
+.timer-countdown-idle { margin: 0; }
+.timer-countdown-go { position: fixed; top: 1rem; left: 50%; transform: translateX(-50%); z-index: 20; pointer-events: none; background: #302139; border-radius: 1rem; padding: .4rem 1.5rem; margin: 0; }

@@ -60,6 +60,8 @@ test('private Time Trial shows Shroomer flips, cancels on restart and resumes af
   await page.getByRole('button', { name: 'Start!', exact: true }).click();
   await page.getByRole('button', { name: "Start Ada's turn" }).click();
   await page.getByRole('button', { name: 'Start Timer', exact: true }).click();
+  await page.clock.runFor(3000);
+  await expect(page.locator('.order-tiles button, .pair-card').first()).toBeVisible();
   const ids = await page.locator('.pair-card[data-kind="word"]').evaluateAll(cards => cards.slice(0, 3).map(card => card.getAttribute('data-pair-id')));
   for (const id of ids) {
     await page.locator(`.pair-card[data-pair-id="${id}"][data-kind="icon"]`).click();
@@ -68,6 +70,8 @@ test('private Time Trial shows Shroomer flips, cancels on restart and resumes af
   await page.getByRole('button', { name: 'Next turn' }).click();
   await page.getByRole('button', { name: "Start Shroomer's turn" }).click();
   await page.getByRole('button', { name: 'Start Timer', exact: true }).click();
+  await page.clock.runFor(3000);
+  await expect(page.locator('.order-tiles button, .pair-card').first()).toBeVisible();
   await page.clock.runFor(500);
   await expect(page.locator('.pair-card-face')).toHaveCount(1);
   await page.getByRole('button', { name: 'Restart go', exact: false }).click();
@@ -75,6 +79,8 @@ test('private Time Trial shows Shroomer flips, cancels on restart and resumes af
   await expect(page.locator('.pair-card')).toHaveCount(0);
   await expect(page.locator('.feedback')).toHaveCount(0);
   await page.getByRole('button', { name: 'Start Timer', exact: true }).click();
+  await page.clock.runFor(3000);
+  await expect(page.locator('.order-tiles button, .pair-card').first()).toBeVisible();
   await page.clock.runFor(500);
   await page.reload();
   await page.getByRole('button', { name: 'Resume game', exact: true }).click();

@@ -4,7 +4,7 @@ Reviewed against the working code on **4 October 2026**. This replaces the dupli
 
 ## Remaining-work summary — 4 October 2026
 
-This is a quick overview of the detailed checklist below, not a separate backlog. The priority is **content quality and variety**, not adding more game modes.
+This is a quick overview of the detailed checklist below, not a separate backlog. **7 October priority update: iPhone readability and the complete next-go loop come first**, followed by content quality and variety, not more game modes.
 
 - [ ] Review the remaining **94 of 138 original questions** for accuracy, wording giveaways, plausible choices and useful explanations. Forty-four are reviewed.
 - [ ] Expand the genuinely new, reviewed question batch from **28 to roughly 60**, covering a wider range of subjects without filler.
@@ -253,4 +253,29 @@ Next content batch: review the weakest existing questions and broaden Track Find
 - [x] Isolate the test server's Vite dependency cache from the interactive dev server and disable test hot reload after observing an unexpected navigation during a history assertion. This prevents that source of interference, without claiming it explains every timeout.
 - [x] Replace real-time polling of Shroomer's 650 ms first-card window with a paused test clock. Assert one revealed card, restart, then advance three seconds and verify callbacks remain cancelled. Three isolated repeats passed; gameplay timing is unchanged.
 - [x] Run the complete final-code local gate: content audit passed; browser result was 101 passed and two 60-second whole-test timeouts in long matching workflows (10.8 minutes total). No full local pass claimed. No additional limits were relaxed.
-- [ ] Confirm the pushed revision's GitHub `test:all` and deployment jobs. Publication is gated by `deploy.needs: test`; a successful push alone is not verification. This release attempt uses the clean CI runner to verify the complete change after the slow local run.
+- [x] Confirm revision `2d157d7` on [GitHub Actions run 37515373366](https://github.com/Swon404/MarioTriviaQuiz/actions/runs/37515373366): all 103 browser tests, content audit, production build and deployment passed. This completes release verification of the fun-fact pilot above.
+
+### 6 October continuation: timed-round countdown
+
+- [x] Add a shared, accessible 3–2–1–Go countdown to Game Order and timed Match & Hunt (Hunt timer and Time Trial), including multiplayer/championship turns and Shroomer's timed turns. Untimed matching stays unchanged.
+- [x] Keep boards hidden until Go; start stopwatch and replay capture only then. Show Go without moving the board. Cancel preparation safely; unmount cancels pending callbacks. Reload during preparation returns to Start Timer, while already-running rounds preserve their existing recovery behaviour.
+- [x] Add four countdown tests covering exact timing, cancellation and reload for both games. Update existing browser workflows to wait for revealed boards; advance controlled clocks before checking Shroomer's moves. Focused nine-test run passed.
+- [x] Final `npm run test:all` passed: 166-question/900-quiz/48-track content audit, all 107 browser tests (3.7 minutes), TypeScript and production/PWA build (88 precached assets). Whitespace check passed. Non-blocking Browserslist data-age warning remains. No commit or push requested in this turn.
+- [ ] Consider countdowns for the optional timers in the other quiz/finder modes; this batch covers the ordering and memory-board timed events, not every optional timer.
+
+### 7 October: iPhone play and next-go flow
+
+Audit at 390 × 740 in Chromium phone emulation, not physical Safari: Game Order/Match & Hunt setup exceeded 1,200px; the matching board began around 379px down and Clue Duel answers around 502px. Next appeared around 766–897px in sampled quizzes and 1,400px in timed Hunt. Rules repeated on subsequent goes and navigation had no explicit scroll reset.
+
+- [x] Add concise mode help with expandable rules. Phone play shows the question and optional How to play instead of a repeated instruction paragraph; desktop first rounds retain a short hint. Reset expanded help when changing rounds.
+- [x] Put phone Next/Rewind in a fixed bottom action bar with safe-area padding and scrolling space below content. Preserve explanations, one fun fact, source links and learning cards. Move focus to the result after answering.
+- [x] Reset scroll and focus for new screens, questions and player handovers. Shorten shared handover wording. Preserve hidden puzzles and timed countdowns.
+- [x] Put voice beside the question, use opaque playing surfaces, tighten spacing, compact level/settings controls, enlarge buttons to at least 44 × 44 CSS pixels in sampled phone layouts, and keep the setup Start action sticky. Preserve all settings and rules; show the selected Game Order rule description.
+- [x] Collapse timed leaderboards during play; open them on completion. Preserve replay access and existing saved times. Keep matching cards a stable height as they flip.
+- [x] Nine focused phone checks passed: all seven setup/play screens for button sizing and horizontal overflow, three consecutive quiz questions, and two timed Hunt boards for reachable Next, scroll reset and non-repeated help.
+- [x] Final `npm run test:all` passed: 166-question content/rules audit, all 116 browser tests (3.2 minutes), TypeScript and production/PWA build (88 precached assets). Whitespace check passed. Reviewed phone screenshots of Clue Duel and matching; Clue Duel answers start roughly 140px higher and matching roughly 70px higher than the audit samples. Browserslist data-age warning remains non-blocking.
+- [ ] Physical iPhone Safari checks: browser bars, safe areas, larger text, voice, rotation and background/foreground. Automated phone checks are not a substitute.
+- [ ] Follow-up refinement: fully collapsed remembered-settings summary, further merging of championship score strips, and explicit rapid-double-tap protection across round transitions. These are not claimed complete by the compact-layout pass.
+- [ ] Larger 16/20-pair boards and longer clues still need scrolling. Do not shrink text or remove pairs merely to force every board onto one screen; assess with the family.
+
+No content-bank expansion, rule/scoring changes or deployment in this mobile-layout batch.
