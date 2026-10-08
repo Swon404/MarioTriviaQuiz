@@ -276,7 +276,8 @@ Audit at 390 × 740 in Chromium phone emulation, not physical Safari: Game Order
 - [x] Final `npm run test:all` passed: 166-question content/rules audit, all 116 browser tests (3.2 minutes), TypeScript and production/PWA build (88 precached assets). Whitespace check passed. Reviewed phone screenshots of Clue Duel and matching; Clue Duel answers start roughly 140px higher and matching roughly 70px higher than the audit samples. Browserslist data-age warning remains non-blocking.
 - [ ] Physical iPhone Safari checks: browser bars, safe areas, larger text, voice, rotation and background/foreground. Automated phone checks are not a substitute.
 - [x] Follow-up: collapsed remembered-settings summary (continuation below).
-- [ ] Further merge championship score strips and add explicit rapid-double-tap protection across round transitions. These are not claimed complete by the compact-layout pass.
+- [x] Merge championship score strips (8 October continuation below).
+- [ ] Add explicit rapid-double-tap protection across round transitions. This is not claimed complete by the compact-layout pass.
 - [ ] Larger 16/20-pair boards and longer clues still need scrolling. Do not shrink text or remove pairs merely to force every board onto one screen; assess with the family.
 
 No content-bank expansion or rule/scoring changes in this mobile-layout batch.
@@ -288,3 +289,16 @@ No content-bank expansion or rule/scoring changes in this mobile-layout batch.
 - [x] Summaries update with player names, opponent, difficulty and relevant settings. Matching includes board size, goal/target, timer and unlock count; Game Order includes tile count and challenge; championship includes length and game count. No saved-setting format changes.
 - [x] Verify all seven phone Start buttons are within the 390 × 740 viewport, all expanded controls remain reachable, settings survive reload, the actual matching board agrees with the summary, and championship cannot start with fewer than two games. Eleven focused phone tests passed. Inspected the compact championship screenshot.
 - [x] Full final-code `npm run test:all` passed: content/rules audit, all 118 browser tests (2.8 minutes), TypeScript and production/PWA build (88 precached assets). Whitespace check passed; the existing Browserslist data-age warning is non-blocking. The compact-setup continuation is local and is not part of published `93e20db`.
+
+### 8 October: compact championship scores
+
+- [x] Commit and push the compact remembered-settings work as `86dd36f`.
+- [x] Inspect [GitHub run 37836013107](https://github.com/Swon404/MarioTriviaQuiz/actions/runs/37836013107): 117 tests passed; Game Order selected-tile recovery failed after reload. Deployment was skipped. Do not treat this revision as deployed.
+- [x] Replace the stacked in-game championship score/turn banners with one labelled table: Player, Game EP, Total EP. Retain the active player and championship game number in the top bar. Use the same table during handovers; completed-leg totals retain their existing display.
+- [x] Preserve existing score calculations and standalone displays. Show a pending answer's points immediately, reverse them on rewind, retain totals at handover, and distinguish reset game points from carried championship totals in the next leg.
+- [x] Add a 390 × 740 browser regression covering six alternating answers, rewind and the next championship leg. Check exact values in both score columns and no horizontal overflow. Inspect the screenshot showing 0 game EP and 36 total EP per player at the next leg.
+- [x] Final `npm run test:all` passed: content/rules audit, all 119 browser tests (2.8 minutes), TypeScript and production/PWA build (88 precached assets). Existing Browserslist warning is non-blocking. Whitespace check passed.
+- [x] Repair the recovery save timing: OrderBoard checkpoint propagation and parent checkpoint persistence now run in layout effects before paint, instead of two deferred effects. Preserve existing deduplication and storage warnings.
+- [x] Strengthen the recovery regression with a MutationObserver: when the selected tile's DOM attribute changes, the saved checkpoint must already contain that selection. Keep the existing reload, elapsed-time, solved-board and duplicate-record assertions. Five repeated runs passed; no timeout increases or retries added.
+- [x] Inspect an intermediate local six-turn Hunt failure: the board assertion expired while the countdown still displayed 1. Use the controlled Playwright clock to advance each three-second preparation in that workflow, keeping all board/score assertions and the dedicated countdown tests. Final complete run passed; gameplay timing is unchanged.
+- [ ] Publish the verified recovery repair and scoreboard continuation, then confirm both GitHub test and deployment jobs.

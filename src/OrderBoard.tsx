@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type { ReplayFrame, ReplayTile } from './mario/replay.ts';
 import ReplayViewer from './ReplayViewer.tsx';
 import TimerCountdown from './TimerCountdown.tsx';
@@ -25,7 +25,7 @@ export default function OrderBoard({ round, difficulty, options, player, resultI
   const [solved, setSolved] = useState(initial?.solved ?? false);
   const [recordMessage, setRecordMessage] = useState(initial?.recordMessage ?? '');
   const frames = useRef<ReplayFrame[]>(initial?.frames ?? []);
-  useEffect(() => {
+  useLayoutEffect(() => {
     onCheckpoint?.({ resultId, tiles, selected, started, elapsed: solved ? elapsed : 0, penalty, attempts, feedback, solved, recordMessage, frames: frames.current, practice: isOrderPractice(resultId) });
   }, [resultId, tiles, selected, started, penalty, attempts, feedback, solved, recordMessage, onCheckpoint]);
   const recordFrame = (event: string, ids: string[], selection: number | null, positions: string[] = [], atMs?: number) => {

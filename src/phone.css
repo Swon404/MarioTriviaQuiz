@@ -12,6 +12,11 @@
 .mario-app .settings-overview { padding: 12px; border: 1px solid var(--border); border-radius: 12px; line-height: 1.5; overflow-wrap: anywhere; }
 .mario-app .settings-overview p { margin: 4px 0 0; }
 .mario-app .setup-settings > summary { min-height: 44px; padding: 10px 4px; cursor: pointer; font-weight: 700; }
+.mario-app .champ-scoreboard { display: table; width: 100%; table-layout: fixed; border-spacing: 0; padding: 6px; font-size: .95rem; }
+.mario-app .champ-scoreboard th, .mario-app .champ-scoreboard td { padding: 4px; text-align: right; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+.mario-app .champ-scoreboard th:first-child { text-align: left; width: 40%; }
+.mario-app .champ-scoreboard thead { font-size: .8rem; }
+.mario-app .champ-scoreboard td:last-child { font-weight: 800; color: var(--gold); }
 @media (max-width: 600px) {
   .mario-app { padding: 8px; padding-bottom: calc(96px + env(safe-area-inset-bottom)); gap: 8px; }
   .mario-app button, .mario-app summary, .mario-app select { min-height: 44px; min-width: 44px; touch-action: manipulation; }

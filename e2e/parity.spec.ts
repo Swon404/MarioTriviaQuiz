@@ -456,6 +456,7 @@ test('relaxed Hunt shares a board, passes on a miss, keeps a match and rewinds b
 });
 
 test('timed Hunt alternates three private boards per player', async ({ page }) => {
+  await page.clock.install();
   await openGame(page, 'Match & Hunt', true);
   await page.getByLabel('Player name', { exact: true }).fill('Ada');
   await page.getByLabel('Player 2 name').fill('Ben');
@@ -465,6 +466,7 @@ test('timed Hunt alternates three private boards per player', async ({ page }) =
   for (let turn = 0; turn < 6; turn += 1) {
     await page.getByRole('button', { name: turn % 2 ? "Start Ben's turn" : "Start Ada's turn" }).click();
     await page.getByRole('button', { name: 'Start Timer' }).click();
+    await page.clock.runFor(3000);
     await expect(page.locator('.order-tiles button, .pair-card').first()).toBeVisible();
     const ids = [...new Set(await page.locator('.pair-card').evaluateAll(cards => cards.map(card => card.getAttribute('data-pair-id'))))];
     boards.add(ids.join(','));

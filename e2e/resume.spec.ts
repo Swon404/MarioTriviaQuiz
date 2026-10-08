@@ -99,7 +99,19 @@ test('Game Order restores selected tiles, running time and a solved board withou
   await expect(page.locator('.order-tiles button, .pair-card').first()).toBeVisible();
   const tiles = page.locator('.order-tiles button');
   const original = await tiles.locator('span').allTextContents();
+  await page.evaluate(() => {
+    const tile = document.querySelector('.order-tiles button')!;
+    const observer = new MutationObserver(() => {
+      if (tile.getAttribute('aria-pressed') !== 'true') return;
+      const envelope = JSON.parse(localStorage.getItem('mariotrivia_checkpoint_v1')!);
+      const saved = JSON.parse(envelope.payload).orderCheckpoint;
+      document.documentElement.dataset.savedOrderSelection = String(saved?.selected);
+      observer.disconnect();
+    });
+    observer.observe(tile, { attributes: true, attributeFilter: ['aria-pressed'] });
+  });
   await tiles.first().click();
+  await expect(page.locator('html')).toHaveAttribute('data-saved-order-selection', '0');
   const before = Number((await page.getByLabel('Puzzle time').textContent())!.replace('s', ''));
   await resume(page);
   expect(await tiles.locator('span').allTextContents()).toEqual(original);

@@ -1,7 +1,7 @@
 import { trackLabel } from './mario/trackChallenges.ts';
 import { readCheckpoint, saveCheckpoint, clearCheckpoint } from './mario/checkpoint.ts';
 import { fitsCategory, categoryContext } from './mario/categoryCatalog.ts';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { chooseMemoryCard, rememberCard, seededBotRandom, type CardMemory } from './mario/memoryBot.ts';
 import { computerRoundTime } from './mario/botTiming.ts';
 import { QUESTIONS, type Difficulty } from './mario/questions.ts';
@@ -217,7 +217,8 @@ export default function MarioApp() {
   });
   const [checkpointWarning, setCheckpointWarning] = useState(false);
   const lastCheckpoint = useRef('');
-  useEffect(() => {
+  // Persist committed actions before paint: a reload must not race a visible selection.
+  useLayoutEffect(() => {
     const inProgress = ['game', 'versus-game', 'championship-handover'].includes(screen) || (screen === 'result' && championship !== null);
     if (!inProgress) return;
     const payload = JSON.stringify(recoveryCheckpoint);
@@ -259,7 +260,14 @@ export default function MarioApp() {
     setElapsedMs(saved.previousRoundMs + (saved.startedAt ? Date.now() - saved.startedAt : 0));
     setScreen(saved.screen); setPendingResume(null);
   };
-  const renderTotals = () => championship && <div className="champ-live-total"><span>{player}: {liveTotals[0]} EP</span>{championship.format !== 'solo' && <strong>{opponentName}: {liveTotals[1]} EP</strong>}</div>;
+  const renderTotals = (withGame = false) => championship && (withGame
+    ? <table className="champ-live-total champ-scoreboard" aria-label="Championship scores">
+      <thead><tr><th scope="col">Player</th><th scope="col">Game EP</th><th scope="col">Total EP</th></tr></thead>
+      <tbody>{[player, ...(championship.format === 'solo' ? [] : [opponentName])].map((name, index) => <tr key={index} data-player-index={index}>
+        <th scope="row">{name}</th><td>{index === activePlayer ? gamePointsNow : turnScores?.points[index] ?? 0} EP</td><td>{liveTotals[index]} EP</td>
+      </tr>)}</tbody>
+    </table>
+    : <div className="champ-live-total" aria-label="Championship total"><span>{player}: {liveTotals[0]} EP</span>{championship.format !== 'solo' && <strong>{opponentName}: {liveTotals[1]} EP</strong>}</div>);
   const availablePairTargets = ICON_PAIRS;
   const pairOptions: PairMatchOptions = {
     variant: pairVariant, pairCount, trialTarget, huntTimed,
@@ -832,7 +840,7 @@ export default function MarioApp() {
 
     {screen === 'championship-handover' && (championship || standalone) && <section className="quiz-playing mario-game quiz-panel versus-handover">
       <button className="back-btn" onClick={leaveGame}>← Games</button>
-      {championship && <p className="eyebrow">🏆 {championship.size} Championship · Game {championship.index + 1}/{championship.modes.length}</p>}{renderTotals()}
+      {championship && <p className="eyebrow">🏆 Game {championship.index + 1}/{championship.modes.length}</p>}{renderTotals(true)}
       <h1>{MODE_LABELS[mode]}</h1>
       <h2>{activeName}'s turn</h2>
       <p>{isBotTurn ? "Ready to watch Shroomer?" : `Pass to ${activeName}.`}</p>
@@ -901,9 +909,11 @@ export default function MarioApp() {
     </section>}
 
     {screen === 'game' && round && session && <section className="quiz-playing mario-game quiz-panel">
-      <div className="game-topbar"><button className="back-btn" onClick={leaveGame}>← Games</button><span className="score-display">{activeName} · {round.mode === 'pair-match' ? `${foundPairs.length} pairs` : `${(turnScores ? turnScores.correct[activePlayer] : session.correct) + (session.submission?.correct ? 1 : 0)} correct`} · {gamePointsNow} EP</span></div>
-      {championship && <div className="champ-game-banner">🏆 {championship.size} Championship · Game {championship.index + 1}/{championship.modes.length} · {MODE_LABELS[mode]}</div>}{renderTotals()}
-      {turnScores && <div className="versus-now-playing" role="status">{activeName}'s turn · {player}: {turnScores.points[0]} EP · {opponentName}: {turnScores.points[1]} EP</div>}
+      <div className="game-topbar"><button className="back-btn" onClick={leaveGame}>← Games</button>{championship
+        ? <span className="versus-now-playing" role="status">{activeName}'s turn · 🏆 {championship.index + 1}/{championship.modes.length}</span>
+        : <span className="score-display">{activeName} · {round.mode === 'pair-match' ? `${foundPairs.length} pairs` : `${(turnScores ? turnScores.correct[activePlayer] : session.correct) + (session.submission?.correct ? 1 : 0)} correct`} · {gamePointsNow} EP</span>}</div>
+      {renderTotals(true)}
+      {turnScores && !championship && <div className="versus-now-playing" role="status">{activeName}'s turn · {player}: {turnScores.points[0]} EP · {opponentName}: {turnScores.points[1]} EP</div>}
       <div className="quiz-topline"><span>{MODE_ICONS[mode]} {MODE_LABELS[mode]}{round.mode === 'pair-match' ? ` · ${round.variant === 'hunt' ? 'Hunt' : 'Time Trial'}` : ` · ${DIFFICULTY_LABELS[difficulty]}`}</span><span>{turnScores && !sharedHunt ? 'Round' : mode === 'pair-match' ? 'Board' : 'Question'} {turnScores && !sharedHunt ? Math.floor(session.index / 2) + 1 : session.index + 1} of {turnScores && !sharedHunt ? session.rounds.length / 2 : session.rounds.length}{turnScores && !sharedHunt ? ' each' : ''}</span>{timed && mode !== 'game-order' && <span aria-label="Elapsed time">{((elapsedMs - (mode === 'pair-match' ? previousRoundMs.current : 0)) / 1000).toFixed(1)}s</span>}</div>
       <div className="progress-track"><div style={{ width: `${(session.index / session.rounds.length) * 100}%` }} /></div>
       <div className="game-question"><h1>{round.prompt}</h1>
