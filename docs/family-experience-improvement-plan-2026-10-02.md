@@ -275,7 +275,16 @@ Audit at 390 × 740 in Chromium phone emulation, not physical Safari: Game Order
 - [x] Nine focused phone checks passed: all seven setup/play screens for button sizing and horizontal overflow, three consecutive quiz questions, and two timed Hunt boards for reachable Next, scroll reset and non-repeated help.
 - [x] Final `npm run test:all` passed: 166-question content/rules audit, all 116 browser tests (3.2 minutes), TypeScript and production/PWA build (88 precached assets). Whitespace check passed. Reviewed phone screenshots of Clue Duel and matching; Clue Duel answers start roughly 140px higher and matching roughly 70px higher than the audit samples. Browserslist data-age warning remains non-blocking.
 - [ ] Physical iPhone Safari checks: browser bars, safe areas, larger text, voice, rotation and background/foreground. Automated phone checks are not a substitute.
-- [ ] Follow-up refinement: fully collapsed remembered-settings summary, further merging of championship score strips, and explicit rapid-double-tap protection across round transitions. These are not claimed complete by the compact-layout pass.
+- [x] Follow-up: collapsed remembered-settings summary (continuation below).
+- [ ] Further merge championship score strips and add explicit rapid-double-tap protection across round transitions. These are not claimed complete by the compact-layout pass.
 - [ ] Larger 16/20-pair boards and longer clues still need scrolling. Do not shrink text or remove pairs merely to force every board onto one screen; assess with the family.
 
-No content-bank expansion, rule/scoring changes or deployment in this mobile-layout batch.
+No content-bank expansion or rule/scoring changes in this mobile-layout batch.
+
+### 7 October release and compact-setup continuation
+
+- [x] Commit and push countdown/mobile-flow work as `93e20db`. [GitHub run 37698531407](https://github.com/Swon404/MarioTriviaQuiz/actions/runs/37698531407) completed successfully: test and deploy jobs both passed. The first iPhone-layout pass is live.
+- [x] Add a compact remembered-settings summary to all seven standalone modes and championship setup. Collapse controls initially on phones, keep them expanded on wider screens, and expose Change/Hide settings. Keep Start outside the collapsed panel.
+- [x] Summaries update with player names, opponent, difficulty and relevant settings. Matching includes board size, goal/target, timer and unlock count; Game Order includes tile count and challenge; championship includes length and game count. No saved-setting format changes.
+- [x] Verify all seven phone Start buttons are within the 390 × 740 viewport, all expanded controls remain reachable, settings survive reload, the actual matching board agrees with the summary, and championship cannot start with fewer than two games. Eleven focused phone tests passed. Inspected the compact championship screenshot.
+- [x] Full final-code `npm run test:all` passed: content/rules audit, all 118 browser tests (2.8 minutes), TypeScript and production/PWA build (88 precached assets). Whitespace check passed; the existing Browserslist data-age warning is non-blocking. The compact-setup continuation is local and is not part of published `93e20db`.

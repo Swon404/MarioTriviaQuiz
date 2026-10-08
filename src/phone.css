@@ -9,6 +9,9 @@
 .mario-app .game-question { display: flex; align-items: center; gap: 8px; }
 .mario-app .game-question h1 { flex: 1; min-width: 0; }
 .mario-app .game-question .tts-btn { flex-shrink: 0; }
+.mario-app .settings-overview { padding: 12px; border: 1px solid var(--border); border-radius: 12px; line-height: 1.5; overflow-wrap: anywhere; }
+.mario-app .settings-overview p { margin: 4px 0 0; }
+.mario-app .setup-settings > summary { min-height: 44px; padding: 10px 4px; cursor: pointer; font-weight: 700; }
 @media (max-width: 600px) {
   .mario-app { padding: 8px; padding-bottom: calc(96px + env(safe-area-inset-bottom)); gap: 8px; }
   .mario-app button, .mario-app summary, .mario-app select { min-height: 44px; min-width: 44px; touch-action: manipulation; }

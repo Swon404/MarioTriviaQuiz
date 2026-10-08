@@ -17,6 +17,7 @@ for (const [level, attempts] of [['Rookie', 4], ['Pro', 2], ['Legend', 1]] as co
     await page.goto('./');
     await page.getByRole('button', { name: 'Play Games' }).click();
     await page.getByRole('button', { name: 'Quiz Battle' }).click();
+    if (await page.locator('.setup-settings:not([open])').count()) await page.locator('.setup-settings > summary').click();
     await page.getByRole('button', { name: level }).click();
     await page.getByRole('button', { name: 'Start!' }).click();
     const prompt = await page.locator('.quiz-playing h1').textContent();
@@ -47,6 +48,7 @@ test('mixed quiz gives four answers, feedback, and rewind before Next', async ({
   await page.goto('./');
   await page.getByRole('button', { name: 'Play Games' }).click();
   await page.getByRole('button', { name: 'Quiz Battle' }).click();
+  if (await page.locator('.setup-settings:not([open])').count()) await page.locator('.setup-settings > summary').click();
   await page.getByLabel('Player name').fill('Blaize');
   await expect(page.getByRole('group', { name: 'Topic' })).toHaveCount(0);
   for (const level of ['Rookie', 'Pro', 'Legend']) {
@@ -76,6 +78,7 @@ test('completed results survive reload and stay in a separate storage namespace'
   await page.goto('./');
   await page.getByRole('button', { name: 'Play Games' }).click();
   await page.getByRole('button', { name: 'Quiz Battle' }).click();
+  if (await page.locator('.setup-settings:not([open])').count()) await page.locator('.setup-settings > summary').click();
   await page.getByLabel('Player name').fill('Blaize');
   await page.getByRole('button', { name: 'Start!' }).click();
   for (let i = 0; i < 10; i += 1) {
@@ -99,6 +102,7 @@ test('quiz remains readable on a narrow phone screen', async ({ page }) => {
   await page.goto('./');
   await page.getByRole('button', { name: 'Play Games' }).click();
   await page.getByRole('button', { name: 'Quiz Battle' }).click();
+  if (await page.locator('.setup-settings:not([open])').count()) await page.locator('.setup-settings > summary').click();
   await page.getByRole('button', { name: 'Start!' }).click();
   await expect(page.locator('.answer-grid button')).toHaveCount(4);
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth > innerWidth);
@@ -155,6 +159,7 @@ test('Match & Hunt relaxed mode keeps cards hidden and scores every pair on one 
   await page.goto('./');
   await page.getByRole('button', { name: 'Play Games' }).click();
   await page.getByRole('button', { name: 'Match & Hunt' }).click();
+  if (await page.locator('.setup-settings:not([open])').count()) await page.locator('.setup-settings > summary').click();
   await expect(page.getByRole('group', { name: 'Matching mode' }).getByRole('button', { name: 'Hunt' })).toHaveAttribute('aria-pressed', 'true');
   await page.getByRole('button', { name: 'Start!' }).click();
   await expect(page.getByText('Board 1 of 1')).toBeVisible();
@@ -190,6 +195,7 @@ test('Match & Hunt renders web console artwork on a revealed card', async ({ pag
   await page.goto('./');
   await page.getByRole('button', { name: 'Play Games' }).click();
   await page.getByRole('button', { name: 'Match & Hunt' }).click();
+  if (await page.locator('.setup-settings:not([open])').count()) await page.locator('.setup-settings > summary').click();
   await page.getByRole('group', { name: 'Hunt target mode' }).getByRole('button', { name: 'Choose' }).click();
   await page.getByLabel('Target name').selectOption('mario-Wii');
   await page.getByRole('button', { name: 'Start!' }).click();
@@ -209,6 +215,7 @@ test('Match & Hunt Time Trial uses three timed championship boards sized from Ga
   await page.goto('./');
   await page.getByRole('button', { name: 'Play Games' }).click();
   await page.getByRole('button', { name: 'Championship', exact: false }).click();
+  if (await page.locator('.setup-settings:not([open])').count()) await page.locator('.setup-settings > summary').click();
   await page.getByRole('button', { name: 'Quick' }).click();
   for (const game of ['Game Order', 'Track Finder', 'Clue Match Up', 'Clue Duel', 'Category Finder']) {
     await page.locator('.champ-game-toggle').filter({ hasText: game }).click();
@@ -247,6 +254,7 @@ test('Match & Hunt locks its target until two other pairs are found', async ({ p
   await page.goto('./');
   await page.getByRole('button', { name: 'Play Games' }).click();
   await page.getByRole('button', { name: 'Match & Hunt' }).click();
+  if (await page.locator('.setup-settings:not([open])').count()) await page.locator('.setup-settings > summary').click();
   await page.getByRole('group', { name: 'Hunt target mode' }).getByRole('button', { name: 'Random' }).click();
   await page.getByRole('group', { name: 'Target unlock' }).getByRole('button', { name: '2' }).click();
   await page.getByRole('button', { name: 'Start!' }).click();
@@ -277,6 +285,7 @@ test('chosen timed Hunt keeps its target through three boards and rewind restart
   await page.goto('./');
   await page.getByRole('button', { name: 'Play Games' }).click();
   await page.getByRole('button', { name: 'Match & Hunt' }).click();
+  if (await page.locator('.setup-settings:not([open])').count()) await page.locator('.setup-settings > summary').click();
   await page.getByRole('group', { name: 'Hunt timer' }).getByRole('button', { name: 'On' }).click();
   await page.getByRole('group', { name: 'Hunt target mode' }).getByRole('button', { name: 'Choose' }).click();
   const targetId = await page.getByLabel('Target name').inputValue();
@@ -319,6 +328,7 @@ test('Track Finder accepts a course that fits the clue', async ({ page }) => {
   await page.goto('./');
   await page.getByRole('button', { name: 'Play Games' }).click();
   await page.getByRole('button', { name: 'Track Finder' }).click();
+  if (await page.locator('.setup-settings:not([open])').count()) await page.locator('.setup-settings > summary').click();
   await page.getByRole('button', { name: 'Start!' }).click();
   await expect(page.locator('.finder-grid button')).toHaveCount(4);
   const prompt = await page.locator('.quiz-panel h1').textContent();
@@ -337,6 +347,7 @@ test('Clue Match Up uses real pairs and rewind restarts the whole go', async ({ 
   await page.goto('./');
   await page.getByRole('button', { name: 'Play Games' }).click();
   await page.getByRole('button', { name: 'Clue Match Up' }).click();
+  if (await page.locator('.setup-settings:not([open])').count()) await page.locator('.setup-settings > summary').click();
   await page.getByRole('button', { name: 'On', exact: true }).click();
   await page.getByRole('button', { name: 'Start!' }).click();
   const names = page.locator('.match-column').first().locator('button');
@@ -378,6 +389,7 @@ for (const [level, retries] of [['Rookie', 3], ['Pro', 1], ['Legend', 0]] as con
     await page.goto('./');
     await page.getByRole('button', { name: 'Play Games' }).click();
     await page.getByRole('button', { name: 'Clue Match Up' }).click();
+    if (await page.locator('.setup-settings:not([open])').count()) await page.locator('.setup-settings > summary').click();
     await page.locator('.difficulty-select').getByRole('button', { name: level }).click();
     await page.getByRole('button', { name: 'Start!' }).click();
     const names = page.locator('.match-column').first().locator('button');
@@ -405,6 +417,7 @@ test('Clue Duel reveals five clues, accepts a guess, and rewinds before Next', a
   await page.goto('./');
   await page.getByRole('button', { name: 'Play Games' }).click();
   await page.getByRole('button', { name: 'Clue Duel' }).click();
+  if (await page.locator('.setup-settings:not([open])').count()) await page.locator('.setup-settings > summary').click();
   await page.getByRole('button', { name: 'Legend' }).click();
   await page.getByRole('button', { name: 'Start!' }).click();
   await expect(page.getByText('Question 1 of 5')).toBeVisible();
@@ -451,6 +464,7 @@ test('Category Finder shows a consecutive 5×5 window with a valid target', asyn
   await page.goto('./');
   await page.getByRole('button', { name: 'Play Games' }).click();
   await page.getByRole('button', { name: 'Category Finder' }).click();
+  if (await page.locator('.setup-settings:not([open])').count()) await page.locator('.setup-settings > summary').click();
   await page.getByRole('button', { name: 'Legend' }).click();
   await page.getByRole('button', { name: 'Start!' }).click();
   await expect(page.locator('.category-grid button')).toHaveCount(25);
@@ -480,6 +494,7 @@ test('Category Finder accepts overlapping original-release groups', async ({ pag
   await page.evaluate(ids => localStorage.setItem('mariotrivia_question_history_v1', JSON.stringify({ ada: ids })), seen);
   await page.getByRole('button', { name: 'Play Games' }).click();
   await page.getByRole('button', { name: 'Category Finder' }).click();
+  if (await page.locator('.setup-settings:not([open])').count()) await page.locator('.setup-settings > summary').click();
   await page.getByLabel('Player name', { exact: true }).fill('Ada');
   await page.getByRole('button', { name: 'Pro', exact: false }).click();
   await page.getByRole('button', { name: 'Start!', exact: true }).click();
@@ -495,6 +510,7 @@ test('two-player Quiz Battle alternates hidden turns and saves both scores', asy
   await page.goto('./');
   await page.getByRole('button', { name: 'Play Games' }).click();
   await page.getByRole('button', { name: 'Quiz Battle' }).click();
+  if (await page.locator('.setup-settings:not([open])').count()) await page.locator('.setup-settings > summary').click();
   await page.getByLabel('Player name').fill('Ada');
   await page.getByRole('button', { name: 'Two Players' }).click();
   await page.getByLabel('Player 2 name').fill('Ben');
@@ -535,6 +551,7 @@ test('Shroomer Quiz Battle reveals a prechosen answer after its handover', async
   await page.goto('./');
   await page.getByRole('button', { name: 'Play Games' }).click();
   await page.getByRole('button', { name: 'Quiz Battle' }).click();
+  if (await page.locator('.setup-settings:not([open])').count()) await page.locator('.setup-settings > summary').click();
   await page.getByRole('button', { name: 'Play Shroomer' }).click();
   await page.getByRole('button', { name: 'Start!' }).click();
   await page.locator('.versus-handover .start-btn').click();
@@ -560,6 +577,7 @@ test('solo championship carries points into three Clue Match Up rounds and saves
   await page.goto('./');
   await page.getByRole('button', { name: 'Play Games' }).click();
   await page.getByRole('button', { name: 'Championship', exact: false }).click();
+  if (await page.locator('.setup-settings:not([open])').count()) await page.locator('.setup-settings > summary').click();
   await expect(page.getByRole('heading', { name: 'Solo Championship' })).toBeVisible();
   await expect(page.getByRole('group', { name: 'Topic' })).toHaveCount(0);
   await expect(page.locator('.champ-game-toggle')).toHaveCount(7);
@@ -659,8 +677,10 @@ test('game hub selects the format first and loads the spotted Shroomer image', a
   await mushbotCard.click();
   await expect(mushbotCard).toHaveAttribute('aria-pressed', 'true');
   await page.getByRole('button', { name: 'Game Order' }).click();
+  if (await page.locator('.setup-settings:not([open])').count()) await page.locator('.setup-settings > summary').click();
   await expect(page.getByRole('button', { name: 'Play Shroomer' })).toHaveAttribute('aria-pressed', 'true');
   await page.getByRole('button', { name: '← Back to games' }).click();
   await page.getByRole('button', { name: 'Championship', exact: false }).click();
+  if (await page.locator('.setup-settings:not([open])').count()) await page.locator('.setup-settings > summary').click();
   await expect(page.getByRole('heading', { name: 'Shroomer Championship' })).toBeVisible();
 });

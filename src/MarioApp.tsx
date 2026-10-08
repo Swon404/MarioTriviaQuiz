@@ -23,6 +23,7 @@ import { newTurnScores, scoreTurn, type TurnScores } from './mario/turns.ts';
 import OrderBoard, { type OrderCheckpoint } from './OrderBoard.tsx';
 import TimerCountdown from './TimerCountdown.tsx';
 import GameHelp from './GameHelp.tsx';
+import CompactSettings from './CompactSettings.tsx';
 import './phone.css';
 import LearningCards, { LearningFeedback } from './LearningCards.tsx';
 import PairLeaderboards, { PairTimeList } from './PairLeaderboard.tsx';
@@ -730,6 +731,15 @@ export default function MarioApp() {
     return () => window.clearTimeout(timer);
   }, [screen, isBotTurn, round, session?.submission, pairTimerReady, pairLocked, pairMoves, pairMessage, flippedCards, foundPairs, difficulty]);
 
+  const setupPlayers = (format: QuizFormat) => `${draftName || 'Player'}${format === 'solo' ? ' · Solo' : ` vs ${format === 'computer' ? MUSHBOT : draftOpponent || 'Player 2'}`} · ${DIFFICULTY_LABELS[difficulty]}`;
+  const setupDetail = mode === 'game-order'
+    ? `${orderOptions.tiles} tiles · ${ORDER_RULES[orderChallenge].label} · timed`
+    : mode === 'pair-match'
+      ? pairVariant === 'time-trial'
+        ? `Time Trial · ${pairCount} pairs · find ${trialTarget === 'all' ? 'all' : trialTarget} · 3 rounds`
+        : `Hunt · ${pairCount} pairs · ${huntTimed ? 'timed · 3 rounds' : 'untimed'} · ${huntTargetMode === 'none' ? 'find every pair' : huntTargetMode === 'random' ? 'random target' : availablePairTargets.find(pair => pair.id === pairOptions.chosenTargetId)?.name ?? 'chosen target'}${huntTargetMode === 'none' ? '' : ` · unlock after ${huntUnlockPairs} pairs`}`
+      : `${DIFFICULTY_DESCRIPTIONS[difficulty]}${mode === 'quiz' && quizFormat !== 'solo' ? '' : ` Timer ${timerEnabled ? 'on' : 'off'}.`}`;
+
   const renderOrderSettings = () => <section className="champ-options-group" aria-label="Game Order options">
     <h3>Game Order · race the clock</h3>
     <div className="round-select" role="group" aria-label="Game Order tile count"><span>Tiles:</span>{orderTileOptions(difficulty).map(count => <button key={count} className={orderCounts[difficulty] === count ? 'round-btn selected' : 'round-btn'} aria-pressed={orderCounts[difficulty] === count} onClick={() => setOrderCounts(previous => ({ ...previous, [difficulty]: count }))}>{count}</button>)}</div>
@@ -804,6 +814,7 @@ export default function MarioApp() {
       <button className="back-btn" onClick={() => setScreen('hub')}>← Back to games</button>
       <h2 className="setup-title">🏆 {championshipFormat === 'solo' ? 'Solo' : championshipFormat === 'two-player' ? 'Two-Player' : 'Shroomer'} Championship</h2>
       <p className="setup-intro">Choose at least two games. Earn points in each game to build your championship total.</p>
+      <CompactSettings summary={setupPlayers(championshipFormat)} detail={`${championshipSize[0].toUpperCase() + championshipSize.slice(1)} · ${chosenChampionshipModes.length} ${chosenChampionshipModes.length === 1 ? 'game' : 'games'}`}>
        <fieldset><legend>Players</legend><div className="round-select">{(['solo', 'two-player', 'computer'] as QuizFormat[]).map(item => <button key={item} className={`round-btn ${championshipFormat === item ? 'selected' : ''}`} aria-pressed={championshipFormat === item} onClick={() => setChampionshipFormat(item)}>{item === 'solo' ? 'Solo' : item === 'two-player' ? 'Two Players' : 'Play Shroomer'}</button>)}</div></fieldset>
        {championshipFormat === 'computer' && <div className="mushbot-intro"><img src={MUSHBOT_IMAGE} alt="Shroomer, a friendly red mushroom with white spots and a face" /><span>Meet Shroomer, your computer challenger.</span></div>}
       <label className="field-label" htmlFor="championship-player-name">Player name</label>
@@ -814,6 +825,7 @@ export default function MarioApp() {
       <div className="champ-game-picker"><label>Games (choose at least 2):</label><div className="champ-games-list">{availableModes(section).map(item => <button key={item} className={`champ-game-chip champ-game-toggle ${championshipModes.includes(item) ? 'selected' : ''}`} aria-pressed={championshipModes.includes(item)} onClick={() => toggleChampionshipMode(item)}>{championshipModes.includes(item) ? '✓ ' : ''}{MODE_ICONS[item]} {MODE_LABELS[item]} · {championshipRoundCount(item, championshipSize)} rounds</button>)}</div></div>
       {chosenChampionshipModes.includes('game-order') && renderOrderSettings()}
       {chosenChampionshipModes.includes('pair-match') && renderPairSettings(true)}
+      </CompactSettings>
       <p className="champ-info-footer">{chosenChampionshipModes.length} games selected · Each player’s total is the EP earned in their own games.</p>
       <button className="start-btn" disabled={chosenChampionshipModes.length < 2} onClick={startChampionship}>{championshipFormat === 'solo' ? 'Start Solo Championship' : 'Start Championship'}</button>
     </section>}
@@ -831,6 +843,7 @@ export default function MarioApp() {
       <button className="back-btn" onClick={() => setScreen('hub')}>← Back to games</button>
       <h2 className="setup-title">{MODE_ICONS[mode]} {MODE_LABELS[mode]}</h2>
       <p className="setup-intro">{MODE_DESCRIPTIONS[mode]}</p>
+      <CompactSettings summary={setupPlayers(quizFormat)} detail={setupDetail}>
       <label className="field-label" htmlFor="player-name">Player name</label>
       <input id="player-name" className="player-name-input" maxLength={24} value={draftName} onChange={event => setDraftName(event.target.value)} placeholder="Player" />
       <fieldset><legend>Players</legend><div className="round-select">{(['solo', 'two-player', 'computer'] as QuizFormat[]).map(item => <button key={item} className={`round-btn ${quizFormat === item ? 'selected' : ''}`} aria-pressed={quizFormat === item} onClick={() => setQuizFormat(item)}>{item === 'solo' ? 'Solo' : item === 'two-player' ? 'Two Players' : 'Play Shroomer'}</button>)}</div></fieldset>
@@ -840,6 +853,7 @@ export default function MarioApp() {
       {mode === 'game-order' && renderOrderSettings()}
       {mode === 'pair-match' && renderPairSettings(false)}
       {mode !== 'pair-match' && mode !== 'game-order' && (mode !== 'quiz' || quizFormat === 'solo') && <fieldset><legend>Timer</legend><div className="round-select"><button className={`round-btn ${!timed ? 'selected' : ''}`} onClick={() => setTimerEnabled(false)} aria-pressed={!timed}>Off</button><button className={`round-btn ${timed ? 'selected' : ''}`} onClick={() => setTimerEnabled(true)} aria-pressed={timed}>On</button></div></fieldset>}
+      </CompactSettings>
       <button className="start-btn" onClick={start}>Start!</button>
     </section>}
 

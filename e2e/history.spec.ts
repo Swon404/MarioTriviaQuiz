@@ -92,6 +92,7 @@ for (const level of ['Rookie', 'Pro', 'Legend']) {
 async function open(page: Page, mode = 'Quiz Battle') {
   await page.getByRole('button', { name: 'Play Games' }).click();
   await page.getByRole('button', { name: mode, exact: false }).click();
+  if (await page.locator('.setup-settings:not([open])').count()) await page.locator('.setup-settings > summary').click();
 }
 async function history(page: Page): Promise<Record<string, string[]>> {
   return page.evaluate(key => JSON.parse(localStorage.getItem(key) ?? '{}'), KEY);

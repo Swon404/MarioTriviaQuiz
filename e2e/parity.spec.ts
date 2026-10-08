@@ -12,6 +12,7 @@ async function openGame(page: Page, name: string, versus = false) {
   await page.getByRole('button', { name: 'Play Games' }).click();
   if (versus) await page.getByRole('button', { name: '2 Players' }).click();
   await page.getByRole('button', { name, exact: false }).click();
+  if (await page.locator('.setup-settings:not([open])').count()) await page.locator('.setup-settings > summary').click();
 }
 async function solveOrder(page: Page, startTimer = true) {
   if (startTimer) await page.getByRole('button', { name: 'Start Timer', exact: true }).click();
