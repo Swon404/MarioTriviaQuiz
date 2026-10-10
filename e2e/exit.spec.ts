@@ -5,6 +5,7 @@ for (const format of ['Solo', 'Two Players', 'Play Shroomer']) {
     await page.goto('./');
     await page.getByRole('button', { name: 'Play Games' }).click();
     await page.getByRole('button', { name: 'Quiz Battle' }).click();
+  if (await page.locator('.setup-settings:not([open])').count()) await page.locator('.setup-settings > summary').click();
     if (format !== 'Solo') await page.getByRole('button', { name: format, exact: true }).click();
     await page.getByRole('button', { name: 'Start!', exact: true }).click();
     const heading = await page.locator('.quiz-playing h1').textContent();

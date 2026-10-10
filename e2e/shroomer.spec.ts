@@ -51,6 +51,7 @@ test('private Time Trial shows Shroomer flips, cancels on restart and resumes af
   await page.goto('./');
   await page.getByRole('button', { name: 'Play Games' }).click();
   await page.getByRole('button', { name: 'Match & Hunt' }).click();
+  if (await page.locator('.setup-settings:not([open])').count()) await page.locator('.setup-settings > summary').click();
   await page.getByRole('button', { name: 'Play Shroomer', exact: true }).click();
   await page.getByLabel('Player name', { exact: true }).fill('Ada');
   await page.getByRole('button', { name: 'Legend', exact: false }).click();
@@ -58,7 +59,6 @@ test('private Time Trial shows Shroomer flips, cancels on restart and resumes af
   await expect(page.getByRole('button', { name: 'Separate timed turns' })).toHaveAttribute('aria-pressed', 'true');
   await page.getByRole('group', { name: 'Matches to find' }).getByRole('button', { name: '3', exact: true }).click();
   await page.getByRole('button', { name: 'Start!', exact: true }).click();
-  await page.getByRole('button', { name: "Start Ada's turn" }).click();
   await page.getByRole('button', { name: 'Start Timer', exact: true }).click();
   await page.clock.runFor(3000);
   await expect(page.locator('.order-tiles button, .pair-card').first()).toBeVisible();
@@ -68,17 +68,13 @@ test('private Time Trial shows Shroomer flips, cancels on restart and resumes af
     await page.locator(`.pair-card[data-pair-id="${id}"][data-kind="word"]`).click();
   }
   await page.getByRole('button', { name: 'Next turn' }).click();
-  await page.getByRole('button', { name: "Start Shroomer's turn" }).click();
-  await page.getByRole('button', { name: 'Start Timer', exact: true }).click();
   await page.clock.runFor(3000);
   await expect(page.locator('.order-tiles button, .pair-card').first()).toBeVisible();
   await page.clock.runFor(500);
   await expect(page.locator('.pair-card-face')).toHaveCount(1);
   await page.getByRole('button', { name: 'Restart go', exact: false }).click();
-  await page.clock.runFor(5000);
   await expect(page.locator('.pair-card')).toHaveCount(0);
   await expect(page.locator('.feedback')).toHaveCount(0);
-  await page.getByRole('button', { name: 'Start Timer', exact: true }).click();
   await page.clock.runFor(3000);
   await expect(page.locator('.order-tiles button, .pair-card').first()).toBeVisible();
   await page.clock.runFor(500);
@@ -90,7 +86,7 @@ test('private Time Trial shows Shroomer flips, cancels on restart and resumes af
   await expect(page.locator('.pair-card-found')).toHaveCount(6);
   await page.getByRole('button', { name: 'Next turn' }).click();
   await page.clock.runFor(10000);
-  await expect(page.getByRole('heading', { name: "Ada's turn", exact: true })).toBeVisible();
+  await expect(page.locator('.versus-now-playing').filter({ hasText: "Ada's turn" })).toBeVisible();
   await expect(page.locator('.pair-card')).toHaveCount(0);
   const scores = await page.evaluate(() => JSON.parse(localStorage.getItem('mariotrivia_pair_times_v1')!));
   expect(scores).toHaveLength(1);

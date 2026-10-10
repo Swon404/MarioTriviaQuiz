@@ -9,10 +9,10 @@ import { ORDER_RULES, orderLeaderboard, saveOrderTime, isOrderPractice, markOrde
 
 export type OrderCheckpoint = { resultId: string; tiles: string[]; selected: number | null; started: number | null; elapsed: number; penalty: number; attempts: number; feedback: string[]; solved: boolean; recordMessage: string; frames: ReplayFrame[]; practice: boolean };
 
-export default function OrderBoard({ round, difficulty, options, player, resultId, onSolved, onNext, onRestart, nextLabel, resultMessage, initialCheckpoint, onCheckpoint, firstRound }: {
+export default function OrderBoard({ round, difficulty, options, player, resultId, onSolved, onNext, onRestart, nextLabel, resultMessage, initialCheckpoint, onCheckpoint, firstRound, computer = false }: {
   round: OrderRound; difficulty: Difficulty; options: OrderOptions; player: string; resultId: string; onSolved: (elapsedMs: number) => void;
   onNext: () => void; onRestart: () => void; nextLabel: string; resultMessage?: string;
-  firstRound?: boolean; initialCheckpoint?: OrderCheckpoint | null; onCheckpoint?: (value: OrderCheckpoint) => void;
+  computer?: boolean; firstRound?: boolean; initialCheckpoint?: OrderCheckpoint | null; onCheckpoint?: (value: OrderCheckpoint) => void;
 }) {
   const initial = initialCheckpoint?.resultId === resultId ? initialCheckpoint : null;
   const [tiles, setTiles] = useState(initial?.tiles ?? round.tiles.map(tile => tile.id));
@@ -57,11 +57,29 @@ export default function OrderBoard({ round, difficulty, options, player, resultI
       const time = Math.max(1, Math.round(Date.now() - started + penalty));
       setElapsed(time);
       setSolved(true);
-      const saved = saveOrderTime({ id: resultId, player, difficulty, ...options, elapsedMs: time, attempts: tries, completedAt: new Date().toISOString(), replay: frames.current.length < 2000 ? { version: 1, kind: 'order', title: `${player} · Game Order`, frames: frames.current } : undefined });
-      setRecordMessage(isOrderPractice(resultId) ? 'Practice complete — restarted boards do not enter the leaderboard.' : saved ? 'Time saved to the leaderboard!' : 'Time could not be saved on this device.');
+      const saved = !computer && saveOrderTime({ id: resultId, player, difficulty, ...options, elapsedMs: time, attempts: tries, completedAt: new Date().toISOString(), replay: frames.current.length < 2000 ? { version: 1, kind: 'order', title: `${player} · Game Order`, frames: frames.current } : undefined });
+      setRecordMessage(computer ? '' : isOrderPractice(resultId) ? 'Practice complete — restarted boards do not enter the leaderboard.' : saved ? '' : 'Time could not be saved on this device.');
       onSolved(time);
     } else setPenalty(value => value + rules.penalty);
   };
+  useEffect(() => {
+    if (!computer || started === null || solved) return;
+    const timer = window.setTimeout(() => {
+      const index = tiles.findIndex((id, position) => id !== round.correctIds[position]);
+      if (index < 0) { check(); return; }
+      if (selected === null) {
+        recordFrame('Tile selected', tiles, index);
+        setSelected(index);
+      } else {
+        const next = [...tiles];
+        const other = next.indexOf(round.correctIds[selected]);
+        [next[selected], next[other]] = [next[other], next[selected]];
+        recordFrame('Tiles swapped', next, null);
+        setTiles(next); setSelected(null); setFeedback([]);
+      }
+    }, 500);
+    return () => window.clearTimeout(timer);
+  }, [computer, started, solved, tiles, selected]);
   const scores = useMemo(() => orderLeaderboard(difficulty, options), [difficulty, options.challenge, options.tiles, solved]);
   return <div className="order-challenge">
     <GameHelp first={!!firstRound && started === null} hint="Oldest → newest. Tap two tiles to swap.">
@@ -70,21 +88,21 @@ export default function OrderBoard({ round, difficulty, options, player, resultI
     </GameHelp>
     {isOrderPractice(resultId) && <p className="review-note">Practice board — your original time stays on the leaderboard.</p>}
     {started === null && <p className="help-copy">Ready? The tiles appear on Go!</p>}
-    <TimerCountdown ready={started === null} onGo={() => { frames.current = []; recordFrame('Timer started', tiles, null, [], 0); setStarted(Date.now()); }} />
+    <TimerCountdown autoStart={computer} ready={started === null} onGo={() => { frames.current = []; recordFrame('Timer started', tiles, null, [], 0); setStarted(Date.now()); }} />
     {started !== null && <>
       <div className="order-big-timer" aria-label="Puzzle time">{(elapsed / 1000).toFixed(1)}<small>s</small></div>
       <div className="order-tiles">{tiles.map((id, index) => {
         const tile = round.tiles.find(item => item.id === id)!;
         const state = feedback[index];
-        return <button key={id} disabled={solved} aria-pressed={selected === index} className={`${selected === index ? 'selected-tile' : ''} ${options.challenge !== 'hard' || solved ? state === 'correct' ? 'order-correct' : state ? 'order-wrong' : '' : ''}`} onClick={() => {
+        return <button key={id} disabled={solved || computer} aria-pressed={selected === index} className={`${selected === index ? 'selected-tile' : ''} ${options.challenge !== 'hard' || solved ? state === 'correct' ? 'order-correct' : state ? 'order-wrong' : '' : ''}`} onClick={() => {
           if (selected === null) { recordFrame('Tile selected', tiles, index, feedback); setSelected(index); }
           else { const next = [...tiles]; [next[selected], next[index]] = [next[index], next[selected]]; recordFrame(selected === index ? 'Selection cleared' : 'Tiles swapped', next, null); setTiles(next); setSelected(null); setFeedback([]); }
         }}><span>{tile.title}</span>{solved && <small className="order-year">{tile.year}</small>}{state && (options.challenge !== 'hard' || solved) && <small className="order-position-feedback">{state === 'correct' ? '✓ Correct position' : rules.hints ? state === 'left' ? '← Move earlier' : 'Move later →' : 'Wrong position'}</small>}</button>;
       })}</div>
-      {!solved && <button className="start-btn check-button" onClick={check}>Check order</button>}
+      {!solved && !computer && <button className="start-btn check-button" onClick={check}>Check order</button>}
       {feedback.length > 0 && <p className="order-feedback" role="status">{solved ? `Solved in ${(elapsed / 1000).toFixed(1)} seconds! ${attempts} ${attempts === 1 ? 'check' : 'checks'}.` : `${feedback.filter(value => value === 'correct').length}/${tiles.length} correct positions. Keep going!${rules.penalty ? ' +1 second.' : ''}`}</p>}
-      {solved && <>{resultMessage && <p className="order-result">{resultMessage}</p>}<p role="status">{recordMessage}</p><div className="feedback-actions"><button className="back-btn" onClick={() => { markOrderPractice(resultId); onRestart(); }}>Rewind</button><button className="start-btn" onClick={onNext}>{nextLabel}</button></div></>}
+      {solved && <>{resultMessage && !resultMessage.startsWith('Time recorded.') && <p className="order-result">{resultMessage}</p>}{recordMessage && <p role="status">{recordMessage}</p>}<div className="feedback-actions"><button className="back-btn" onClick={() => { markOrderPractice(resultId); onRestart(); }}>Rewind</button><button className="start-btn" onClick={onNext}>{nextLabel}</button></div></>}
     </>}
-    <section className="order-leaderboard"><details open={solved}><summary>Game Order Top 10</summary><p>{options.tiles} tiles · {rules.label} · fastest times</p>{scores.length ? <ol>{scores.map(score => <li key={score.id}><span>{score.player} · {score.attempts} checks</span><strong>{(score.elapsedMs / 1000).toFixed(1)}s</strong><ReplayViewer replay={score.replay} /></li>)}</ol> : <p>No times yet. Set the first!</p>}</details></section>
+    <section className="order-leaderboard"><details open={solved}><summary>Game Order Top 5</summary><p>{options.tiles} tiles · {rules.label} · fastest times</p>{scores.length ? <ol>{scores.map(score => <li key={score.id}><span>{score.player} · {score.attempts} checks</span><strong>{(score.elapsedMs / 1000).toFixed(1)}s</strong><ReplayViewer replay={score.replay} /></li>)}</ol> : <p>No times yet. Set the first!</p>}</details></section>
   </div>;
 }

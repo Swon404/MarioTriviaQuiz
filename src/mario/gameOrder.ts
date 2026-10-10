@@ -8,7 +8,7 @@ export const ORDER_RULES = {
   medium: { label: 'Medium', description: 'Position feedback, no arrows. Years revealed when solved. +1 second per wrong check.', hints: false, penalty: 1000 },
   hard: { label: 'Hard', description: 'Only the number of correct positions. Years revealed when solved. +1 second per wrong check.', hints: false, penalty: 1000 },
 } as const;
-export const orderTileOptions = (difficulty: Difficulty) => difficulty === 'explorer' ? [3, 4, 5] : difficulty === 'scientist' ? [4, 5, 6] : [5, 6, 8];
+export const orderTileOptions = (_difficulty: Difficulty) => [4, 6, 8];
 export const ORDER_RULESET = 'order-v2';
 const practised = new Set<string>();
 export const markOrderPractice = (id: string) => { practised.add(id); };
@@ -30,5 +30,5 @@ export function saveOrderTime(value: OrderTime): boolean {
   } catch { return false; }
 }
 export function orderLeaderboard(difficulty: Difficulty, options: OrderOptions): OrderTime[] {
-  return getOrderTimes().filter(item => item.ruleset === ORDER_RULESET && item.difficulty === difficulty && item.challenge === options.challenge && item.tiles === options.tiles).sort((a, b) => a.elapsedMs - b.elapsedMs || a.attempts - b.attempts).slice(0, 10);
+  return getOrderTimes().filter(item => item.ruleset === ORDER_RULESET && item.difficulty === difficulty && item.challenge === options.challenge && item.tiles === options.tiles).sort((a, b) => a.elapsedMs - b.elapsedMs || a.attempts - b.attempts).slice(0, 5);
 }

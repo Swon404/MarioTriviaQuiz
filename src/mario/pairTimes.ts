@@ -43,5 +43,5 @@ export function savePairTime(item: PairTime, eligible: boolean): boolean {
 export function pairLeaderboard(round: PairRound, difficulty: Difficulty): PairTime[] {
   const key = pairTimeKey(pairConfiguration(round, difficulty));
   return getPairTimes().filter(item => pairTimeKey(item) === key)
-    .sort((a, b) => a.elapsedMs - b.elapsedMs || a.moves - b.moves).slice(0, 10);
+    .sort((a, b) => a.elapsedMs - b.elapsedMs || a.moves - b.moves).slice(0, 5);
 }

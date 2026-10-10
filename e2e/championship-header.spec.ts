@@ -28,7 +28,6 @@ test('phone championship shows game and total scores through rewind, handovers a
   };
   for (let turn = 0; turn < 6; turn++) {
     await check(points);
-    await page.getByRole('button', { name: `Start ${turn % 2 ? 'Dad' : 'Blaize'}'s turn` }).click();
     await check(points);
     await expect(page.locator('.versus-now-playing')).toHaveCount(1);
     await expect(page.locator('.champ-game-banner')).toHaveCount(0);
@@ -46,7 +45,6 @@ test('phone championship shows game and total scores through rewind, handovers a
   }
   await page.getByRole('button', { name: 'Next: Track Finder' }).click();
   await check([0, 0], points);
-  await page.getByRole('button', { name: "Start Blaize's turn" }).click();
   await check([0, 0], points);
   await page.screenshot({ path: 'test-results/phone-championship-scores.png', fullPage: true });
 });

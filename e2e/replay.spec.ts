@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 
 test('Replay plays selections and completion on a phone; cleanup confirms and can be undone', async ({ page }) => {
+  await page.clock.install();
   await page.setViewportSize({ width: 360, height: 740 });
   await page.goto('./');
   await page.evaluate(() => {
@@ -16,14 +17,20 @@ test('Replay plays selections and completion on a phone; cleanup confirms and ca
   await page.getByRole('button', { name: 'High Scores' }).click();
   const table = page.getByRole('heading', { name: 'Game Order · fastest times' }).locator('..');
   const replay = table.locator('.board-replay').first();
-  await replay.locator('summary').click();
-  await replay.getByRole('button', { name: 'Play replay' }).click();
+  await replay.getByRole('button', { name: 'Replay', exact: false }).click();
+  await replay.getByRole('button', { name: 'Start replay' }).click();
+  await page.clock.runFor(80);
+  await expect(replay.locator('.replay-selected')).toHaveCount(1);
+  await replay.getByRole('button', { name: 'Stop replay' }).click();
+  await page.clock.runFor(500);
+  await expect(replay.locator('.replay-selected')).toHaveCount(1);
+  await replay.getByRole('button', { name: 'Start replay' }).click();
+  await page.clock.runFor(160);
   await expect(replay).toContainText('Replay finished');
   await expect(replay.locator('.replay-correct')).toHaveCount(3);
-  await replay.getByRole('button', { name: 'Previous event' }).click();
-  await expect(replay.locator('.replay-selected')).toHaveCount(1);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.screenshot({ path: 'test-results/replay-phone.png', fullPage: true });
+  await replay.getByRole('button', { name: 'Back', exact: false }).click();
   page.once('dialog', dialog => dialog.dismiss());
   await table.getByRole('button', { name: 'Keep best per table' }).click();
   await expect(table.locator('.order-leaderboard li')).toHaveCount(2);

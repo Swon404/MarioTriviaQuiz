@@ -37,6 +37,7 @@ test('selected quiz fact stays the same after rewind and restoring a completed a
   await page.evaluate(history => localStorage.setItem('mariotrivia_question_history_v1', JSON.stringify({ ada: history })), recent);
   await page.getByRole('button', { name: 'Play Games' }).click();
   await page.getByRole('button', { name: 'Quiz Battle' }).click();
+  if (await page.locator('.setup-settings:not([open])').count()) await page.locator('.setup-settings > summary').click();
   await page.getByLabel('Player name', { exact: true }).fill('Ada');
   await page.getByRole('button', { name: 'Start!', exact: true }).click();
   await expect(page.locator('.quiz-playing h1')).toHaveText(wanted.prompt);

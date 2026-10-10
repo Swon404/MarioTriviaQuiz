@@ -1,8 +1,6 @@
 import type { ReactNode } from 'react';
 
-export default function GameHelp({ first, hint, children }: { first: boolean; hint: string; children?: ReactNode }) {
-  return <div className="game-help">
-    {first && <p className="help-copy">{hint}</p>}
-    <details><summary>How to play</summary><div>{children ?? hint}</div></details>
-  </div>;
+// Instructions belong in the game prompt, not a repeated panel between turns.
+export default function GameHelp(_props: { first: boolean; hint: string; children?: ReactNode }) {
+  return null;
 }

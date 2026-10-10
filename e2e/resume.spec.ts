@@ -6,6 +6,7 @@ async function open(page: Page) {
   await page.goto('./');
   await page.getByRole('button', { name: 'Play Games' }).click();
   await page.getByRole('button', { name: 'Quiz Battle' }).click();
+  if (await page.locator('.setup-settings:not([open])').count()) await page.locator('.setup-settings > summary').click();
   await page.getByLabel('Player name', { exact: true }).fill('Ada');
 }
 async function correct(page: Page) {
@@ -42,12 +43,11 @@ for (const format of ['Two Players', 'Play Shroomer']) {
     await page.getByRole('button', { name: format, exact: true }).click();
     if (format === 'Two Players') await page.getByLabel('Player 2 name').fill('Ben');
     await page.getByRole('button', { name: 'Start!', exact: true }).click();
-    await page.locator('.versus-handover .start-btn').click();
     await correct(page);
     await page.getByRole('button', { name: 'Next turn' }).click();
     await resume(page);
-    await expect(page.locator('.versus-handover')).toContainText(format === 'Two Players' ? 'Ben' : 'Shroomer');
-    await expect(page.locator('.answer-grid button')).toHaveCount(0);
+    await expect(page.locator('.versus-now-playing')).toContainText(format === 'Two Players' ? 'Ben' : 'Shroomer');
+    await expect(page.locator('.answer-grid button')).toHaveCount(4);
     await expect(page.locator('.score-display')).toContainText('Ada 1');
   });
 }
@@ -91,6 +91,7 @@ async function openBoard(page: Page, mode: string) {
   await page.goto('./');
   await page.getByRole('button', { name: 'Play Games' }).click();
   await page.getByRole('button', { name: mode, exact: false }).click();
+  await page.locator('.setup-settings > summary').click();
 }
 test('Game Order restores selected tiles, running time and a solved board without another save', async ({ page }) => {
   await openBoard(page, 'Game Order');
@@ -172,21 +173,19 @@ test('Championship recovery keeps totals and the next player across a leg bounda
   for (const mode of ['Game Order', 'Clue Match Up', 'Match & Hunt', 'Clue Duel', 'Category Finder']) await page.locator('.champ-game-toggle').filter({ hasText: mode }).click();
   await page.getByRole('button', { name: 'Start Championship', exact: true }).click();
   for (let turn = 0; turn < 6; turn++) {
-    const name = turn % 2 ? 'Ben' : 'Ada';
-    await page.getByRole('button', { name: `Start ${name}'s turn`, exact: true }).click();
     await correct(page);
     await page.getByRole('button', { name: turn === 5 ? 'See result' : 'Next turn' }).click();
     if (turn === 0) {
       const totals = await page.locator('.champ-live-total').textContent();
       await resume(page);
-      await expect(page.getByRole('heading', { name: "Ben's turn", exact: true })).toBeVisible();
+      await expect(page.locator('.versus-now-playing').filter({ hasText: "Ben's turn" })).toBeVisible();
       await expect(page.locator('.champ-live-total')).toHaveText(totals!);
     }
   }
   const results = await page.evaluate(() => localStorage.getItem('mariotrivia_results_v1'));
   await resume(page);
   await page.getByRole('button', { name: 'Next: Track Finder', exact: true }).click();
-  await expect(page.getByRole('heading', { name: "Ada's turn", exact: true })).toBeVisible();
+  await expect(page.locator('.versus-now-playing').filter({ hasText: "Ada's turn" })).toBeVisible();
   expect(await page.evaluate(() => localStorage.getItem('mariotrivia_results_v1'))).toBe(results);
   await expect(page.locator('.champ-live-total')).toContainText('36 EP');
 });
@@ -196,7 +195,6 @@ test('Reload during a shared Hunt mismatch passes the turn and unlocks the board
   await page.getByLabel('Player name', { exact: true }).fill('Ada');
   await page.getByLabel('Player 2 name').fill('Ben');
   await page.getByRole('button', { name: 'Start!', exact: true }).click();
-  await page.getByRole('button', { name: "Start Ada's turn" }).click();
   const ids = [...new Set(await page.locator('.pair-card').evaluateAll(cards => cards.map(card => card.getAttribute('data-pair-id'))))];
   await page.locator(`.pair-card[data-pair-id="${ids[0]}"]`).first().click();
   await page.locator(`.pair-card[data-pair-id="${ids[1]}"]`).first().click();

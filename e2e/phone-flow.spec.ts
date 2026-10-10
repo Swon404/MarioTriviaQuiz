@@ -58,7 +58,7 @@ test('phone timed Hunt keeps Next above the board and hides repeated instruction
   const target = await page.getByLabel('Target name').inputValue();
   await page.getByRole('button', { name: 'Start!', exact: true }).click();
   for (let round = 0; round < 2; round++) {
-    await expect(page.locator('.game-help > .help-copy')).toHaveCount(round === 0 ? 1 : 0);
+    await expect(page.locator('.game-help')).toHaveCount(0);
     await expect(page.locator('.order-leaderboard > details')).not.toHaveAttribute('open', '');
     await page.getByRole('button', { name: 'Start Timer', exact: true }).click();
     await page.locator(`.pair-card[data-pair-id="${target}"][data-kind="icon"]`).click();
@@ -69,7 +69,7 @@ test('phone timed Hunt keeps Next above the board and hides repeated instruction
     await next.click();
     await expect.poll(() => page.evaluate(() => scrollY)).toBe(0);
     await expect(page.locator('.pair-card')).toHaveCount(0);
-    await expect(page.locator('.game-help details')).not.toHaveAttribute('open', '');
+    await expect(page.getByText('How to play', { exact: true })).toHaveCount(0);
   }
 });
 
@@ -95,7 +95,6 @@ test('phone settings summary restores names, difficulty and matching rules after
   await expect(page.getByLabel('Selected settings')).toContainText('Blaize vs Dad · Pro');
   await expect(page.getByLabel('Selected settings')).toContainText('16 pairs · find 3');
   await page.getByRole('button', { name: 'Start!', exact: true }).click();
-  await page.getByRole('button', { name: "Start Blaize's turn" }).click();
   await expect(page.locator('.quiz-panel h1')).toContainText('3');
   await page.getByRole('button', { name: 'Start Timer', exact: true }).click();
   await expect(page.locator('.pair-card')).toHaveCount(32);

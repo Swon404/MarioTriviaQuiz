@@ -31,6 +31,7 @@ test('legacy saved history is normalised when play resumes without deleting unre
   });
   await page.getByRole('button', { name: 'Play Games' }).click();
   await page.getByRole('button', { name: 'Quiz Battle', exact: false }).click();
+  if (await page.locator('.setup-settings:not([open])').count()) await page.locator('.setup-settings > summary').click();
   await page.getByLabel('Player name', { exact: true }).fill('Ada');
   await page.getByRole('button', { name: 'Start!', exact: true }).click();
   const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('mariotrivia_question_history_v1')!));

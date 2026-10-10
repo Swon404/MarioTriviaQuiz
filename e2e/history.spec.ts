@@ -25,7 +25,7 @@ for (const mode of ['Clue Duel', 'Track Finder', 'Category Finder']) {
     expect(second[0]).not.toBe(first[0]);
     await expect(page.locator('.review-note')).toHaveCount(0);
   });
-  test(`${mode} uses both players' histories without recording hidden handovers`, async ({ page }) => {
+  test(`${mode} uses both players' histories and records the visible question immediately`, async ({ page }) => {
     await page.goto('./');
     await page.evaluate(({ key, ids }) => localStorage.setItem(key, JSON.stringify({ ben: ids })), { key: KEY, ids: all });
     await open(page, mode);
@@ -33,8 +33,6 @@ for (const mode of ['Clue Duel', 'Track Finder', 'Category Finder']) {
     await page.getByLabel('Player name', { exact: true }).fill('Ada');
     await page.getByLabel('Player 2 name').fill('Ben');
     await page.getByRole('button', { name: 'Start!', exact: true }).click();
-    expect((await history(page)).ada).toBeUndefined();
-    await page.getByRole('button', { name: "Start Ada's turn" }).click();
     await expect(page.locator('.review-note')).toContainText('Review challenge');
     expect((await history(page)).ada).toHaveLength(1);
     expect((await history(page)).ben[0]).toBe((await history(page)).ada[0]);
@@ -102,23 +100,21 @@ async function currentKnowledge(page: Page) {
   return QUESTIONS.find(item => item.prompt === prompt)!.knowledgeId;
 }
 
-test('Shroomer finder history waits until its hidden answer is revealed', async ({ page }) => {
+test('Shroomer finder shows its board and records the answered challenge', async ({ page }) => {
   await page.goto('./');
   await open(page, 'Category Finder');
   await page.getByRole('button', { name: 'Play Shroomer', exact: true }).click();
   await page.getByLabel('Player name', { exact: true }).fill('Ada');
   await page.getByRole('button', { name: 'Start!', exact: true }).click();
-  await page.getByRole('button', { name: "Start Ada's turn" }).click();
   const prompt = await page.locator('.quiz-panel h1').textContent();
   const labels = await page.locator('.category-grid button span').allTextContents();
   const answer = CATEGORY_ITEMS.find(item => `Find one ${CATEGORY_LABELS[item.category]}.` === prompt && labels.includes(item.name))!;
   await page.locator('.category-grid').getByText(answer.name, { exact: true }).click();
   const seen = await history(page);
   await page.getByRole('button', { name: 'Next turn' }).click();
-  await page.getByRole('button', { name: "Start Shroomer's turn" }).click();
-  await expect(page.locator('.category-grid')).toHaveCount(0);
+  await expect(page.locator('.category-grid')).toBeVisible();
   expect(await history(page)).toEqual(seen);
-  await page.getByRole('button', { name: /Show Shroomer/ }).click();
+  await expect(page.locator('.feedback')).toBeVisible();
   await expect.poll(async () => (await history(page)).ada.length).toBe(2);
   expect((await history(page)).mushbot).toBeUndefined();
 });
@@ -131,9 +127,7 @@ for (const format of ['Solo', 'Two Players', 'Play Shroomer']) {
     await page.getByLabel('Player name', { exact: true }).fill('Ada');
     if (format === 'Two Players') await page.getByLabel('Player 2 name').fill('Ben');
     await page.getByRole('button', { name: 'Start!', exact: true }).click();
-    if (format !== 'Solo') await page.getByRole('button', { name: "Start Ada's turn" }).click();
-    expect(await history(page)).toEqual({});
-    const card = page.locator('.pair-card').first();
+      const card = page.locator('.pair-card').first();
     const id = await card.getAttribute('data-pair-id');
     await card.click();
     const seen = await history(page);
@@ -143,7 +137,6 @@ for (const format of ['Solo', 'Two Players', 'Play Shroomer']) {
     await page.reload();
     await open(page, 'Match & Hunt');
     await page.getByRole('button', { name: 'Start!', exact: true }).click();
-    if (format !== 'Solo') await page.getByRole('button', { name: "Start Ada's turn" }).click();
     await expect(page.locator(`.pair-card[data-pair-id="${id}"]`)).toHaveCount(0);
     expect((await history(page)).ada).toEqual([`memory-pair-${id}`]);
   });
@@ -153,7 +146,6 @@ test('Quiz remembers shown facts across reload, not an entire generated game', a
   await page.goto('./');
   await open(page);
   await page.getByLabel('Player name', { exact: true }).fill('Ada');
-  expect(await history(page)).toEqual({});
   await page.getByRole('button', { name: 'Start!', exact: true }).click();
   const first = await currentKnowledge(page);
   expect((await history(page)).ada).toEqual([first]);
@@ -184,15 +176,13 @@ test('Exhausted pools label reviews and other players still get fresh questions'
   expect((await history(page)).ben).toHaveLength(1);
 });
 
-test('Two-player handover does not count as seeing the hidden question', async ({ page }) => {
+test('Two-player question is recorded for both viewers immediately', async ({ page }) => {
   await page.goto('./');
   await open(page);
   await page.getByRole('button', { name: 'Two Players', exact: true }).click();
   await page.getByLabel('Player name', { exact: true }).fill('Ada');
   await page.getByLabel('Player 2 name').fill('Ben');
   await page.getByRole('button', { name: 'Start!', exact: true }).click();
-  expect(await history(page)).toEqual({});
-  await page.getByRole('button', { name: "Start Ada's turn" }).click();
   const saved = await history(page);
   expect(saved.ada).toHaveLength(1);
   expect(saved.ben).toEqual(saved.ada);

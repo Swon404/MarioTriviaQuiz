@@ -2,8 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import './TimerCountdown.css';
 
 /** Preparation only: callers reveal the board and start their stopwatch on Go. */
-export default function TimerCountdown({ ready, onGo, label = 'Start Timer' }: {
-  ready: boolean; onGo: () => void; label?: string;
+export default function TimerCountdown({ ready, onGo, label = 'Start Timer', autoStart = false }: {
+  ready: boolean; onGo: () => void; label?: string; autoStart?: boolean;
 }) {
   const [count, setCount] = useState<number | null>(null);
   const pending = useRef<number[]>([]);
@@ -30,6 +30,7 @@ export default function TimerCountdown({ ready, onGo, label = 'Start Timer' }: {
       if (second === 3) callback.current();
     }, second * 1000));
   };
+  useEffect(() => { if (ready && autoStart) start(); }, [ready, autoStart]);
   return <>
     <div className={`timer-countdown${count === null ? ' timer-countdown-idle' : count === 0 ? ' timer-countdown-go' : ''}`} role="status" aria-live="assertive" aria-atomic="true">
       {count !== null && <><span className="timer-countdown-caption">{count ? 'Get ready!' : 'Timer started'}</span><strong>{count || 'Go!'}</strong></>}

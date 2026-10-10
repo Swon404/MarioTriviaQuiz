@@ -1,4 +1,15 @@
 /* Phone-first playing surfaces. Keep the artwork around, not behind, reading text. */
+.mario-app .replay-stage { box-sizing: border-box; width: min(700px, calc(100vw - 24px)); max-height: calc(100dvh - 24px); margin: 12px auto; padding: 16px; border: 2px solid var(--border); border-radius: 16px; background: #493248; color: var(--text-primary); overflow: auto; }
+.mario-app .replay-stage::backdrop { background: #211d32ed; }
+.mario-app .replay-stage .replay-tile { opacity: 1; }
+.mario-app .replay-stage .order-big-timer { margin: 12px 0; }
+.mario-app .order-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.mario-app .order-tiles button { overflow-wrap: normal; word-break: normal; font-size: clamp(1.1rem, 4vw, 1.5rem); }
+.mario-app .clue-reveal { min-height: 52px; width: 100%; margin: 12px 0; }
+.mario-app .versus-now-playing { padding: 10px; border: 2px solid var(--gold); border-radius: 12px; background: #493248; }
+.mario-app .choice-btn.correct, .mario-app .matched-tile { animation: answer-arrives .25s ease-out; }
+@keyframes answer-arrives { from { transform: scale(.97); } to { transform: scale(1); } }
+@media (prefers-reduced-motion: reduce) { .mario-app .choice-btn.correct, .mario-app .matched-tile { animation: none; } }
 .mario-app .game-help { font-size: 1rem; line-height: 1.4; }
 .mario-app .game-help p { margin: 0; }
 .mario-app .game-help summary { cursor: pointer; min-height: 44px; display: flex; align-items: center; justify-content: center; }

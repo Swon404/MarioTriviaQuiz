@@ -5,6 +5,7 @@ test('Timed Hunt saves the human turn immediately while Shroomer plays visibly w
   await page.goto('./');
   await page.getByRole('button', { name: 'Play Games' }).click();
   await page.getByRole('button', { name: 'Match & Hunt' }).click();
+  if (await page.locator('.setup-settings:not([open])').count()) await page.locator('.setup-settings > summary').click();
   await page.getByRole('button', { name: 'Play Shroomer', exact: true }).click();
   await page.getByRole('button', { name: 'Legend', exact: false }).click();
   await page.getByLabel('Player name', { exact: true }).fill('Ada');
@@ -13,7 +14,6 @@ test('Timed Hunt saves the human turn immediately while Shroomer plays visibly w
   await page.getByRole('group', { name: 'Target unlock' }).getByRole('button', { name: '0', exact: true }).click();
   const target = await page.getByLabel('Target name').inputValue();
   await page.getByRole('button', { name: 'Start!', exact: true }).click();
-  await page.getByRole('button', { name: "Start Ada's turn" }).click();
   await page.getByRole('button', { name: 'Start Timer', exact: true }).click();
   await page.clock.runFor(3000);
   await expect(page.locator('.order-tiles button, .pair-card').first()).toBeVisible();
@@ -24,20 +24,20 @@ test('Timed Hunt saves the human turn immediately while Shroomer plays visibly w
   expect(saved[0]).toMatchObject({ player: 'Ada', target, moves: 1, ruleset: 'pairs-v1' });
   expect(saved[0].replay.target).toBeTruthy();
   expect(saved[0].replay.frames.map((frame: { event: string }) => frame.event)).toEqual(['Timer started', 'First card revealed', 'Second card revealed — a pair', 'Hunt target found']);
-  await page.locator('.board-replay summary').click();
+  await page.locator('.board-replay').getByRole('button', { name: 'Replay', exact: false }).click();
   const replay = page.locator('.board-replay');
   await expect(replay).toContainText(`Hunt target: ${saved[0].replay.target}`);
   await expect(replay.locator('.replay-hidden')).toHaveCount(24);
-  await replay.getByRole('button', { name: 'Next event' }).click();
+  await replay.getByRole('button', { name: 'Start replay' }).click();
+  const frames = saved[0].replay.frames;
+  await page.clock.runFor(Math.max(80, frames[1].atMs - frames[0].atMs));
   await expect(replay.locator('.replay-selected')).toHaveCount(1);
-  await replay.getByRole('button', { name: 'Next event' }).click();
+  await page.clock.runFor(Math.max(80, frames[2].atMs - frames[1].atMs));
   await expect(replay.locator('.replay-selected')).toHaveCount(2);
-  await replay.getByRole('button', { name: 'Next event' }).click();
+  await page.clock.runFor(Math.max(80, frames[3].atMs - frames[2].atMs));
   await expect(replay.locator('.replay-matched')).toHaveCount(2);
-  await expect(replay).toContainText('Replay finished');
+  await replay.getByRole('button', { name: 'Back', exact: false }).click();
   await page.getByRole('button', { name: 'Next turn' }).click();
-  await page.getByRole('button', { name: "Start Shroomer's turn" }).click();
-  await page.getByRole('button', { name: 'Start Timer', exact: true }).click();
   await page.clock.runFor(3000);
   await expect(page.locator('.order-tiles button, .pair-card').first()).toBeVisible();
   await page.clock.runFor(500);
@@ -52,7 +52,7 @@ test('Timed Hunt saves the human turn immediately while Shroomer plays visibly w
   await page.getByRole('button', { name: 'High Scores' }).click();
   await expect(page.getByRole('heading', { name: 'Match & Hunt · fastest times' })).toBeVisible();
   await expect(page.locator('.order-leaderboard').filter({ hasText: 'pairs-v1' })).toContainText('Ada');
-  await page.locator('.board-replay summary').click();
+  await page.locator('.board-replay').getByRole('button', { name: 'Replay', exact: false }).click();
   await expect(page.locator('.board-replay')).toContainText(`Hunt target: ${saved[0].replay.target}`);
 });
 

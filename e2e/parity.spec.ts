@@ -35,13 +35,11 @@ test('Two-player Game Order gives comparable but different timed boards', async 
   await page.getByLabel('Player name', { exact: true }).fill('Ada');
   await page.getByLabel('Player 2 name').fill('Ben');
   await page.getByRole('button', { name: 'Start!', exact: true }).click();
-  await page.getByRole('button', { name: "Start Ada's turn" }).click();
   await page.getByRole('button', { name: 'Start Timer', exact: true }).click();
   await expect(page.locator('.order-tiles button, .pair-card').first()).toBeVisible();
   const first = await page.locator('.order-tiles button span').allTextContents();
   await solveOrder(page, false);
   await page.getByRole('button', { name: 'Next turn', exact: true }).click();
-  await page.getByRole('button', { name: "Start Ben's turn" }).click();
   await page.getByRole('button', { name: 'Start Timer', exact: true }).click();
   await expect(page.locator('.order-tiles button, .pair-card').first()).toBeVisible();
   const second = await page.locator('.order-tiles button span').allTextContents();
@@ -158,20 +156,15 @@ test('Category Finder has explicit feedback without arbitrary visible numbers', 
 });
 
 test('Restart cancels a pending Shroomer memory turn and clears its board', async ({ page }) => {
+  await page.clock.install();
   await openGame(page, 'Match & Hunt');
   await page.getByRole('button', { name: 'Play Shroomer', exact: true }).click();
   await page.getByLabel('Player name', { exact: true }).fill('Ada');
   await page.getByRole('button', { name: 'Start!', exact: true }).click();
-  await page.getByRole('button', { name: "Start Ada's turn" }).click();
   const ids = [...new Set(await page.locator('.pair-card').evaluateAll(cards => cards.map(card => card.getAttribute('data-pair-id'))))];
   await page.locator(`.pair-card[data-pair-id="${ids[0]}"][data-kind="icon"]`).click();
   await page.locator(`.pair-card[data-pair-id="${ids[1]}"][data-kind="word"]`).click();
-  await expect(page.getByRole('button', { name: /Show Shroomer/ })).toBeVisible();
-  // Hold the first flip steady: real-time polling can miss its 650 ms window
-  // on a busy runner, without indicating a gameplay failure.
-  await page.clock.install({ time: new Date('2026-10-06T12:00:00Z') });
-  await page.clock.pauseAt(new Date('2026-10-06T12:00:01Z'));
-  await page.getByRole('button', { name: /Show Shroomer/ }).click();
+  await page.clock.runFor(700);
   await expect(page.locator('.pair-card-face')).toHaveCount(1);
   await page.getByRole('button', { name: 'Restart go' }).click();
   await expect(page.locator('.versus-now-playing')).toContainText("Ada's turn");
@@ -195,6 +188,7 @@ test('Championship is first and setup choices survive reload', async ({ page }) 
   await page.getByRole('button', { name: 'Play Games' }).click();
   await expect(page.locator('.game-mode-btn').first()).toContainText('Championship');
   await page.getByRole('button', { name: 'Championship', exact: false }).click();
+  if (await page.locator('.setup-settings:not([open])').count()) await page.locator('.setup-settings > summary').click();
   await expect(page.getByLabel('Player name', { exact: true })).toHaveValue('Ada');
   await expect(page.getByLabel('Player 2 name')).toHaveValue('Ben');
   await expect(page.getByRole('button', { name: 'Epic', exact: true })).toHaveAttribute('aria-pressed', 'true');
@@ -230,15 +224,12 @@ test('Game Order keeps timing through wrong checks and saves a solved round imme
   expect(saved[0].elapsedMs).toBeGreaterThan(1000);
   expect(saved[0].replay.frames.some((frame: { event: string }) => frame.event === 'Tile selected')).toBe(true);
   expect(saved[0].replay.frames.filter((frame: { event: string }) => frame.event.startsWith('Check'))).toHaveLength(2);
-  await page.locator('.board-replay summary').click();
+  await page.locator('.board-replay').getByRole('button', { name: 'Replay', exact: false }).click();
   const replay = page.locator('.board-replay');
-  await replay.getByRole('button', { name: 'Next event' }).click();
-  await expect(replay).toContainText('Check 1');
-  await replay.getByRole('button', { name: 'Next event' }).click();
-  await expect(replay.locator('.replay-selected')).toHaveCount(1);
-  await replay.getByRole('button', { name: 'Restart replay' }).click();
-  await expect(replay).toContainText('Timer started');
-  await page.locator('.board-replay summary').click();
+  await expect(replay.getByRole('dialog')).toBeVisible();
+  await expect(replay.getByRole('button', { name: 'Start replay' })).toBeVisible();
+  await expect(replay.getByRole('button', { name: 'Previous event' })).toHaveCount(0);
+  await replay.getByRole('button', { name: 'Back', exact: false }).click();
   expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(false);
   await page.screenshot({ path: 'test-results/game-order-phone.png', fullPage: true, animations: 'disabled' });
   await page.getByRole('button', { name: 'Rewind' }).click();
@@ -261,9 +252,8 @@ test('championship alternates every question with distinct questions and totals'
     const prompts: string[] = [];
     for (let turn = 0; turn < 6; turn += 1) {
       const name = turn % 2 === 0 ? 'Ada' : 'Ben';
-      await expect(page.getByRole('heading', { name: `${name}'s turn`, exact: true })).toBeVisible();
-      await expect(page.locator('.answer-grid button')).toHaveCount(0);
-      await page.getByRole('button', { name: `Start ${name}'s turn` }).click();
+      await expect(page.locator('.versus-now-playing').filter({ hasText: `${name}'s turn` })).toBeVisible();
+      await expect(page.locator('.answer-grid button')).toHaveCount(game === 'quiz' ? 4 : 0);
       if (game === 'tracks') await expect(page.locator('.finder-grid button')).toHaveCount(4);
       prompts.push((await (game === 'quiz' ? answerQuiz(page) : answerTrack(page)))!);
       await page.getByRole('button', { name: turn === 5 ? 'See result' : 'Next turn' }).click();
@@ -285,7 +275,6 @@ test('Clue Duel passes clues and gives one bonus guess before alternating the ne
   await page.getByLabel('Player 2 name').fill('Ben');
   await page.getByRole('button', { name: 'Legend', exact: false }).click();
   await page.getByRole('button', { name: 'Start!', exact: true }).click();
-  await page.getByRole('button', { name: "Start Ada's turn" }).click();
   await page.getByRole('button', { name: 'Next clue — pass to Ben' }).click();
   await expect(page.locator('.versus-now-playing')).toContainText("Ben's turn");
   const clues = await page.locator('.clue-list li').allTextContents();
@@ -296,7 +285,7 @@ test('Clue Duel passes clues and gives one bonus guess before alternating the ne
   await expect(page.locator('.match-message')).toContainText('bonus chance');
   await page.getByRole('button', { name: 'Skip bonus' }).click();
   await page.getByRole('button', { name: 'Next turn' }).click();
-  await expect(page.getByRole('heading', { name: "Ben's turn", exact: true })).toBeVisible();
+  await expect(page.locator('.versus-now-playing').filter({ hasText: "Ben's turn" })).toBeVisible();
 });
 
 test('Track Finder mixes all three clue types on a phone without origin giveaways', async ({ page }) => {
@@ -352,8 +341,7 @@ test('Shroomer takes individual championship turns including timed Game Order', 
   await page.getByRole('button', { name: 'Start Championship', exact: true }).click();
   for (const game of ['quiz', 'order']) {
     for (let turn = 0; turn < 6; turn += 1) {
-      await page.getByRole('button', { name: turn % 2 ? "Start Shroomer's turn" : "Start Ada's turn" }).click();
-      if (turn % 2) await page.getByRole('button', { name: /Show Shroomer/ }).click();
+      if (turn % 2) await expect(page.getByRole('button', { name: turn === 5 ? 'See result' : 'Next turn', exact: false })).toBeVisible({ timeout: 15000 });
       else if (game === 'quiz') await answerQuiz(page);
       else await solveOrder(page);
       await page.getByRole('button', { name: turn === 5 ? 'See result' : 'Next turn' }).click();
@@ -388,25 +376,24 @@ test('Hunt and Time Trial options are remembered along with player format', asyn
 });
 
 test('Shroomer shares relaxed Hunt and human controls are locked during its move', async ({ page }) => {
+  await page.clock.install();
   await openGame(page, 'Match & Hunt');
   await page.getByRole('button', { name: 'Play Shroomer', exact: true }).click();
   await page.getByLabel('Player name', { exact: true }).fill('Ada');
   await page.getByRole('button', { name: 'Start!', exact: true }).click();
-  await page.getByRole('button', { name: "Start Ada's turn" }).click();
   const ids = [...new Set(await page.locator('.pair-card').evaluateAll(cards => cards.map(card => card.getAttribute('data-pair-id'))))];
   await page.locator(`.pair-card[data-pair-id="${ids[0]}"][data-kind="icon"]`).click();
   await page.locator(`.pair-card[data-pair-id="${ids[1]}"][data-kind="word"]`).click();
+  await page.clock.runFor(450);
   await expect(page.locator('.versus-now-playing')).toContainText("Shroomer's turn");
   await expect(page.locator('.pair-card:enabled')).toHaveCount(0);
-  await page.getByRole('button', { name: /Show Shroomer/ }).click();
+  await page.clock.runFor(250);
   // A bot must reveal cards rather than instantly locating an unseen pair.
   await expect(page.locator('.pair-card-face')).toHaveCount(1);
-  await expect(page.getByRole('button', { name: /Show Shroomer/ })).toBeDisabled();
+  await expect(page.getByRole('button', { name: /Show Shroomer/ })).toHaveCount(0);
+  await page.clock.runFor(450);
   await expect(page.locator('.pair-card-face')).toHaveCount(2);
-  await expect.poll(async () => {
-    const button = page.getByRole('button', { name: /Show Shroomer/ });
-    return await button.count() === 0 || await button.isEnabled();
-  }).toBe(true);
+  await page.clock.runFor(450);
   // It may legitimately match or miss; do not encode a guaranteed bot success.
   expect(await page.locator('.pair-card-found').count()).toBeLessThanOrEqual(2);
 });
@@ -417,7 +404,6 @@ for (const name of ['Clue Match Up', 'Category Finder']) {
     await page.getByLabel('Player name', { exact: true }).fill('Ada');
     await page.getByLabel('Player 2 name').fill('Ben');
     await page.getByRole('button', { name: 'Start!', exact: true }).click();
-    await page.getByRole('button', { name: "Start Ada's turn" }).click();
     if (name === 'Clue Match Up') {
       for (const clue of await page.locator('.match-column').last().locator('button').allTextContents()) {
         const answer = MATCH_CLUES.find(item => item.clue === clue)!.name;
@@ -432,7 +418,7 @@ for (const name of ['Clue Match Up', 'Category Finder']) {
       await page.locator('.category-grid').getByText(answer.name, { exact: true }).click();
     }
     await page.getByRole('button', { name: 'Next turn' }).click();
-    await expect(page.getByRole('heading', { name: "Ben's turn", exact: true })).toBeVisible();
+    await expect(page.locator('.versus-now-playing').filter({ hasText: "Ben's turn" })).toBeVisible();
   });
 }
 
@@ -441,7 +427,6 @@ test('relaxed Hunt shares a board, passes on a miss, keeps a match and rewinds b
   await page.getByLabel('Player name', { exact: true }).fill('Ada');
   await page.getByLabel('Player 2 name').fill('Ben');
   await page.getByRole('button', { name: 'Start!', exact: true }).click();
-  await page.getByRole('button', { name: "Start Ada's turn" }).click();
   const ids = [...new Set(await page.locator('.pair-card').evaluateAll(cards => cards.map(card => card.getAttribute('data-pair-id'))))];
   await page.locator(`.pair-card[data-pair-id="${ids[0]}"][data-kind="icon"]`).click();
   await page.locator(`.pair-card[data-pair-id="${ids[1]}"][data-kind="word"]`).click();
@@ -464,7 +449,6 @@ test('timed Hunt alternates three private boards per player', async ({ page }) =
   await page.getByRole('button', { name: 'Start!', exact: true }).click();
   const boards = new Set<string>();
   for (let turn = 0; turn < 6; turn += 1) {
-    await page.getByRole('button', { name: turn % 2 ? "Start Ben's turn" : "Start Ada's turn" }).click();
     await page.getByRole('button', { name: 'Start Timer' }).click();
     await page.clock.runFor(3000);
     await expect(page.locator('.order-tiles button, .pair-card').first()).toBeVisible();

@@ -6,7 +6,10 @@ for (const game of ['Game Order', 'Match & Hunt']) {
     await page.goto('./');
     await page.getByRole('button', { name: 'Play Games' }).click();
     await page.getByRole('button', { name: game, exact: false }).click();
-    if (game === 'Match & Hunt') await page.getByRole('group', { name: 'Hunt timer' }).getByRole('button', { name: 'On' }).click();
+    if (game === 'Match & Hunt') {
+      await page.locator('.setup-settings > summary').click();
+      await page.getByRole('group', { name: 'Hunt timer' }).getByRole('button', { name: 'On' }).click();
+    }
     await page.getByRole('button', { name: 'Start!', exact: true }).click();
     await page.clock.pauseAt(new Date('2026-10-06T12:01:00Z'));
     const board = page.locator('.order-tiles button, .pair-card');
@@ -40,7 +43,10 @@ for (const game of ['Game Order', 'Match & Hunt']) {
     await page.goto('./');
     await page.getByRole('button', { name: 'Play Games' }).click();
     await page.getByRole('button', { name: game, exact: false }).click();
-    if (game === 'Match & Hunt') await page.getByRole('group', { name: 'Hunt timer' }).getByRole('button', { name: 'On' }).click();
+    if (game === 'Match & Hunt') {
+      await page.locator('.setup-settings > summary').click();
+      await page.getByRole('group', { name: 'Hunt timer' }).getByRole('button', { name: 'On' }).click();
+    }
     await page.getByRole('button', { name: 'Start!', exact: true }).click();
     await page.clock.pauseAt(new Date(Date.now() + 60000));
     await page.getByRole('button', { name: 'Start Timer', exact: true }).click();

@@ -18,7 +18,7 @@ export default function PairLeaderboards() {
       const group = records.filter(item => pairTimeKey(item) === key).sort((a, b) => a.elapsedMs - b.elapsedMs || a.moves - b.moves);
       const first = group[0];
       const target = ICON_PAIRS.find(pair => pair.id === first.target)?.name ?? first.target;
-      return <section className="order-leaderboard" key={key}><h4>{({ explorer: 'Rookie', scientist: 'Pro', professor: 'Legend' })[first.difficulty]} · {first.variant === 'hunt' ? 'Hunt' : 'Time Trial'} · {first.pairs} pairs</h4><p>{target ? `Target: ${target} · unlock after ${first.unlockPairs} pairs` : `Find ${first.goal} pairs`} · {first.ruleset}</p><PairTimeList records={group.slice(0, 10)} /></section>;
+      return <section className="order-leaderboard" key={key}><h4>{({ explorer: 'Rookie', scientist: 'Pro', professor: 'Legend' })[first.difficulty]} · {first.variant === 'hunt' ? 'Hunt' : 'Time Trial'} · {first.pairs} pairs</h4><p>{target ? `Target: ${target} · unlock after ${first.unlockPairs} pairs` : `Find ${first.goal} pairs`} · {first.ruleset}</p><PairTimeList records={group.slice(0, 5)} /></section>;
     })}
   </section>;
 }
