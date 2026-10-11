@@ -58,18 +58,18 @@ test('mixed quiz gives four answers, feedback, and rewind before Next', async ({
   await page.getByRole('button', { name: 'Start!' }).click();
   await expect(page.locator('.quiz-topline')).toContainText('Pro');
   await expect(page.getByText('Question 1 of 10')).toBeVisible();
-  await expect(page.locator('.score-display')).toContainText('Blaize · 0 correct · 0 EP');
+  await expect(page.locator('.score-display')).toContainText('Blaize · 0 correct · 0 points');
   await expect(page.locator('.answer-grid button')).toHaveCount(4);
   await answerQuizCorrectly(page);
   await expect(page.getByText('Fun fact:')).toBeVisible();
-  await expect(page.locator('.mario-earned')).toContainText('EP');
+  await expect(page.locator('.mario-earned')).toContainText('points');
   await page.getByRole('button', { name: '↶ Rewind', exact: true }).click();
   await expect(page.getByText('Fun fact:')).toHaveCount(0);
   await expect(page.locator('.answer-grid button:not([disabled])')).toHaveCount(4);
   await answerQuizCorrectly(page);
   await page.getByRole('button', { name: 'Next question' }).click();
   await expect(page.getByText('Question 2 of 10')).toBeVisible();
-  await expect(page.locator('.score-display')).toContainText(/Blaize · [01] correct · \d+ EP/);
+  await expect(page.locator('.score-display')).toContainText(/Blaize · [01] correct · \d+ points/);
   await expect(page.locator('.score-display')).not.toContainText('NaN');
   await expect(page.getByRole('button', { name: '↶ Rewind', exact: true })).toHaveCount(0);
 });
@@ -182,7 +182,7 @@ test('Match & Hunt relaxed mode keeps cards hidden and scores every pair on one 
   }
   await expect(page.getByText('Fun fact:')).toBeVisible();
   await expect(page.locator('.pair-card-found')).toHaveCount(24);
-  await expect(page.locator('.score-display')).toContainText('12 EP');
+  await expect(page.locator('.score-display')).toContainText('12 points');
   await page.getByRole('button', { name: 'See result' }).click();
   await expect(page.getByText('Nice work, Player!')).toBeVisible();
   await expect(page.locator('.result-card')).toContainText('1/1');
@@ -274,7 +274,7 @@ test('Match & Hunt locks its target until two other pairs are found', async ({ p
     await flip(targetId);
     await expect(page.getByText('Target found!')).toBeVisible();
     await expect(page.getByText('Fun fact:')).toBeVisible();
-    await expect(page.locator('.score-display')).toContainText('6 EP');
+    await expect(page.locator('.score-display')).toContainText('6 points');
     await page.getByRole('button', { name: 'See result' }).click();
   }
   await expect(page.locator('.result-card')).toContainText('1/1');
@@ -309,7 +309,7 @@ test('chosen timed Hunt keeps its target through three boards and rewind restart
       await page.locator(`.pair-card[data-pair-id="${id}"][data-kind="icon"]`).click();
       await page.locator(`.pair-card[data-pair-id="${id}"][data-kind="word"]`).click();
     }
-    await expect(page.locator('.score-display')).toContainText(`${(board + 1) * 5} EP`);
+    await expect(page.locator('.score-display')).toContainText(`${(board + 1) * 5} points`);
     const records = await page.evaluate(() => JSON.parse(localStorage.getItem('mariotrivia_pair_times_v1') ?? '[]'));
     expect(records).toHaveLength(board);
     if (board === 0) await expect(page.getByText('Practice complete', { exact: false })).toBeVisible();
@@ -344,6 +344,7 @@ test('Track Finder accepts a course that fits the clue', async ({ page }) => {
 });
 
 test('Clue Match Up uses real pairs and rewind restarts the whole go', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 740 });
   await page.goto('./');
   await page.getByRole('button', { name: 'Play Games' }).click();
   await page.getByRole('button', { name: 'Clue Match Up' }).click();
@@ -360,9 +361,13 @@ test('Clue Match Up uses real pairs and rewind restarts the whole go', async ({ 
   const first = (await clues.first().textContent())!;
   const firstAnswer = MATCH_CLUES.find(item => item.clue === first)!.name;
   const wrong = (await names.allTextContents()).find(name => name !== firstAnswer)!;
+  const boardBefore = await page.locator('.match-board').boundingBox();
   await page.locator('.match-column').first().getByRole('button', { name: wrong, exact: true }).click();
   await clues.first().click();
   await expect(page.getByText('Not a pair')).toBeVisible();
+  const boardAfter = await page.locator('.match-board').boundingBox();
+  expect(boardAfter!.y).toBeCloseTo(boardBefore!.y, 0);
+  expect(boardAfter!.height).toBeCloseTo(boardBefore!.height, 0);
   await expect(page.getByText('0/4 pairs found')).toBeVisible();
 
   await page.locator('.match-column').first().getByRole('button', { name: firstAnswer, exact: true }).click();
@@ -406,9 +411,9 @@ for (const [level, retries] of [['Rookie', 3], ['Pro', 1], ['Legend', 0]] as con
       }
     }
     await expect(page.locator('.feedback h2')).toContainText('Round over');
-    await expect(page.locator('.mario-earned')).toContainText('+0 EP');
+    await expect(page.locator('.mario-earned')).toContainText('+0 points');
     await page.getByRole('button', { name: 'Next question' }).click();
-    await expect(page.getByText('Question 2 of 3')).toBeVisible();
+    await expect(page.getByText('Question 2 of 2')).toBeVisible();
     await expect(page.locator('.match-retries')).toContainText(retries === 0 ? 'No retries left' : `${retries} ${retries === 1 ? 'retry' : 'retries'} left`);
   });
 }
@@ -575,7 +580,7 @@ test('Shroomer Quiz Battle shows its choices then answers automatically after on
   expect(overflow).toBe(false);
 });
 
-test('solo championship carries points into three Clue Match Up rounds and saves the total', async ({ page }) => {
+test('solo championship carries points into two Clue Match Up rounds and saves the total', async ({ page }) => {
   await page.setViewportSize({ width: 360, height: 740 });
   await page.goto('./');
   await page.getByRole('button', { name: 'Play Games' }).click();
@@ -598,34 +603,34 @@ test('solo championship carries points into three Clue Match Up rounds and saves
     await page.locator('.answer-grid').getByText(answer, { exact: true }).click();
     await page.getByRole('button', { name: i === 2 ? 'See result' : 'Next question' }).click();
   }
-  await expect(page.locator('.champ-live-total')).toContainText('36 EP');
+  await expect(page.locator('.champ-live-total')).toContainText('36 points');
   await page.getByRole('button', { name: 'Next: Clue Match Up' }).click();
-  for (let i = 0; i < 3; i += 1) {
-    await expect(page.getByText(`Question ${i + 1} of 3`)).toBeVisible();
+  for (let i = 0; i < 2; i += 1) {
+    await expect(page.getByText(`Question ${i + 1} of 2`)).toBeVisible();
     const clues = await page.locator('.match-column').last().locator('button').allTextContents();
     for (const clue of clues) {
       const answer = MATCH_CLUES.find(item => item.clue === clue)!.name;
       await page.locator('.match-column').first().getByRole('button', { name: answer, exact: true }).click();
       await page.locator('.match-column').last().getByRole('button', { name: clue, exact: true }).click();
     }
-    await page.getByRole('button', { name: i === 2 ? 'See result' : 'Next question' }).click();
+    await page.getByRole('button', { name: i === 1 ? 'See result' : 'Next question' }).click();
   }
   await page.getByRole('button', { name: 'See championship result' }).click();
   await expect(page.getByText('CHAMPIONSHIP COMPLETE')).toBeVisible();
-  await expect(page.locator('.result-card')).toContainText('72');
+  await expect(page.locator('.result-card')).toContainText('60');
   const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('mariotrivia_championships_v1') || '[]'));
-  expect(saved[0].points).toBe(72);
-  expect(saved[0].games.map((game: { correct: number }) => game.correct)).toEqual([3, 3]);
+  expect(saved[0].points).toBe(60);
+  expect(saved[0].games.map((game: { correct: number }) => game.correct)).toEqual([3, 2]);
   await page.getByRole('button', { name: 'High Scores' }).click();
   await expect(page.getByText('Championships')).toBeVisible();
-  await expect(page.locator('.score-list').last()).toContainText('72 EP');
+  await expect(page.locator('.score-list').last()).toContainText('60 points');
   await page.getByRole('button', { name: 'Back to games' }).click();
   await page.getByRole('button', { name: 'Home' }).click();
-  await expect(page.getByText('72 EP', { exact: true })).toBeVisible();
+  await expect(page.getByText('60 points', { exact: true })).toBeVisible();
   await expect(page.getByText('Coin Collector')).toBeVisible();
 });
 
-test('voice settings persist and EP rank progress appears on the home screen', async ({ page }) => {
+test('voice settings persist and points rank progress appears on the home screen', async ({ page }) => {
   await page.goto('./');
   await page.getByRole('button', { name: 'Voice Settings' }).click();
   await expect(page.getByRole('heading', { name: 'Voice Settings' })).toBeVisible();
@@ -635,7 +640,7 @@ test('voice settings persist and EP rank progress appears on the home screen', a
   await page.getByRole('button', { name: 'Voice Settings' }).click();
   await expect(page.getByText('Speed: 1.3x')).toBeVisible();
   await expect(page.getByText('Rookie Racer')).toBeVisible();
-  await expect(page.getByText('0 EP', { exact: true })).toBeVisible();
+  await expect(page.getByText('0 points', { exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Read welcome aloud' })).toBeVisible();
   await page.evaluate(() => {
     window.speechSynthesis.speak = utterance => { (window as typeof window & { spokenText?: string }).spokenText = utterance.text; };

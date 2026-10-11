@@ -59,7 +59,8 @@ test('phone timed Hunt keeps Next above the board and hides repeated instruction
   await page.getByRole('button', { name: 'Start!', exact: true }).click();
   for (let round = 0; round < 2; round++) {
     await expect(page.locator('.game-help')).toHaveCount(0);
-    await expect(page.locator('.order-leaderboard > details')).not.toHaveAttribute('open', '');
+    await expect(page.locator('.order-leaderboard details')).toHaveCount(0);
+    await expect(page.getByRole('heading', { name: 'Match & Hunt Top 5' })).toBeVisible();
     await page.getByRole('button', { name: 'Start Timer', exact: true }).click();
     await page.locator(`.pair-card[data-pair-id="${target}"][data-kind="icon"]`).click();
     await page.locator(`.pair-card[data-pair-id="${target}"][data-kind="word"]`).click();

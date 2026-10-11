@@ -47,7 +47,7 @@ const MODE_DESCRIPTIONS: Record<GameMode, string> = {
   quiz: 'Four-choice questions about characters, baddies, power-ups, games, consoles, tracks and famous fixed bugs.',
   'game-order': 'Put Mario games in release order.',
   'track-finder': 'Find tracks by cup, original console or course features.',
-  'match-hunt': 'Match each name with its clue. Three rounds of visible pairs.',
+  'match-hunt': 'Match each name with its clue. Two rounds each.',
   'pair-match': 'Flip icon and word cards. Switch between Hunt and Time Trial.',
   'clue-duel': 'Guess a character or track from five clues that get clearer. Five rounds.',
   'category-finder': 'Find one character, baddie, power-up, game or system that fits the clue.',
@@ -263,12 +263,12 @@ export default function MarioApp() {
   };
   const renderTotals = (withGame = false) => championship && (withGame
     ? <table className="champ-live-total champ-scoreboard" aria-label="Championship scores">
-      <thead><tr><th scope="col">Player</th><th scope="col">Game EP</th><th scope="col">Total EP</th></tr></thead>
+      <thead><tr><th scope="col">Player</th><th scope="col">This game</th><th scope="col">Championship</th></tr></thead>
       <tbody>{[player, ...(championship.format === 'solo' ? [] : [opponentName])].map((name, index) => <tr key={index} data-player-index={index}>
-        <th scope="row">{name}</th><td>{index === activePlayer ? gamePointsNow : turnScores?.points[index] ?? 0} EP</td><td>{liveTotals[index]} EP</td>
+        <th scope="row">{name}</th><td>{index === activePlayer ? gamePointsNow : turnScores?.points[index] ?? 0} points</td><td>{liveTotals[index]} points</td>
       </tr>)}</tbody>
     </table>
-    : <div className="champ-live-total" aria-label="Championship total"><span>{player}: {liveTotals[0]} EP</span>{championship.format !== 'solo' && <strong>{opponentName}: {liveTotals[1]} EP</strong>}</div>);
+    : <div className="champ-live-total" aria-label="Championship total"><span>Championship total</span><span>{player}: {liveTotals[0]} points</span>{championship.format !== 'solo' && <strong>{opponentName}: {liveTotals[1]} points</strong>}</div>);
   const availablePairTargets = ICON_PAIRS;
   const pairOptions: PairMatchOptions = {
     variant: pairVariant, pairCount, trialTarget, huntTimed,
@@ -808,7 +808,7 @@ export default function MarioApp() {
       <div className="home-stats">
         <div className="player-header"><span className="player-greeting">Hi, {player || 'Player'}!</span><button className="switch-profile-btn" onClick={() => { const next = window.prompt('Player name', player || 'Player')?.trim().slice(0, 24); if (next) { savePlayer(next); setPlayer(next); setDraftName(next); } }}>👤 Switch</button></div>
         <div className="rank-display"><span className="rank-icon">{rank.icon}</span><span className="rank-name">{rank.name}</span></div>
-        <div className="ep-display"><span className="ep-amount">{progress.totalEP} EP</span>{nextRank && <div className="ep-progress"><div className="ep-bar" style={{ width: `${rankProgress}%` }} /><span className="ep-next">{nextRank.minEP - progress.totalEP} EP to {nextRank.icon} {nextRank.name}</span></div>}</div>
+        <div className="ep-display"><span className="ep-amount">{progress.totalEP} points</span>{nextRank && <div className="ep-progress"><div className="ep-bar" style={{ width: `${rankProgress}%` }} /><span className="ep-next">{nextRank.minEP - progress.totalEP} points to {nextRank.icon} {nextRank.name}</span></div>}</div>
         <div className="home-ministat"><span>🏆 {progress.gamesPlayed} games</span><span>🔥 Best streak: {progress.bestStreak}</span><button className="ministat-btn" aria-expanded={showMilestones} onClick={() => setShowMilestones(value => !value)}>🏅 {progress.milestones}/{progress.milestoneCount} milestones</button></div>
         {showMilestones && <div className="milestones-panel">{MILESTONES.map((milestone, index) => <div key={milestone.title} className={`milestone ${progress.milestoneUnlocks[index] ? 'milestone-done' : 'milestone-locked'}`}><span className="milestone-icon">{progress.milestoneUnlocks[index] ? milestone.icon : '🔒'}</span><div className="milestone-info"><span className="milestone-title">{milestone.title}</span><span className="milestone-desc">{milestone.description}</span></div></div>)}</div>}
       </div>
@@ -853,7 +853,7 @@ export default function MarioApp() {
       {chosenChampionshipModes.includes('game-order') && renderOrderSettings()}
       {chosenChampionshipModes.includes('pair-match') && renderPairSettings(true)}
       </CompactSettings>
-      <p className="champ-info-footer">{chosenChampionshipModes.length} games selected · Each player’s total is the EP earned in their own games.</p>
+      <p className="champ-info-footer">{chosenChampionshipModes.length} games selected · Each player’s total is the points earned in their own games.</p>
       <button className="start-btn" disabled={chosenChampionshipModes.length < 2} onClick={startChampionship}>{championshipFormat === 'solo' ? 'Start Solo Championship' : 'Start Championship'}</button>
     </section>}
 
@@ -886,7 +886,7 @@ export default function MarioApp() {
 
     {screen === 'versus-game' && versus && versusTurn && <section className="quiz-playing mario-game quiz-panel versus-game">
       <div className="game-topbar"><button className="back-btn" onClick={leaveGame}>← Games</button><span className="score-display">{player} {versus.scores[0]} · {opponentName} {versus.scores[1]}</span></div>
-      <div className="mario-points-line">{player}: {versus.points[0] + (versusTurn.playerIndex === 0 ? versus.submission?.points ?? 0 : 0)} EP · {opponentName}: {versus.points[1] + (versusTurn.playerIndex === 1 ? versus.submission?.points ?? 0 : 0)} EP</div>
+      <div className="mario-points-line">{player}: {versus.points[0] + (versusTurn.playerIndex === 0 ? versus.submission?.points ?? 0 : 0)} points · {opponentName}: {versus.points[1] + (versusTurn.playerIndex === 1 ? versus.submission?.points ?? 0 : 0)} points</div>
       <div className="quiz-topline"><span>⚔️ Quiz Battle · {DIFFICULTY_LABELS[difficulty]}</span><span>Round {Math.floor(versus.index / 2) + 1} of 5</span></div>
       <div className="progress-track"><div style={{ width: `${(versus.index / versus.turns.length) * 100}%` }} /></div>
       {versusReady ? <div className="versus-handover">
@@ -906,7 +906,7 @@ export default function MarioApp() {
           <h2>{versus.submission.correct ? 'Correct!' : `Answer: ${versusTurn.question.answer}`}</h2>
           <p>{versusTurn.question.explanation}</p>
           <p><strong>Fun fact:</strong> {versusTurn.question.funFact}</p>
-          <p className="mario-earned">+{versus.submission.points} EP</p>
+          <p className="mario-earned">+{versus.submission.points} points</p>
           {speechAvailable() && <button className="tts-btn tts-btn-small" title="Read explanation aloud" aria-label="Read explanation aloud" onClick={() => speakText(`${versusTurn.question.explanation} Fun fact: ${versusTurn.question.funFact}`)}>🔊</button>}
           <a href={versusTurn.question.sourceUrl} target="_blank" rel="noreferrer">Check the source ↗</a>
           <LearningFeedback id={versusTurn.question.id} />
@@ -919,7 +919,7 @@ export default function MarioApp() {
       <p className="eyebrow">MATCH COMPLETE</p>
       {latestResult.format === 'computer' && <img className="mushbot-result" src={MUSHBOT_IMAGE} alt="Shroomer" />}
       <h1>{(latestResult.points ?? 0) === (latestResult.opponentPoints ?? 0) ? "It's a draw!" : `${(latestResult.points ?? 0) > (latestResult.opponentPoints ?? 0) ? player : opponentName} wins!`}</h1>
-      <div className="result-card"><div className="result-stats"><div className="result-stat"><span className="stat-value">{latestResult.points} EP</span><span className="stat-label">{player} · {latestResult.correct}/{latestResult.total} correct</span></div><div className="result-stat"><span className="stat-value">{latestResult.opponentPoints} EP</span><span className="stat-label">{opponentName} · {latestResult.opponentCorrect}/{latestResult.total} correct</span></div></div><p>{MODE_LABELS[latestResult.mode ?? 'quiz']} · {LABELS[section]} · {DIFFICULTY_LABELS[difficulty]}</p></div>
+      <div className="result-card"><div className="result-stats"><div className="result-stat"><span className="stat-value">{latestResult.points} points</span><span className="stat-label">{player} · {latestResult.correct}/{latestResult.total} correct</span></div><div className="result-stat"><span className="stat-value">{latestResult.opponentPoints} points</span><span className="stat-label">{opponentName} · {latestResult.opponentCorrect}/{latestResult.total} correct</span></div></div><p>{MODE_LABELS[latestResult.mode ?? 'quiz']} · {LABELS[section]} · {DIFFICULTY_LABELS[difficulty]}</p></div>
       <button className="start-btn" onClick={start}>Play again</button>
       <button className="back-btn" onClick={() => setScreen('hub')}>← Back to games</button>
       <button className="high-scores-link" onClick={() => setScreen('scores')}>🏆 High Scores</button>
@@ -928,9 +928,9 @@ export default function MarioApp() {
     {screen === 'game' && round && session && <section className="quiz-playing mario-game quiz-panel">
       <div className="game-topbar"><button className="back-btn" onClick={leaveGame}>← Games</button>{championship
         ? <span className="versus-now-playing" role="status">{activeName}'s turn · 🏆 {championship.index + 1}/{championship.modes.length}</span>
-        : <span className="score-display">{activeName} · {round.mode === 'pair-match' ? `${foundPairs.length} pairs` : `${(turnScores ? turnScores.correct[activePlayer] : session.correct) + (session.submission?.correct ? 1 : 0)} correct`} · {gamePointsNow} EP</span>}</div>
+        : <span className="score-display">{activeName} · {round.mode === 'pair-match' ? `${foundPairs.length} pairs` : `${(turnScores ? turnScores.correct[activePlayer] : session.correct) + (session.submission?.correct ? 1 : 0)} correct`} · {gamePointsNow} points</span>}</div>
       {renderTotals(true)}
-      {turnScores && !championship && <div className="versus-now-playing" role="status">{activeName}'s turn · {player}: {turnScores.points[0]} EP · {opponentName}: {turnScores.points[1]} EP</div>}
+      {turnScores && !championship && <div className="versus-now-playing" role="status">{activeName}'s turn · {player}: {turnScores.points[0]} points · {opponentName}: {turnScores.points[1]} points</div>}
       <div className="quiz-topline"><span>{MODE_ICONS[mode]} {MODE_LABELS[mode]}{round.mode === 'pair-match' ? ` · ${round.variant === 'hunt' ? 'Hunt' : 'Time Trial'}` : ` · ${DIFFICULTY_LABELS[difficulty]}`}</span><span>{turnScores && !sharedHunt ? 'Round' : mode === 'pair-match' ? 'Board' : 'Question'} {turnScores && !sharedHunt ? Math.floor(session.index / 2) + 1 : session.index + 1} of {turnScores && !sharedHunt ? session.rounds.length / 2 : session.rounds.length}{turnScores && !sharedHunt ? ' each' : ''}</span>{timed && mode !== 'game-order' && <span aria-label="Elapsed time">{((elapsedMs - (mode === 'pair-match' ? previousRoundMs.current : 0)) / 1000).toFixed(1)}s</span>}</div>
       <div className="progress-track"><div style={{ width: `${(session.index / session.rounds.length) * 100}%` }} /></div>
       <div className="game-question"><h1>{round.prompt}</h1>
@@ -976,7 +976,7 @@ export default function MarioApp() {
             return <button key={id} disabled={matchedIds.includes(id) || session.submission !== null} className={`${selectedMatchClue === id ? 'selected-tile' : ''} ${matchedIds.includes(id) ? 'matched-tile' : ''}`} aria-pressed={selectedMatchClue === id} onClick={() => chooseMatch('clue', id)}>{pair.clue}</button>;
           })}</div>
         </div>
-        {matchMessage && <p className="match-message" aria-live="polite">{matchMessage}</p>}
+        <p className="match-message match-feedback-slot" aria-live="polite">{matchMessage || '\u00a0'}</p>
       </>}
 
       {round.mode === 'pair-match' && <>
@@ -991,7 +991,7 @@ export default function MarioApp() {
         {round.timed && <TimerCountdown key={round.id} autoStart={isBotTurn} ready={!pairTimerReady} onGo={() => { startTime.current = Date.now(); pairFrames.current = []; recordPairFrame('Timer started', [], [], 0); setElapsedMs(previousRoundMs.current); setPairTimerReady(true); }} />}
         {pairTimerReady && <PairCards tiles={pairTilesFor(round.cards, flippedCards, foundPairs)} disabled={pairLocked || isBotTurn || session.submission !== null} onChoose={flipPairCard} />}
         {pairMessage && <p className="match-message" aria-live="polite">{pairMessage}</p>}
-        {round.timed && <section className="order-leaderboard"><details open={!!session.submission}><summary>Match &amp; Hunt Top 5</summary><p>Same settings · human first attempts only. Restarting this board makes it practice.</p><PairTimeList records={pairScores} /></details></section>}
+        {round.timed && <section className="order-leaderboard" aria-label="Match & Hunt Top 5"><h3>Match &amp; Hunt Top 5</h3><PairTimeList records={pairScores} /></section>}
       </>}
 
       {round.mode === 'clue-duel' && <>
@@ -1012,7 +1012,7 @@ export default function MarioApp() {
         {isBotTurn && round.mode === 'pair-match' && round.timed && <p>Shroomer’s time: {((pairRoundCompletedMs.current ?? 0) / 1000).toFixed(1)} seconds.</p>}
         <p>{round.explanation}</p>
         <p><strong>Fun fact:</strong> {round.funFact}</p>
-        <p className="mario-earned">+{session.submission.points} EP</p>
+        <p className="mario-earned">+{session.submission.points} points</p>
         {speechAvailable() && <button className="tts-btn tts-btn-small" title="Read explanation aloud" aria-label="Read explanation aloud" onClick={() => speakText(`${round.explanation} Fun fact: ${round.funFact}`)}>🔊</button>}
         <a href={round.sourceUrl} target="_blank" rel="noreferrer">Check the source ↗</a>
         <LearningFeedback id={round.id} />
@@ -1022,9 +1022,14 @@ export default function MarioApp() {
 
     {screen === 'result' && latestResult && <section className="quiz-result result-panel">
       <p className="eyebrow">{championship ? `CHAMPIONSHIP · GAME ${championship.index + 1} OF ${championship.modes.length}` : 'GAME COMPLETE'}</p>
-      <h1>Nice work, {latestResult.player}!</h1>
-      <div className="result-card"><div className="result-stats"><div className="result-stat"><span className="stat-value">{latestResult.correct}/{latestResult.total}</span><span className="stat-label">Correct</span></div><div className="result-stat"><span className="stat-value">{latestResult.points ?? latestResult.correct}</span><span className="stat-label">EP earned</span></div></div><p>{modeLabel(latestResult.mode)}{latestResult.variant ? ` · ${latestResult.variant === 'hunt' ? 'Hunt' : 'Time Trial'}` : ''} · {LABELS[latestResult.topic]} · {DIFFICULTY_LABELS[latestResult.difficulty]}{timed ? ` · ${(latestResult.elapsedMs / 1000).toFixed(1)}s` : ''}</p></div>
-      {latestResult.opponent && <p>{opponentName}: {latestResult.opponentPoints} EP · {latestResult.opponentCorrect} correct</p>}
+      <h1>{latestResult.opponent ? latestResult.points === latestResult.opponentPoints ? "It's a draw!" : `${(latestResult.points ?? 0) > (latestResult.opponentPoints ?? 0) ? latestResult.player : latestResult.opponent} wins!` : `Nice work, ${latestResult.player}!`}</h1>
+      <div className="result-card">
+        <table className="game-result-scores" aria-label="Game results"><caption>{modeLabel(latestResult.mode)} · Points earned</caption><thead><tr><th scope="col">Player</th><th scope="col">Correct</th><th scope="col">Points</th></tr></thead><tbody>
+          <tr><th scope="row">{latestResult.player}</th><td>{latestResult.correct}/{latestResult.total}</td><td>{latestResult.points ?? latestResult.correct}</td></tr>
+          {latestResult.opponent && <tr><th scope="row">{latestResult.opponent}</th><td>{latestResult.opponentCorrect}/{latestResult.total}</td><td>{latestResult.opponentPoints ?? 0}</td></tr>}
+        </tbody></table>
+        <p>{DIFFICULTY_LABELS[latestResult.difficulty]}{timed ? ` · ${(latestResult.elapsedMs / 1000).toFixed(1)}s` : ''}</p>
+      </div>
       {championship ? <>{renderTotals()}<button className="start-btn" onClick={continueChampionship}>{championship.index + 1 === championship.modes.length ? 'See championship result' : 'Next: ' + MODE_LABELS[championship.modes[championship.index + 1]]}</button></> : <button className="start-btn" onClick={start}>Play again</button>}
       <button className="back-btn" onClick={leaveGame}>← Back to games</button>
       {!championship && <button className="high-scores-link" onClick={() => setScreen('scores')}>🏆 High Scores</button>}
@@ -1033,17 +1038,17 @@ export default function MarioApp() {
     {screen === 'championship-result' && finishedChampionship && <section className="quiz-result result-panel">
       <p className="eyebrow">CHAMPIONSHIP COMPLETE</p><h1>🏆 {finishedChampionship.opponent ? finishedChampionship.points === finishedChampionship.opponentPoints ? "It's a draw!" : `${finishedChampionship.points > (finishedChampionship.opponentPoints ?? 0) ? finishedChampionship.player : finishedChampionship.opponent} wins!` : `Nice work, ${finishedChampionship.player}!`}</h1>
       {finishedChampionship.format === 'computer' && <img className="mushbot-result" src={MUSHBOT_IMAGE} alt="Shroomer" />}
-      <div className="result-card"><div className="result-stats"><div className="result-stat"><span className="stat-value">{finishedChampionship.points}</span><span className="stat-label">{finishedChampionship.player} · total EP</span></div><div className="result-stat"><span className="stat-value">{finishedChampionship.opponent ? finishedChampionship.opponentPoints : finishedChampionship.games.length}</span><span className="stat-label">{finishedChampionship.opponent ? `${finishedChampionship.opponent} · total EP` : 'Games'}</span></div></div><p>{finishedChampionship.size} · {LABELS[finishedChampionship.topic]} · {DIFFICULTY_LABELS[finishedChampionship.difficulty]}</p></div>
-      <div className="champ-running-total"><h3>Game breakdown</h3>{finishedChampionship.games.map((game, index) => <div className="champ-total-row" key={game.mode}><span>{MODE_ICONS[game.mode]} {modeLabel(game.mode)}{game.variant ? ` · ${game.variant === 'hunt' ? 'Hunt' : 'Time Trial'}` : ''}</span><strong>{finishedChampionship.player}: {game.points ?? game.correct} EP{finishedChampionship.opponent ? ` · ${finishedChampionship.opponent}: ${finishedChampionship.opponentGames?.[index]?.points ?? 0} EP` : ''}</strong></div>)}</div>
+      <div className="result-card"><div className="result-stats"><div className="result-stat"><span className="stat-value">{finishedChampionship.points}</span><span className="stat-label">{finishedChampionship.player} · total points</span></div><div className="result-stat"><span className="stat-value">{finishedChampionship.opponent ? finishedChampionship.opponentPoints : finishedChampionship.games.length}</span><span className="stat-label">{finishedChampionship.opponent ? `${finishedChampionship.opponent} · total points` : 'Games'}</span></div></div><p>{finishedChampionship.size} · {LABELS[finishedChampionship.topic]} · {DIFFICULTY_LABELS[finishedChampionship.difficulty]}</p></div>
+      <div className="champ-running-total"><h3>Game breakdown</h3>{finishedChampionship.games.map((game, index) => <div className="champ-total-row" key={game.mode}><span>{MODE_ICONS[game.mode]} {modeLabel(game.mode)}{game.variant ? ` · ${game.variant === 'hunt' ? 'Hunt' : 'Time Trial'}` : ''}</span><strong>{finishedChampionship.player}: {game.points ?? game.correct} points{finishedChampionship.opponent ? ` · ${finishedChampionship.opponent}: ${finishedChampionship.opponentGames?.[index]?.points ?? 0} points` : ''}</strong></div>)}</div>
       <button className="start-btn" onClick={() => setScreen('championship-setup')}>Play again</button><button className="back-btn" onClick={() => setScreen('hub')}>← Back to games</button><button className="high-scores-link" onClick={() => setScreen('scores')}>🏆 High Scores</button>
     </section>}
 
     {screen === 'scores' && <section className="high-scores-screen">
       <div className="high-scores-header"><button className="back-btn" onClick={() => setScreen('hub')}>← Back to games</button><div><h2>🏆 High Scores</h2><p>Your finished games</p></div></div>
-      {scores.length === 0 ? <p>No completed games yet.</p> : <ol className="score-list">{scores.slice(0, 20).map(result => <li key={result.id}><span><strong>{result.opponent ? `${result.player} vs ${result.opponent}` : result.player}</strong><small>{modeLabel(result.mode)}{result.variant ? ` · ${result.variant === 'hunt' ? 'Hunt' : 'Time Trial'}` : ''} · {LABELS[result.topic]} · {DIFFICULTY_LABELS[result.difficulty]} · {result.opponent ? `${result.correct}–${result.opponentCorrect}` : `${result.correct}/${result.total}`} correct</small></span><strong>{result.opponent ? `${result.points ?? result.correct}–${result.opponentPoints ?? result.opponentCorrect} EP` : `${result.points ?? result.correct} EP`}</strong></li>)}</ol>}
+      {scores.length === 0 ? <p>No completed games yet.</p> : <ol className="score-list">{scores.slice(0, 20).map(result => <li key={result.id}><span><strong>{result.opponent ? `${result.player} vs ${result.opponent}` : result.player}</strong><small>{modeLabel(result.mode)}{result.variant ? ` · ${result.variant === 'hunt' ? 'Hunt' : 'Time Trial'}` : ''} · {LABELS[result.topic]} · {DIFFICULTY_LABELS[result.difficulty]} · {result.opponent ? `${result.correct}–${result.opponentCorrect}` : `${result.correct}/${result.total}`} correct</small></span><strong>{result.opponent ? `${result.points ?? result.correct}–${result.opponentPoints ?? result.opponentCorrect} points` : `${result.points ?? result.correct} points`}</strong></li>)}</ol>}
       <PairLeaderboards />
       <OrderLeaderboards />
-      <h3>Championships</h3>{championshipScores.length === 0 ? <p>No completed championships yet.</p> : <ol className="score-list">{championshipScores.slice(0, 20).map(result => <li key={result.id}><span><strong>{result.opponent ? `${result.player} vs ${result.opponent}` : result.player}</strong><small>{result.size} · {LABELS[result.topic]} · {DIFFICULTY_LABELS[result.difficulty]} · {result.games.length} games</small></span><strong>{result.opponent ? `${result.points}–${result.opponentPoints} EP` : `${result.points} EP`}</strong></li>)}</ol>}
+      <h3>Championships</h3>{championshipScores.length === 0 ? <p>No completed championships yet.</p> : <ol className="score-list">{championshipScores.slice(0, 20).map(result => <li key={result.id}><span><strong>{result.opponent ? `${result.player} vs ${result.opponent}` : result.player}</strong><small>{result.size} · {LABELS[result.topic]} · {DIFFICULTY_LABELS[result.difficulty]} · {result.games.length} games</small></span><strong>{result.opponent ? `${result.points}–${result.opponentPoints} points` : `${result.points} points`}</strong></li>)}</ol>}
     </section>}
 
     {screen === 'explore' && <section className="mario-learning-zone">

@@ -70,6 +70,25 @@ Physical iPhone and family acceptance checks remain outstanding.
 
 Do this before adding features. Preserve the short interface the family requested.
 
+### Screenshot follow-up — 11 October 2026 (local, not yet published)
+
+- [x] Keep timed Top 5 tables open; compact rows show rank, player, Replay and time without checks/moves clutter.
+- [x] Replace visible EP terminology with points across play, results, championships and lifetime progress. Keep existing earned points and saved history unchanged: lifetime progress is the sum of game awards, not a separate currency.
+- [x] Label live championship columns This game / Championship; show both players together in the game-result table, followed by the championship total.
+- [x] Restrict all patch-version questions to Legend. Move two existing Wonder gameplay questions to Pro in their place; this is difficulty reclassification, not new content.
+- [x] Focused phone, replay and championship tests passed (13); inspect phone scoreboard screenshot.
+- [x] Final full regression gate: content/rules audit, all 122 browser tests and production/PWA build passed on 11 October 2026.
+- [ ] Continue broader Mario-world question expansion and family difficulty checks; moving four records does not complete that work.
+
+### Matching follow-up — 11 October 2026 (local)
+
+- [x] Reserve a two-line feedback area in Clue Match Up so retry messages do not move the board.
+- [x] Set new Clue Match Up games to two rounds per player, including all championship lengths. Existing saved sessions retain their original boards; timed picture Match & Hunt still has three rounds.
+- [x] Check packaged artwork loads and decodes; inspect its contact sheet. The cropped broken-image screenshot does not identify the failing asset or establish its original cause.
+- [x] Add a readable pair-name fallback for failed images in live boards and replays; preserve hidden-card privacy. Handle already-rooted image URLs without prepending the app base twice.
+- [x] Add stable-board, two-round totals and simulated-image-failure regression checks; seven focused tests passed.
+- [x] Final full regression gate: content/rules audit, all 123 browser tests and production/PWA build passed. Local app started and returned HTTP 200.
+
 - [ ] **Complete the physical iPhone check**, in Safari and Home Screen mode:
   first load, repeat visit, portrait, rotation, browser bars, safe areas, larger
   text, voice, silent play, screen lock, app switching, reload and offline revisit.

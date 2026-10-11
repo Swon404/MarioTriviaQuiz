@@ -11,7 +11,7 @@ const ROUND_COUNTS: Record<GameMode, Record<ChampionshipSize, number>> = {
   quiz: { quick: 3, standard: 5, epic: 8 },
   'game-order': { quick: 3, standard: 4, epic: 5 },
   'track-finder': { quick: 3, standard: 4, epic: 5 },
-  'match-hunt': { quick: 3, standard: 3, epic: 3 },
+  'match-hunt': { quick: 2, standard: 2, epic: 2 },
   'pair-match': { quick: 3, standard: 3, epic: 3 },
   'clue-duel': { quick: 3, standard: 4, epic: 5 },
   'category-finder': { quick: 3, standard: 3, epic: 3 },

@@ -15,6 +15,22 @@ test('Shroomer welcomes players on the home page on a phone', async ({ page }) =
   await expect(page.getByRole('button', { name: 'Play Shroomer' })).toBeVisible();
 });
 
+test('failed matching artwork falls back to its name without revealing hidden cards', async ({ page }) => {
+  await page.route('**/match-icons/web-*', route => route.abort());
+  await page.goto('./');
+  await page.getByRole('button', { name: 'Play Games' }).click();
+  await page.getByRole('button', { name: 'Match & Hunt', exact: false }).click();
+  await page.getByRole('button', { name: 'Start!', exact: true }).click();
+  await expect(page.locator('.pair-card img')).toHaveCount(0);
+  const cards = await page.locator('.pair-card[data-kind="icon"]').all();
+  const target = (await Promise.all(cards.map(async item => ({ item, id: await item.getAttribute('data-pair-id') })))).find(({ id }) => ICON_PAIRS.some(pair => pair.id === id && pair.iconKind === 'image'))!;
+  const name = ICON_PAIRS.find(pair => pair.id === target.id)!.name;
+  await target.item.click();
+  await expect(target.item.locator('.pair-card-word')).toHaveText(name);
+  await expect(target.item.locator('img')).toHaveCount(0);
+  await expect(page.locator('.pair-card-back').first()).toHaveText('?');
+});
+
 test('Shroomer is a spotted mushroom and all matching web images load', async ({ page }) => {
   await page.goto('./');
   await page.getByRole('button', { name: 'Play Games' }).click();

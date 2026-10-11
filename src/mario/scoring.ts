@@ -16,8 +16,8 @@ export const MILESTONES = [
   { title: 'Game Fan', description: 'Finish ten games', icon: '🏁' },
   { title: 'Hat Trick', description: 'Get three right in a row', icon: '🔥' },
   { title: 'On Fire', description: 'Get five right in a row', icon: '🔥' },
-  { title: 'Rising Star', description: 'Earn 500 EP', icon: '⭐' },
-  { title: 'Super Star', description: 'Earn 2,000 EP', icon: '🌟' },
+  { title: 'Rising Star', description: 'Earn 500 points', icon: '⭐' },
+  { title: 'Super Star', description: 'Earn 2,000 points', icon: '🌟' },
   { title: 'Perfect Game', description: 'Get every answer right in a game', icon: '🏅' },
 ] as const;
 

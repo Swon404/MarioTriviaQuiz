@@ -435,9 +435,9 @@ test('relaxed Hunt shares a board, passes on a miss, keeps a match and rewinds b
   await page.locator(`.pair-card[data-pair-id="${ids[0]}"][data-kind="icon"]`).click();
   await page.locator(`.pair-card[data-pair-id="${ids[0]}"][data-kind="word"]`).click();
   await expect(page.locator('.versus-now-playing')).toContainText("Ben's turn");
-  await expect(page.locator('.versus-now-playing')).toContainText('Ben: 1 EP');
+  await expect(page.locator('.versus-now-playing')).toContainText('Ben: 1 points');
   await page.getByRole('button', { name: 'Restart go' }).click();
-  await expect(page.locator('.versus-now-playing')).toContainText('Ben: 0 EP');
+  await expect(page.locator('.versus-now-playing')).toContainText('Ben: 0 points');
   await expect(page.locator('.pair-card-found')).toHaveCount(0);
 });
 

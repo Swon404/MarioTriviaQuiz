@@ -84,7 +84,7 @@ export const EXPANDED_QUESTIONS: readonly TriviaQuestion[] = entries.map((entry,
   const [topic, difficulty, category, prompt, answer, wrong1, wrong2, wrong3, explanation, funFact, source] = entry;
   return {
     id: `expanded-${index + 1}`, knowledgeId: `expanded-${index + 1}${[21, 22, 25, 26].includes(index) ? '-v2' : ''}`,
-    topic, difficulty, category, prompt,
+    topic, difficulty: category === 'glitches' ? 'professor' : [14, 15].includes(index) ? 'scientist' : difficulty, category, prompt,
     choices: [answer, wrong1, wrong2, wrong3], answer, explanation, funFact,
     sourceUrl: sources[source],
     sourceReview: [0, 1, 7, 8].includes(index)

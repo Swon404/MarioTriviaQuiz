@@ -17,6 +17,14 @@ test('Replay plays selections and completion on a phone; cleanup confirms and ca
   });
   await page.getByRole('button', { name: 'High Scores' }).click();
   const table = page.getByRole('heading', { name: 'Game Order · fastest times' }).locator('..');
+  const firstRow = table.locator('.order-leaderboard li').first();
+  const nameBox = await firstRow.locator('span').boundingBox();
+  const buttonBox = await firstRow.getByRole('button', { name: 'Replay' }).boundingBox();
+  const timeBox = await firstRow.locator('strong').boundingBox();
+  expect(nameBox && buttonBox && timeBox).toBeTruthy();
+  expect(Math.abs(nameBox!.y + nameBox!.height / 2 - buttonBox!.y - buttonBox!.height / 2)).toBeLessThan(2);
+  expect(Math.abs(timeBox!.y + timeBox!.height / 2 - buttonBox!.y - buttonBox!.height / 2)).toBeLessThan(2);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await table.locator('.board-replay').first().getByRole('button', { name: 'Replay', exact: false }).click();
   const replay = page.getByRole('dialog');
   await replay.getByRole('button', { name: 'Start replay' }).click();

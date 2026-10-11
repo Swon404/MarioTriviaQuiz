@@ -5,7 +5,7 @@ import { useState } from 'react';
 import ScoreCleanup from './ScoreCleanup.tsx';
 
 export function PairTimeList({ records }: { records: PairTime[] }) {
-  return records.length ? <ol>{records.map(item => <li key={item.id}><span>{item.player} · {item.moves} moves</span><strong>{(item.elapsedMs / 1000).toFixed(1)}s</strong><ReplayViewer replay={item.replay} /></li>)}</ol> : <p>No times yet for these settings.</p>;
+  return records.length ? <ol>{records.map(item => <li key={item.id}><span>{item.player}</span><strong>{(item.elapsedMs / 1000).toFixed(1)}s</strong><ReplayViewer replay={item.replay} /></li>)}</ol> : <p>No times yet for these settings.</p>;
 }
 export default function PairLeaderboards() {
   const [, refresh] = useState(0);

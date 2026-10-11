@@ -1,5 +1,13 @@
 import type { OrderRound, PairCard } from './mario/rounds.ts';
 import type { ReplayTile } from './mario/replay.ts';
+import { useState } from 'react';
+
+function CardImage({ path, name }: { path: string; name: string }) {
+  const [failed, setFailed] = useState(false);
+  const src = /^(https?:\/\/|\/|data:)/.test(path) ? path : `${import.meta.env.BASE_URL}${path}`;
+  return failed ? <span className="pair-card-word">{name}</span>
+    : <img className="pair-card-svg" src={src} alt="" aria-hidden="true" onError={() => setFailed(true)} />;
+}
 
 // Both live play and saved playback use these snapshots and these exact tiles.
 export function orderTilesFor(round: OrderRound, ids: string[], selected: number | null, positions: string[], hints: boolean, countOnly: boolean): ReplayTile[] {
@@ -57,7 +65,7 @@ export function PairCards({ tiles, disabled = false, onChoose, replay = false }:
       aria-label={visible ? `${kind === 'word' ? 'Word' : 'Icon'}: ${tile.label}` : `Hidden card ${index + 1}`}
       aria-pressed={visible} onClick={() => onChoose?.(tile.id)}>
       {visible ? kind === 'word' ? <span className="pair-card-word">{tile.label}</span>
-        : tile.image ? <img className="pair-card-svg" src={`${import.meta.env.BASE_URL}${tile.image}`} alt="" aria-hidden="true" />
+        : tile.image ? <CardImage key={tile.image} path={tile.image} name={tiles.find(other => other.kind === 'word' && other.pairId === tile.pairId)?.label ?? tile.label.split(' — ')[0]} />
         : <span className={iconKind === 'text' ? 'pair-card-text-icon' : 'pair-card-icon'}>{tile.label}</span>
         : <span className="pair-card-mark" aria-hidden="true">?</span>}
     </button>;

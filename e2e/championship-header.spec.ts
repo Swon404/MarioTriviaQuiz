@@ -19,10 +19,12 @@ test('phone championship shows game and total scores through rewind, handovers a
   const check = async (game: number[], totals = game) => {
     const table = page.getByRole('table', { name: 'Championship scores' });
     await expect(table).toHaveCount(1);
+    await expect(table.getByRole('columnheader', { name: 'This game', exact: true })).toBeVisible();
+    await expect(table.getByRole('columnheader', { name: 'Championship', exact: true })).toBeVisible();
     for (const index of [0, 1]) {
       const cells = table.locator(`tbody tr[data-player-index="${index}"] td`);
-      await expect(cells.nth(0)).toHaveText(`${game[index]} EP`);
-      await expect(cells.nth(1)).toHaveText(`${totals[index]} EP`);
+      await expect(cells.nth(0)).toHaveText(`${game[index]} points`);
+      await expect(cells.nth(1)).toHaveText(`${totals[index]} points`);
     }
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   };
@@ -43,6 +45,13 @@ test('phone championship shows game and total scores through rewind, handovers a
     await check(points);
     await page.getByRole('button', { name: turn === 5 ? 'See result' : 'Next turn' }).click();
   }
+  const results = page.getByRole('table', { name: 'Game results' });
+  await expect(results).toBeVisible();
+  for (const [index, name] of ['Blaize', 'Dad'].entries()) {
+    await expect(results.getByRole('row').filter({ has: page.getByRole('rowheader', { name, exact: true }) }).locator('td').last()).toHaveText(String(points[index]));
+  }
+  await expect(page.getByLabel('Championship total')).toContainText(`Blaize: ${points[0]} points`);
+  await expect(page.getByLabel('Championship total')).toContainText(`Dad: ${points[1]} points`);
   await page.getByRole('button', { name: 'Next: Track Finder' }).click();
   await check([0, 0], points);
   await check([0, 0], points);

@@ -165,7 +165,7 @@ function makeClueRounds(section: Section, difficulty: Difficulty, random: () => 
   });
 }
 
-function makeMatchRounds(section: Section, difficulty: Difficulty, random: () => number, count = 3, recent: readonly string[] = []): MatchRound[] {
+function makeMatchRounds(section: Section, difficulty: Difficulty, random: () => number, count = 2, recent: readonly string[] = []): MatchRound[] {
   const pairCount = difficulty === 'explorer' ? 4 : difficulty === 'scientist' ? 6 : 8;
   const required = pairCount * count;
   // A name occurs only once in the whole game, even when different quiz questions use it.

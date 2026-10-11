@@ -353,14 +353,14 @@ for (const section of ['mario', 'kart', 'mixed']) {
     const expectedPairs = difficulty === 'explorer' ? 4 : difficulty === 'scientist' ? 6 : 8;
     for (let run = 0; run < 30; run += 1) {
       const rounds = createRounds('match-hunt', section, difficulty);
-      assert.equal(rounds.length, 3);
+      assert.equal(rounds.length, 2);
       assert.ok(rounds.every(round => round.mode === 'match-hunt'));
       const pairs = rounds.flatMap(round => round.pairs);
       assert.ok(pairs.every(pair => knowledgeLevel(MATCH_CLUES.find(item => item.id === pair.id).difficulty) <= knowledgeLevel(difficulty)), 'Matching cannot borrow harder questions');
-      assert.equal(pairs.length, expectedPairs * 3);
+      assert.equal(pairs.length, expectedPairs * 2);
       assert.equal(new Set(pairs.map(pair => pair.id)).size, pairs.length, 'Match facts must not repeat');
       assert.equal(new Set(pairs.map(pair => pair.name)).size, pairs.length, 'Match names must not repeat');
-      assert.equal(new Set(rounds.map(round => round.funFact)).size, 3, 'Match fun facts must not repeat');
+      assert.equal(new Set(rounds.map(round => round.funFact)).size, 2, 'Match fun facts must not repeat');
       for (const round of rounds) {
         assert.ok(round.pairs.some(pair => pair.id === round.targetId), 'Hunt target must be on the board');
         assert.deepEqual(new Set(round.nameIds), new Set(round.pairs.map(pair => pair.id)));
@@ -458,6 +458,7 @@ for (const id of ['expanded-22', 'expanded-23', 'expanded-26', 'expanded-27']) {
 }
 assert.ok(QUESTIONS.filter(question => question.difficulty === 'explorer').every(question => question.category !== 'glitches'), 'Rookie content should teach gameplay, not patch-note recall');
 for (const question of QUESTIONS.filter(question => question.category === 'glitches')) {
+  assert.equal(question.difficulty, 'professor', 'Patch-version trivia belongs on Legend, not Rookie or Pro');
   assert.match(question.prompt, /v\d+\.\d+\.\d+/, 'Historical bugs need a fixed version, not an unqualified present-day claim');
   assert.equal(question.sourceReview?.status, 'source-checked');
   assert.ok(!question.sourceReview.gameVersion.includes('undefined'));
@@ -542,6 +543,7 @@ for (const difficulty of ['explorer', 'scientist', 'professor']) {
       if (mode === 'quiz') assert.equal(new Set(rounds.map(round => round.question.knowledgeId)).size, rounds.length);
       if (mode === 'clue-duel') assert.equal(new Set(rounds.map(round => round.answerId)).size, rounds.length);
       if (mode === 'match-hunt') {
+        assert.equal(rounds.length, 4, 'Clue Match Up has two rounds per player at every championship length');
         const names = rounds.flatMap(round => round.pairs.map(pair => pair.name));
         assert.equal(new Set(names).size, names.length, 'Both players need fresh matching clues');
       }
