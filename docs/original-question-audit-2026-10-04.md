@@ -40,9 +40,23 @@ Do not mark `expanded-6` or `expanded-12` reviewed just because their platform m
 
 There are now 44 reviewed original records and 28 reviewed gameplay-pilot records. The bank contains 166 questions. Rewrites and shared knowledge IDs do not count as new pilot questions.
 
+## Batch 4 — four Wonder power-ups (11 October 2026)
+
+Reviewed `expanded-1`, `expanded-2`, `expanded-8` and `expanded-9` against
+[Nintendo's power-up guide](https://www.nintendo.com/us/whatsnew/get-a-jump-on-super-mario-bros-wonder-with-these-powerful-power-ups/).
+Retain the four item choices and existing knowledge identities: these still test
+the same abilities, not new facts. Specify the game, remove literal elephant,
+bubble and fireball wording from those prompts, and explain useful actions rather
+than restating the correct item. Related facts stay about the same transformation.
+Existing matching clues still describe the same abilities and remain valid.
+
+48 original records are now reviewed; with the 28 gameplay and four Luigi's
+Mansion records, 80 of the 170 records have source-review metadata. This batch
+adds four reviewed Learning Zone cards, not four questions.
+
 ## Remaining
 
-- [ ] Review the other 94 original records: 33 base, 36 expanded and 25 fresh questions.
+- [ ] Review the other 90 original records: 33 base, 32 expanded and 25 fresh questions.
 - [x] Specify fixed versions in all four patch-note questions; retain automated coverage for their review metadata.
 - [ ] Continue checking factual overlap with gameplay questions.
 - [ ] Extend reviewed feedback to varied related facts without importing unrelated trivia.

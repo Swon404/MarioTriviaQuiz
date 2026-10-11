@@ -435,6 +435,18 @@ versus = advanceVersusQuiz(versus);
 assert.deepEqual(versus.scores, [1, 1]);
 assert.deepEqual(versus.points, [12, 12]);
 assert.equal(CLUE_SUBJECTS.length, 24);
+for (const id of ['expanded-1', 'expanded-2', 'expanded-8', 'expanded-9']) {
+  const question = QUESTIONS.find(question => question.id === id);
+  assert.equal(question.sourceReview?.checkedOn, '2026-10-11');
+  assert.equal(question.sourceReview?.status, 'source-checked');
+  assert.match(question.sourceReview.gameVersion, /Super Mario Bros. Wonder/);
+  assert.match(question.sourceUrl, /powerful-power-ups/);
+  assert.match(question.prompt, /Super Mario Bros. Wonder/);
+  assert.equal(question.knowledgeId, canonicalKnowledge(id), 'Editorial rewrites must preserve history for the same power-up fact');
+  assert.equal(new Set(question.choices).size, 4);
+  assert.ok(!question.prompt.includes(question.answer), 'Do not put the answer in the question');
+  assert.ok(!question.explanation.startsWith(question.answer), 'Feedback should explain gameplay, not repeat the answer');
+}
 assert.equal(new Set(CLUE_SUBJECTS.map(subject => subject.id)).size, CLUE_SUBJECTS.length);
 assert.equal(new Set(CLUE_SUBJECTS.map(subject => subject.answer)).size, CLUE_SUBJECTS.length);
 for (const topic of ['mario', 'kart']) assert.equal(CLUE_SUBJECTS.filter(subject => subject.topic === topic).length, 12);

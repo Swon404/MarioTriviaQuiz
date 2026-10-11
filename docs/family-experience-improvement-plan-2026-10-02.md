@@ -1,4 +1,6 @@
-# Mario family experience — active plan
+# Mario family experience — historical progress log
+
+**Superseded 11 October 2026:** use [the current family experience roadmap](family-experience-roadmap-2026-10-11.md) for remaining work and completion criteria. Counts, incomplete release checkboxes and implementation descriptions below are dated historical snapshots, not the active backlog. In particular, visible Shroomer turns, compact settings, shared-board replays and the scoreboard/recovery release are now deployed in `54517a4`. Current bank: 170 questions; all 122 browser tests and GitHub test/deploy passed.
 
 Reviewed against the working code on **4 October 2026**. This replaces the duplicated audit/task lists previously in this file. The earlier Elemental audit is historical reference, not a second active backlog.
 

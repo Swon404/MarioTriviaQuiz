@@ -1,5 +1,7 @@
 # Mario-only content scope
 
+The [active family experience roadmap](family-experience-roadmap-2026-10-11.md) owns priorities, content milestones and acceptance checks. This file records the Mario-only scope correction, not a separate backlog.
+
 User correction: expand **Mario games only**, not Nintendo's wider catalogue.
 
 - [x] Remove the mistaken Nintendo-wide expansion and its planned non-Mario series.

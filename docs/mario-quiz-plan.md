@@ -1,5 +1,7 @@
 # Text-only Mario Quiz: implementation checklist
 
+**Historical plan—superseded 11 October 2026.** The app now has seven modes, multiplayer/Shroomer, championships and a live GitHub Pages deployment. Use [the active family experience roadmap](family-experience-roadmap-2026-10-11.md). The old three-mode status, topic-row proposal, artwork approach, release-date convention and 540-item target below are not current implementation instructions.
+
 Status: in progress. Three solo modes (Quiz Battle, Game Order and Track Finder) and a complete 48-course Booster Course Pass guide are playable locally. Release and later-mode items remain open.
 Created: 27 September 2026.
 

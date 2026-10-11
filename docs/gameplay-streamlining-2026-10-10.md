@@ -19,7 +19,7 @@
 - [ ] Complete a physical iPhone Safari check, including cold-cache image loading, voice, larger text and background/resume.
 - [ ] Further gameplay/content auditing remains separate from this interaction-focused release.
 
-The previous deployed commit was 81ed44b; its GitHub test and deployment jobs succeeded.
+Current deployed commit is **54517a4**. Its [GitHub test and deployment jobs succeeded](https://github.com/Swon404/MarioTriviaQuiz/actions/runs/38165160446). Remaining work is consolidated in the [active family experience roadmap](family-experience-roadmap-2026-10-11.md).
 This document records scope, not a claim that every earlier requested improvement is complete.
 
 ## Shared-board replay follow-up — 11 October 2026
@@ -30,4 +30,4 @@ This document records scope, not a claim that every earlier requested improvemen
 - Replay renders outside the leaderboard markup so leaderboard text styles cannot alter it. Back and Start/Stop remain reachable on a phone.
 - Added live-versus-replay comparisons for layout, colours, selections, years, pictures, target state and unchanged saved scores.
 - Track Finder expansion and physical-iPhone verification remain outstanding.
-- Verification: all 122 browser tests, the content/rules audit and the production/PWA build passed locally. Phone-viewport screenshots were reviewed. This follow-up is not yet committed or deployed.
+- Verification: all 122 browser tests, the content/rules audit and the production/PWA build passed locally. Phone-viewport screenshots were reviewed. This follow-up is committed and deployed in `54517a4`; GitHub tests and deployment passed. Physical-iPhone verification remains outstanding.
