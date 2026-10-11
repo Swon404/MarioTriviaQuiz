@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import type { ReplayFrame, ReplayTile } from './mario/replay.ts';
+import type { ReplayFrame } from './mario/replay.ts';
+import { OrderTiles, orderTilesFor } from './GameBoards.tsx';
 import ReplayViewer from './ReplayViewer.tsx';
 import TimerCountdown from './TimerCountdown.tsx';
 import GameHelp from './GameHelp.tsx';
@@ -30,14 +31,8 @@ export default function OrderBoard({ round, difficulty, options, player, resultI
   }, [resultId, tiles, selected, started, penalty, attempts, feedback, solved, recordMessage, onCheckpoint]);
   const recordFrame = (event: string, ids: string[], selection: number | null, positions: string[] = [], atMs?: number) => {
     if (frames.current.length >= 2000) return;
-    const finished = positions.length > 0 && positions.every(value => value === 'correct');
     frames.current.push({ atMs: Math.max(0, Math.round(atMs ?? (started === null ? 0 : Date.now() - started + penalty))), event,
-      tiles: ids.map((id, index): ReplayTile => {
-        const tile = round.tiles.find(item => item.id === id)!;
-        const shown = options.challenge !== 'hard' || finished;
-        const state = selection === index ? 'selected' : shown && positions[index] ? positions[index] === 'correct' ? 'correct' : 'wrong' : 'shown';
-        return { id, label: tile.title, state, detail: finished ? String(tile.year) : positions[index] && shown ? positions[index] === 'correct' ? '✓ Correct position' : rules.hints ? positions[index] === 'left' ? '← Move earlier' : 'Move later →' : 'Wrong position' : undefined };
-      }) });
+      tiles: orderTilesFor(round, ids, selection, positions, rules.hints, options.challenge === 'hard') });
   };
   const rules = ORDER_RULES[options.challenge];
   useEffect(() => {
@@ -91,14 +86,10 @@ export default function OrderBoard({ round, difficulty, options, player, resultI
     <TimerCountdown autoStart={computer} ready={started === null} onGo={() => { frames.current = []; recordFrame('Timer started', tiles, null, [], 0); setStarted(Date.now()); }} />
     {started !== null && <>
       <div className="order-big-timer" aria-label="Puzzle time">{(elapsed / 1000).toFixed(1)}<small>s</small></div>
-      <div className="order-tiles">{tiles.map((id, index) => {
-        const tile = round.tiles.find(item => item.id === id)!;
-        const state = feedback[index];
-        return <button key={id} disabled={solved || computer} aria-pressed={selected === index} className={`${selected === index ? 'selected-tile' : ''} ${options.challenge !== 'hard' || solved ? state === 'correct' ? 'order-correct' : state ? 'order-wrong' : '' : ''}`} onClick={() => {
-          if (selected === null) { recordFrame('Tile selected', tiles, index, feedback); setSelected(index); }
-          else { const next = [...tiles]; [next[selected], next[index]] = [next[index], next[selected]]; recordFrame(selected === index ? 'Selection cleared' : 'Tiles swapped', next, null); setTiles(next); setSelected(null); setFeedback([]); }
-        }}><span>{tile.title}</span>{solved && <small className="order-year">{tile.year}</small>}{state && (options.challenge !== 'hard' || solved) && <small className="order-position-feedback">{state === 'correct' ? '✓ Correct position' : rules.hints ? state === 'left' ? '← Move earlier' : 'Move later →' : 'Wrong position'}</small>}</button>;
-      })}</div>
+      <OrderTiles tiles={orderTilesFor(round, tiles, selected, feedback, rules.hints, options.challenge === 'hard')} disabled={solved || computer} onChoose={index => {
+        if (selected === null) { recordFrame('Tile selected', tiles, index, feedback); setSelected(index); }
+        else { const next = [...tiles]; [next[selected], next[index]] = [next[index], next[selected]]; recordFrame(selected === index ? 'Selection cleared' : 'Tiles swapped', next, null); setTiles(next); setSelected(null); setFeedback([]); }
+      }} />
       {!solved && !computer && <button className="start-btn check-button" onClick={check}>Check order</button>}
       {feedback.length > 0 && <p className="order-feedback" role="status">{solved ? `Solved in ${(elapsed / 1000).toFixed(1)} seconds! ${attempts} ${attempts === 1 ? 'check' : 'checks'}.` : `${feedback.filter(value => value === 'correct').length}/${tiles.length} correct positions. Keep going!${rules.penalty ? ' +1 second.' : ''}`}</p>}
       {solved && <>{resultMessage && !resultMessage.startsWith('Time recorded.') && <p className="order-result">{resultMessage}</p>}{recordMessage && <p role="status">{recordMessage}</p>}<div className="feedback-actions"><button className="back-btn" onClick={() => { markOrderPractice(resultId); onRestart(); }}>Rewind</button><button className="start-btn" onClick={onNext}>{nextLabel}</button></div></>}

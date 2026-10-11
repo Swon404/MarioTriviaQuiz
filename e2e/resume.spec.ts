@@ -35,7 +35,7 @@ test('Quiz recovery preserves retries and cannot rewind beyond Next', async ({ p
   expect(second).not.toBe(first);
   await resume(page);
   await expect(page.locator('.quiz-playing h1')).toHaveText(second!);
-  await expect(page.getByRole('button', { name: 'Rewind' })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: '↶ Rewind', exact: true })).toHaveCount(0);
 });
 for (const format of ['Two Players', 'Play Shroomer']) {
   test(`${format} recovery preserves the hidden handover and earned score`, async ({ page }) => {

@@ -50,8 +50,8 @@
 .pair-card-back { background: linear-gradient(145deg, #764158, #4d304e); border-color: #ba8ca7; cursor: pointer; }
 .pair-card-back:hover:not(:disabled), .pair-card-back:focus-visible { border-color: var(--gold); transform: translateY(-2px); }
 .pair-card-mark { font-size: 2rem; color: var(--gold); }
-.pair-card-face { background: #704766; border-color: var(--gold); }
-.pair-card-found { background: #285749; border-color: #79d69a; }
+.pair-card-grid button.pair-card-face { background: #704766; border-color: var(--gold); }
+.pair-card-grid button.pair-card-found { background: #285749; border-color: #79d69a; }
 .pair-card:disabled { opacity: 1; }
 .pair-card-icon { font-size: clamp(1.8rem, 5vw, 2.5rem); }
 .pair-card-svg { display: block; width: min(100%, 76px); height: 76px; margin: auto; object-fit: contain; }

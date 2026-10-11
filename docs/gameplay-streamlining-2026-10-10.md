@@ -21,3 +21,13 @@
 
 The previous deployed commit was 81ed44b; its GitHub test and deployment jobs succeeded.
 This document records scope, not a claim that every earlier requested improvement is complete.
+
+## Shared-board replay follow-up — 11 October 2026
+
+- Game Order and Match & Hunt now share their live tile components and snapshot builders with replay.
+- Removed replay-only tile CSS: card columns, image sizes, fonts, selection borders and feedback colours come from the live board.
+- New recordings preserve Order years and feedback separately, and matching card type plus Hunt unlock state. Existing version-1 recordings still play.
+- Replay renders outside the leaderboard markup so leaderboard text styles cannot alter it. Back and Start/Stop remain reachable on a phone.
+- Added live-versus-replay comparisons for layout, colours, selections, years, pictures, target state and unchanged saved scores.
+- Track Finder expansion and physical-iPhone verification remain outstanding.
+- Verification: all 122 browser tests, the content/rules audit and the production/PWA build passed locally. Phone-viewport screenshots were reviewed. This follow-up is not yet committed or deployed.

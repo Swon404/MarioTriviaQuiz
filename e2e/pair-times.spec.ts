@@ -1,7 +1,8 @@
 import { expect, test } from '@playwright/test';
 
 test('Timed Hunt saves the human turn immediately while Shroomer plays visibly without entering human scores', async ({ page }) => {
-  await page.clock.install();
+  await page.clock.install({ time: new Date('2026-10-11T12:00:00Z') });
+  await page.clock.pauseAt(new Date('2026-10-11T12:00:01Z'));
   await page.goto('./');
   await page.getByRole('button', { name: 'Play Games' }).click();
   await page.getByRole('button', { name: 'Match & Hunt' }).click();
@@ -17,7 +18,9 @@ test('Timed Hunt saves the human turn immediately while Shroomer plays visibly w
   await page.getByRole('button', { name: 'Start Timer', exact: true }).click();
   await page.clock.runFor(3000);
   await expect(page.locator('.order-tiles button, .pair-card').first()).toBeVisible();
+  await page.clock.runFor(200);
   await page.locator(`.pair-card[data-pair-id="${target}"][data-kind="icon"]`).click();
+  await page.clock.runFor(200);
   await page.locator(`.pair-card[data-pair-id="${target}"][data-kind="word"]`).click();
   const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('mariotrivia_pair_times_v1') ?? '[]'));
   expect(saved).toHaveLength(1);
@@ -25,7 +28,7 @@ test('Timed Hunt saves the human turn immediately while Shroomer plays visibly w
   expect(saved[0].replay.target).toBeTruthy();
   expect(saved[0].replay.frames.map((frame: { event: string }) => frame.event)).toEqual(['Timer started', 'First card revealed', 'Second card revealed — a pair', 'Hunt target found']);
   await page.locator('.board-replay').getByRole('button', { name: 'Replay', exact: false }).click();
-  const replay = page.locator('.board-replay');
+  const replay = page.getByRole('dialog');
   await expect(replay).toContainText(`Hunt target: ${saved[0].replay.target}`);
   await expect(replay.locator('.replay-hidden')).toHaveCount(24);
   await replay.getByRole('button', { name: 'Start replay' }).click();
@@ -53,7 +56,7 @@ test('Timed Hunt saves the human turn immediately while Shroomer plays visibly w
   await expect(page.getByRole('heading', { name: 'Match & Hunt · fastest times' })).toBeVisible();
   await expect(page.locator('.order-leaderboard').filter({ hasText: 'pairs-v1' })).toContainText('Ada');
   await page.locator('.board-replay').getByRole('button', { name: 'Replay', exact: false }).click();
-  await expect(page.locator('.board-replay')).toContainText(`Hunt target: ${saved[0].replay.target}`);
+  await expect(page.getByRole('dialog')).toContainText(`Hunt target: ${saved[0].replay.target}`);
 });
 
 test('Matching time storage separates rules and preserves the first completion', async ({ page }) => {

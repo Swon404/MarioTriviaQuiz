@@ -225,14 +225,14 @@ test('Game Order keeps timing through wrong checks and saves a solved round imme
   expect(saved[0].replay.frames.some((frame: { event: string }) => frame.event === 'Tile selected')).toBe(true);
   expect(saved[0].replay.frames.filter((frame: { event: string }) => frame.event.startsWith('Check'))).toHaveLength(2);
   await page.locator('.board-replay').getByRole('button', { name: 'Replay', exact: false }).click();
-  const replay = page.locator('.board-replay');
-  await expect(replay.getByRole('dialog')).toBeVisible();
+  const replay = page.getByRole('dialog');
+  await expect(replay).toBeVisible();
   await expect(replay.getByRole('button', { name: 'Start replay' })).toBeVisible();
   await expect(replay.getByRole('button', { name: 'Previous event' })).toHaveCount(0);
   await replay.getByRole('button', { name: 'Back', exact: false }).click();
   expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(false);
   await page.screenshot({ path: 'test-results/game-order-phone.png', fullPage: true, animations: 'disabled' });
-  await page.getByRole('button', { name: 'Rewind' }).click();
+  await page.getByRole('button', { name: 'Rewind', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Start Timer' })).toBeVisible();
   await expect(page.locator('.order-tiles button')).toHaveCount(0);
   await solveOrder(page);
@@ -324,7 +324,7 @@ for (const [level, count] of [['Rookie', 4], ['Pro', 6], ['Legend', 9]] as const
       const wrong = BOOSTER_COURSES.find(course => !task.correctIds.includes(course.id) && labels.includes(task.kind === 'system' ? trackLabel(course.title) : course.title))!;
       await page.locator('.finder-grid').getByRole('button', { name: task.kind === 'system' ? trackLabel(wrong.title) : wrong.title, exact: true }).click();
       await expect(page.locator('.finder-verdict')).toContainText('Not this time');
-      await page.getByRole('button', { name: 'Rewind' }).click();
+      await page.getByRole('button', { name: '↶ Rewind', exact: true }).click();
     }
     await answerTrack(page);
     await expect(page.locator('.finder-verdict')).toContainText('Correct — you found it');
@@ -376,7 +376,8 @@ test('Hunt and Time Trial options are remembered along with player format', asyn
 });
 
 test('Shroomer shares relaxed Hunt and human controls are locked during its move', async ({ page }) => {
-  await page.clock.install();
+  await page.clock.install({ time: new Date('2026-10-11T12:00:00Z') });
+  await page.clock.pauseAt(new Date('2026-10-11T12:00:01Z'));
   await openGame(page, 'Match & Hunt');
   await page.getByRole('button', { name: 'Play Shroomer', exact: true }).click();
   await page.getByLabel('Player name', { exact: true }).fill('Ada');

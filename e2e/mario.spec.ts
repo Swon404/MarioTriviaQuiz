@@ -34,7 +34,7 @@ for (const [level, attempts] of [['Rookie', 4], ['Pro', 2], ['Legend', 1]] as co
     }
     if (level === 'Rookie') await answerQuizCorrectly(page);
     await expect(page.locator('.feedback')).toBeVisible();
-    await page.getByRole('button', { name: 'Rewind' }).click();
+    await page.getByRole('button', { name: '↶ Rewind', exact: true }).click();
     await expect(page.locator('.answer-grid button:enabled')).toHaveCount(4);
     await expect(page.locator('.quiz-retries')).toContainText(`Attempts left: ${attempts}`);
     await answerQuizCorrectly(page);

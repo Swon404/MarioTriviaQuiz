@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
 import { QUESTIONS, createQuiz } from '../src/mario/questions.ts';
+import { MARIO_SIDE_QUESTIONS, MARIO_SIDE_MATCH_CLUES } from '../src/mario/marioSideQuestions.ts';
 import { canonicalKnowledge } from '../src/mario/knowledge.ts';
 import { GAMEPLAY_QUESTIONS, GAMEPLAY_REVIEW } from '../src/mario/gameplayQuestions.ts';
 import { BOOSTER_COURSES } from '../src/mario/courses.ts';
@@ -132,7 +133,23 @@ const computerRounds = createRounds('quiz', 'mario', 'explorer').slice(0, 3);
 assert.deepEqual(computerChampionshipAnswers(computerRounds, 'explorer', () => 0), computerRounds.map(round => round.question.answer));
 assert.ok(computerChampionshipAnswers(computerRounds, 'explorer', () => 0.99).every((answer, index) => answer !== computerRounds[index].question.answer));
 
-assert.equal(QUESTIONS.length, 166, 'Original bank plus 28 genuinely new gameplay questions');
+assert.equal(QUESTIONS.length, 170, 'Existing 166 Mario questions plus four Luigi’s Mansion questions');
+assert.equal(MARIO_SIDE_QUESTIONS.length, 4);
+assert.ok(QUESTIONS.every(question => ['mario', 'kart'].includes(question.topic)), 'Only Mario and Mario Kart topics');
+assert.ok(QUESTIONS.every(question => !question.id.startsWith('nintendo-')), 'Withdrawn Nintendo-wide questions cannot enter any mode');
+assert.ok(MARIO_SIDE_QUESTIONS.every(question => question.sourceReview?.status === 'source-checked'));
+for (const level of ['explorer', 'scientist', 'professor']) {
+  const additions = MARIO_SIDE_QUESTIONS.filter(question => question.difficulty === level);
+  const history = QUESTIONS.filter(question => !question.id.startsWith('mario-luigi-')).map(question => question.knowledgeId);
+  const first = createQuiz('mixed', level, 10, seededBotRandom(`mario-side-${level}`), history);
+  assert.deepEqual(new Set(first.slice(0, additions.length).map(question => question.id)), new Set(additions.map(question => question.id)), 'Retained Mario facts reach existing players first');
+}
+for (const [id, clue] of Object.entries(MARIO_SIDE_MATCH_CLUES)) {
+  const match = MATCH_CLUES.find(item => item.id === id);
+  assert.ok(match, `Mario matching clue wired in: ${id}`);
+  assert.equal(match.clue, clue);
+  assert.equal(match.question.topic, 'mario');
+}
 const ids = new Set();
 for (const mode of ['clue-duel', 'track-finder']) {
   const first = createRounds(mode, 'mixed', 'explorer');

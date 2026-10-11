@@ -35,7 +35,7 @@ test('phone championship shows game and total scores through rewind, handovers a
     const answer = QUESTIONS.find(question => question.prompt === prompt)!.answer;
     await page.locator('.answer-grid').getByText(answer, { exact: true }).click();
     if (turn === 0) {
-      await page.getByRole('button', { name: 'Rewind', exact: false }).click();
+      await page.getByRole('button', { name: '↶ Rewind', exact: true }).click();
       await check([0, 0]);
       await page.locator('.answer-grid').getByText(answer, { exact: true }).click();
     }

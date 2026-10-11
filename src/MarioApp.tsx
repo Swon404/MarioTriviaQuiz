@@ -1,3 +1,4 @@
+import { PairCards, HuntTarget, pairTilesFor } from './GameBoards.tsx';
 import { trackLabel } from './mario/trackChallenges.ts';
 import { readCheckpoint, saveCheckpoint, clearCheckpoint } from './mario/checkpoint.ts';
 import { fitsCategory, categoryContext } from './mario/categoryCatalog.ts';
@@ -561,10 +562,7 @@ export default function MarioApp() {
   const recordPairFrame = (event: string, visible: string[], matched: string[], atMs?: number) => {
     if (round?.mode !== 'pair-match' || !round.timed || pairFrames.current.length >= 2000) return;
     pairFrames.current.push({ atMs: Math.max(0, atMs ?? Date.now() - startTime.current), event,
-      tiles: round.cards.map(card => ({ id: card.id,
-        label: (card.iconKind === 'svg' || card.iconKind === 'image') ? card.iconAlt ?? card.pairId : card.label,
-        image: card.kind === 'icon' && (card.iconKind === 'svg' || card.iconKind === 'image') ? card.label : undefined,
-        state: matched.includes(card.pairId) ? 'matched' : visible.includes(card.id) ? 'selected' : 'hidden' })) });
+      tiles: pairTilesFor(round.cards, visible, matched) });
   };
   const observeCard = (position: number) => {
     if (round?.mode !== 'pair-match') return;
@@ -626,7 +624,7 @@ export default function MarioApp() {
         if (round.timed && !isBotTurn) {
           const id = runId + ':' + session.index;
           const eligible = !practisedRounds.current.has(id);
-          const saved = savePairTime({ id, player: activeName, ...pairConfiguration(round, difficulty), elapsedMs: pairRoundCompletedMs.current, moves: pairMoves + 1, completedAt: new Date().toISOString(), replay: pairFrames.current.length < 2000 ? { version: 1, kind: 'pairs', title: `${activeName} · ${round.variant === 'hunt' ? 'Hunt' : 'Time Trial'}`, target: round.pairs.find(pair => pair.id === round.targetPairId)?.name, frames: pairFrames.current } : undefined }, eligible);
+          const saved = savePairTime({ id, player: activeName, ...pairConfiguration(round, difficulty), elapsedMs: pairRoundCompletedMs.current, moves: pairMoves + 1, completedAt: new Date().toISOString(), replay: pairFrames.current.length < 2000 ? { version: 1, kind: 'pairs', title: `${activeName} · ${round.variant === 'hunt' ? 'Hunt' : 'Time Trial'}`, target: round.pairs.find(pair => pair.id === round.targetPairId)?.name, targetUnlockPairs: round.unlockPairs, frames: pairFrames.current } : undefined }, eligible);
           setPairMessage(!eligible ? 'Practice complete — restarted boards do not enter the leaderboard.' : saved ? 'Time saved to the leaderboard!' : 'Time could not be saved on this device.');
         }
         setSession(submit(session, round.completionId, turnScores ? 0 : nextScore));
@@ -986,16 +984,12 @@ export default function MarioApp() {
           {sharedHunt ? 'A match keeps your turn; a miss passes it. ' : ''}
           {round.variant === 'time-trial' ? `Find ${round.goal} pairs as fast as you can.` : round.targetPairId ? 'Find the target pair after unlocking it.' : 'Find every pair.'}
         </GameHelp>
-        {round.variant === 'hunt' && round.targetPairId && <p className="hunt-target-banner">🎯 <strong>{round.pairs.find(pair => pair.id === round.targetPairId)?.name}</strong>{round.unlockPairs > 0 && <> · {foundPairs.length >= round.unlockPairs ? 'Unlocked!' : `Unlocks after ${round.unlockPairs} other pairs (${foundPairs.length}/${round.unlockPairs})`}</>}</p>}
+        {round.variant === 'hunt' && <HuntTarget name={round.pairs.find(pair => pair.id === round.targetPairId)?.name} unlockPairs={round.unlockPairs} matchedPairs={foundPairs.length} />}
         <p className="match-progress" aria-live="polite">{foundPairs.length}/{round.goal} pairs found · {pairMoves} {pairMoves === 1 ? 'move' : 'moves'} · {pairScore} points</p>
         {!session.submission && pairTimerReady && <button className="back-btn match-restart" onClick={undo}>↶ Restart go</button>}
         {!pairTimerReady && <p className="help-copy">Ready? The cards appear on Go!</p>}
         {round.timed && <TimerCountdown key={round.id} autoStart={isBotTurn} ready={!pairTimerReady} onGo={() => { startTime.current = Date.now(); pairFrames.current = []; recordPairFrame('Timer started', [], [], 0); setElapsedMs(previousRoundMs.current); setPairTimerReady(true); }} />}
-        {pairTimerReady && <div className="pair-card-grid" aria-label="Face-down pair cards">{round.cards.map((card, index) => {
-          const visible = flippedCards.includes(card.id) || foundPairs.includes(card.pairId);
-          const matched = foundPairs.includes(card.pairId);
-          return <button key={card.id} type="button" data-pair-id={card.pairId} data-kind={card.kind} disabled={matched || pairLocked || isBotTurn || session.submission !== null} className={`pair-card ${visible ? 'pair-card-face' : 'pair-card-back'} ${matched ? 'pair-card-found' : ''}`} aria-label={visible ? card.kind === 'word' ? `Word: ${card.label}` : `Icon: ${card.iconAlt ?? card.label}` : `Hidden card ${index + 1}`} aria-pressed={visible} onClick={() => flipPairCard(card.id)}>{visible ? card.kind === 'word' ? <span className="pair-card-word">{card.label}</span> : (card.iconKind === 'svg' || card.iconKind === 'image') ? <img className="pair-card-svg" src={`${import.meta.env.BASE_URL}${card.label}`} alt="" aria-hidden="true" /> : <span className={card.iconKind === 'text' ? 'pair-card-text-icon' : 'pair-card-icon'}>{card.label}</span> : <span className="pair-card-mark" aria-hidden="true">?</span>}</button>;
-        })}</div>}
+        {pairTimerReady && <PairCards tiles={pairTilesFor(round.cards, flippedCards, foundPairs)} disabled={pairLocked || isBotTurn || session.submission !== null} onChoose={flipPairCard} />}
         {pairMessage && <p className="match-message" aria-live="polite">{pairMessage}</p>}
         {round.timed && <section className="order-leaderboard"><details open={!!session.submission}><summary>Match &amp; Hunt Top 5</summary><p>Same settings · human first attempts only. Restarting this board makes it practice.</p><PairTimeList records={pairScores} /></details></section>}
       </>}

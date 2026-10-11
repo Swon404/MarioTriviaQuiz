@@ -1,42 +1,62 @@
-import { memo, useEffect, useState, useRef } from 'react';
+import { OrderTiles, PairCards, HuntTarget } from './GameBoards.tsx';
+import { createPortal } from 'react-dom';
+import { memo, useEffect, useState, useRef, type CSSProperties } from 'react';
 import { validReplay, type BoardReplay } from './mario/replay.ts';
 
 function ReplayViewer({ replay }: { replay: BoardReplay | undefined }) {
   const [position, setPosition] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [opened, setOpened] = useState(false);
+  const [surfaceStyle, setSurfaceStyle] = useState<CSSProperties>({});
+  const [host, setHost] = useState<HTMLElement | null>(null);
   const dialog = useRef<HTMLDialogElement>(null);
   const valid = validReplay(replay);
+  useEffect(() => {
+    if (opened && dialog.current) {
+      dialog.current.showModal();
+      dialog.current.scrollTop = 0;
+    }
+  }, [opened]);
   useEffect(() => {
     if (!valid || !playing || position >= replay.frames.length - 1) return;
     const delay = Math.max(80, replay.frames[position + 1].atMs - replay.frames[position].atMs);
     const timer = window.setTimeout(() => setPosition(value => value + 1), delay);
     return () => window.clearTimeout(timer);
   }, [replay, valid, playing, position]);
+  const close = () => {
+    dialog.current?.close();
+    setPlaying(false);
+    setOpened(false);
+  };
   if (!valid) return null;
   const frame = replay.frames[position];
   const ended = position === replay.frames.length - 1;
   return <div className="board-replay">
-    <button className="back-btn" onClick={() => { setPosition(0); setPlaying(false); setOpened(true); dialog.current?.showModal(); }}>▶ Replay</button>
-    <dialog ref={dialog} className="replay-stage" aria-label={replay.title} onClose={() => { setPlaying(false); setOpened(false); }}>
+    <button className="back-btn" onClick={event => {
+      const game = event.currentTarget.closest<HTMLElement>('.mario-game');
+      const app = event.currentTarget.closest<HTMLElement>('.mario-app')!;
+      const style = getComputedStyle(game ?? app);
+      const width = game ? game.getBoundingClientRect().width : app.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight);
+      setSurfaceStyle({ width, padding: game ? style.padding : undefined });
+      setHost(app);
+      setPosition(0); setPlaying(false); setOpened(true);
+    }}>▶ Replay</button>
+    {host && createPortal(<dialog ref={dialog} style={surfaceStyle} className="replay-stage mario-game quiz-panel" aria-label={replay.title} onCancel={close} onClose={() => { setPlaying(false); setOpened(false); }}>
     {opened && <>
-    <button className="back-btn" onClick={() => dialog.current?.close()}>← Back</button>
-    <h4>{replay.title}</h4>
-    {replay.target && <p><strong>Hunt target:</strong> {replay.target}</p>}
+    <div className="game-topbar"><button className="back-btn" onClick={close}>← Back</button><span>Replay</span></div>
+    <h1>{replay.title}</h1>
+    <HuntTarget name={replay.target} unlockPairs={replay.targetUnlockPairs} matchedPairs={frame.tiles.filter(tile => tile.state === 'matched').length / 2} />
     <div className="order-big-timer">{(frame.atMs / 1000).toFixed(1)}<small>s</small></div>
     <p aria-live="polite">{(frame.atMs / 1000).toFixed(1)}s · {frame.event} {ended && '· Replay finished'}</p>
-    <div className={`${replay.kind === 'order' ? 'order-tiles' : 'pair-card-grid'} replay-${replay.kind}`}>{frame.tiles.map(tile => <button disabled key={tile.id} className={`replay-tile replay-${tile.state} ${replay.kind === 'pairs' ? 'pair-card' : ''} ${tile.state === 'selected' ? 'selected-tile' : tile.state === 'correct' ? 'order-correct' : tile.state === 'wrong' ? 'order-wrong' : tile.state === 'matched' ? 'pair-card-found' : ''}`}>
-      {tile.state === 'hidden' ? '?' : tile.image ? <img src={`${import.meta.env.BASE_URL}${tile.image}`} alt={tile.label} /> : tile.label}
-      {tile.state !== 'hidden' && tile.detail && <small>{tile.detail}</small>}
-      {tile.state === 'selected' && <small>Selected</small>}
-      {tile.state === 'matched' && <small>✓ Matched</small>}
-    </button>)}</div>
+    {replay.kind === 'order'
+      ? <div className="order-challenge"><OrderTiles tiles={frame.tiles} disabled replay /></div>
+      : <PairCards tiles={frame.tiles} disabled replay />}
     <div className="replay-controls">
       <button className="start-btn" disabled={playing && !ended} onClick={() => { setPosition(0); setPlaying(true); }}>Start replay</button>
       <button className="back-btn" disabled={!playing || ended} onClick={() => setPlaying(false)}>Stop replay</button>
     </div>
     </>}
-    </dialog>
+    </dialog>, host)}
   </div>;
 }
 export default memo(ReplayViewer);

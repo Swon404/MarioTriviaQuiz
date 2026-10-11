@@ -45,7 +45,7 @@ test('selected quiz fact stays the same after rewind and restoring a completed a
   const fact = page.locator('p').filter({ hasText: /^Fun fact:/ });
   const text = await fact.innerText();
   expect(QUESTION_FUN_FACTS[wanted.id].map(value => `Fun fact: ${value}`)).toContain(text);
-  await page.getByRole('button', { name: 'Rewind' }).click();
+  await page.getByRole('button', { name: '↶ Rewind', exact: true }).click();
   await page.locator('.answer-grid').getByText(wanted.answer, { exact: true }).click();
   await expect(fact).toHaveText(text);
   await page.reload();

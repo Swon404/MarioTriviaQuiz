@@ -1,4 +1,5 @@
 import { QUESTIONS, type Difficulty, type TriviaQuestion } from './questions.ts';
+import { MARIO_SIDE_MATCH_CLUES } from './marioSideQuestions.ts';
 
 // Matching-specific wording of existing sourced knowledge, not new trivia facts.
 // Difficulty is inherited from the source record: larger boards never borrow
@@ -111,7 +112,7 @@ const CLUES: Readonly<Record<string, string>> = {
 };
 
 export type MatchClue = { id: string; name: string; clue: string; difficulty: Difficulty; question: TriviaQuestion };
-export const MATCH_CLUES: readonly MatchClue[] = Object.entries(CLUES).map(([id, clue]) => {
+export const MATCH_CLUES: readonly MatchClue[] = Object.entries({ ...CLUES, ...MARIO_SIDE_MATCH_CLUES }).map(([id, clue]) => {
   const question = QUESTIONS.find(item => item.id === id);
   if (!question) throw new Error(`Missing matching source: ${id}`);
   return { id, name: question.answer, clue, difficulty: question.difficulty, question };
