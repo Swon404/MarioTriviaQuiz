@@ -134,6 +134,20 @@ assert.deepEqual(computerChampionshipAnswers(computerRounds, 'explorer', () => 0
 assert.ok(computerChampionshipAnswers(computerRounds, 'explorer', () => 0.99).every((answer, index) => answer !== computerRounds[index].question.answer));
 
 assert.equal(QUESTIONS.length, 170, 'Existing 166 Mario questions plus four Luigi’s Mansion questions');
+for (const id of ['fresh-22', 'fresh-26', 'fresh-27', 'kart-explorer-8']) {
+  const question = QUESTIONS.find(question => question.id === id);
+  assert.equal(question.sourceReview?.checkedOn, '2026-10-11');
+  assert.equal(new Set(question.choices).size, 4);
+  assert.ok(!/Inside the score screen|In another game|Erase a cup/.test(question.choices.join('|')));
+}
+assert.equal(QUESTIONS.find(question => question.id === 'fresh-27').knowledgeId, canonicalKnowledge('kart-scientist-10'));
+assert.equal(QUESTIONS.find(question => question.id === 'kart-explorer-8').knowledgeId, 'kart-explorer-8-v2');
+assert.ok(!QUESTIONS.find(question => question.id === 'kart-explorer-8').prompt.toLowerCase().includes('pinball'));
+for (const id of ['kart-scientist-1', 'kart-scientist-2', 'kart-scientist-3', 'kart-scientist-4']) {
+  assert.equal(QUESTIONS.find(question => question.id === id).difficulty, 'professor');
+  assert.equal(MATCH_CLUES.find(clue => clue.id === id).difficulty, 'professor');
+}
+assert.equal(QUESTIONS.filter(question => question.difficulty === 'scientist' && /cup/i.test(question.prompt)).length, 9);
 assert.equal(MARIO_SIDE_QUESTIONS.length, 4);
 assert.ok(QUESTIONS.every(question => ['mario', 'kart'].includes(question.topic)), 'Only Mario and Mario Kart topics');
 assert.ok(QUESTIONS.every(question => !question.id.startsWith('nintendo-')), 'Withdrawn Nintendo-wide questions cannot enter any mode');

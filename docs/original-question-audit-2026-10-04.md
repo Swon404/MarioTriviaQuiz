@@ -54,9 +54,18 @@ Existing matching clues still describe the same abilities and remain valid.
 Mansion records, 80 of the 170 records have source-review metadata. This batch
 adds four reviewed Learning Zone cards, not four questions.
 
-## Remaining
+## Batch 5 — choices, track giveaway and level balance (11 October 2026)
 
-- [ ] Review the other 90 original records: 33 base, 32 expanded and 25 fresh questions.
+- Source-checked `fresh-22`, `fresh-26`, `fresh-27` against [Nintendo's Mario Kart World overview](https://www.nintendo.com/us/whatsnew/mario-kart-world-direct-revs-up-new-details-on-the-biggest-mario-kart-ever-coming-to-nintendo-switch-2-at-launch/). Replace joke choices with comparable speed effects, item effects and driving techniques; keep the tested knowledge and existing history. Invert the rail question to ask for the move; its equivalent Charge Jump fact still shares history.
+- Source-checked `kart-explorer-8` against [Nintendo's Wave 2 course guide](https://www.nintendo.com/us/whatsnew/mario-kart-8-deluxe-booster-course-pass-wave-2-approaches-the-starting-line-on-aug-4/). Ask about the course experience, not a word printed in its name. Give it a replacement knowledge ID and update its matching clue.
+- Reclassify `kart-scientist-1` through `kart-scientist-4` to Legend; `kart-professor-8`, `kart-professor-9`, `kart-professor-10`, `fresh-31` to Pro. These eight moves are editorial difficulty decisions, not new source-review claims. Record IDs and history stay stable.
+- Pro now has nine cup questions rather than 13. Console-heavy content, remaining track-name giveaways, simple Legend recognition, Finder/Duel difficulty and wider Mario gameplay coverage remain unfinished.
+- Total: 84 reviewed records, 86 original records still to review. No claim that tests establish family-appropriate difficulty; family playtesting remains required.
+- Verification: content/rules audit, all 123 browser tests and production/PWA build passed locally. This batch is not yet committed or deployed.
+
+## Remaining work after batch 5
+
+- [ ] Review the other 86 original records: 32 base, 32 expanded and 22 fresh questions.
 - [x] Specify fixed versions in all four patch-note questions; retain automated coverage for their review metadata.
 - [ ] Continue checking factual overlap with gameplay questions.
 - [ ] Extend reviewed feedback to varied related facts without importing unrelated trivia.

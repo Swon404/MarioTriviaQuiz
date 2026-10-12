@@ -31,7 +31,7 @@ const CLUES: Readonly<Record<string, string>> = {
   'kart-explorer-4': 'World mode for exploring without entering a race.',
   'kart-explorer-5': 'World rally mode that eliminates racers at checkpoints.',
   'kart-explorer-7': 'Returning Wii course named after a shopping centre.',
-  'kart-explorer-8': 'Returning DS course named after an arcade ball game.',
+  'kart-explorer-8': 'Returning DS course that launches racers into a giant arcade table with flashing lights.',
   'kart-explorer-9': 'Returning N64 course with a chocolate-themed mountain name.',
   'kart-explorer-10': 'World mode for racing against the clock.',
   'expanded-22': 'Track that debuted in Mario Kart 8 Deluxe’s second DLC wave, before coming to Tour.',

@@ -31,8 +31,8 @@ or family playtest**.
 | Area | Current coverage, measured from code |
 | --- | --- |
 | Quiz Battle | 170 records, 159 distinct knowledge IDs; 58 Rookie / 56 Pro / 56 Legend records |
-| Editorial/source review | 80 reviewed records: 48 original + 28 gameplay + 4 Luigi's Mansion; 90 originals remain |
-| Learning Zone | 80 reviewed cards, plus the separate track guide |
+| Editorial/source review | 84 reviewed records: 52 original + 28 gameplay + 4 Luigi's Mansion; 86 originals remain |
+| Learning Zone | 84 reviewed cards, plus the separate track guide |
 | Clue Match Up | 108 dedicated clues derived from quiz knowledge, not 108 extra facts |
 | Clue Duel | 24 subjects: 12 characters and 12 tracks |
 | Track Finder | 48 Booster Course Pass courses; 23 tasks: cup, origin and feature questions |
@@ -116,7 +116,9 @@ device/iOS/browser, settings and any failure so it can become a regression test.
 ## Priority 2 — make the Mario knowledge worth coming back for
 
 - [x] Review four Wonder power-up records (`expanded-1`, `expanded-2`, `expanded-8`, `expanded-9`) against Nintendo's gameplay guide. Improve wording and useful feedback, preserve knowledge history, and expose reviewed Learning Zone cards. This is an editorial batch, not four new facts.
-- [ ] **Finish the remaining 90-record original audit.** Check question, all four choices,
+- [x] Follow-up batch: improve Dash Food, Hammer and Charge Jump choices/feedback; replace the Waluigi Pinball name giveaway with a course-feature question and matching clue. Four records source-checked; no increase to the 170-record bank.
+- [x] Move four cup-location records from Pro to Legend and four broader World racing records to Pro. Pro cup questions reduced from 13 to nine; retain history and matching difficulty links. This does not complete level calibration.
+- [ ] **Finish the remaining 86-record original audit.** Check question, all four choices,
   answer, explanation, fun fact, source and edition. Fix or remove ambiguous,
   giveaway or thin entries; a source URL alone does not establish accuracy.
 - [ ] **Ask which 3–5 Mario games each player loves/knows.** Start the next batches

@@ -31,6 +31,7 @@ const SOURCES = {
   kart: 'https://mariokart8deluxe.nintendo.com/',
   booster: 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/57858/',
   world: 'https://www.nintendo.com/us/whatsnew/mario-kart-world-direct-revs-up-new-details-on-the-biggest-mario-kart-ever-coming-to-nintendo-switch-2-at-launch/',
+  wave2: 'https://www.nintendo.com/us/whatsnew/mario-kart-8-deluxe-booster-course-pass-wave-2-approaches-the-starting-line-on-aug-4/',
 } as const;
 
 type SourceId = keyof typeof SOURCES;
@@ -83,7 +84,7 @@ const kartExplorer: readonly Row[] = [
   ['Which Mario Kart World mode eliminates racers at checkpoints?', 'Knockout Tour', 'Free Roam', 'Time Trials', 'Balloon Battle', 'Knockout Tour is a long rally with checkpoints. Racers who fall below the cut are eliminated.', 'It can feature up to 24 racers.', 'world'],
   ['What does an Ice Flower do in Mario Kart World?', 'Makes rivals spin', 'Builds a bridge', 'Changes the weather', 'Unlocks a cup', 'The Ice Flower chills opponents and sends them spinning.', 'The game also includes a Coin Shell that makes coins appear.', 'world'],
   ['Which Mario Kart 8 Deluxe extra course is named after a shopping centre?', 'Coconut Mall', 'Choco Mountain', 'Sky Garden', 'Shroom Ridge', 'Wii Coconut Mall appears in the Golden Dash Cup of the Booster Course Pass.', 'It is one of the returning Wii courses in that pass.', 'booster'],
-  ['Which Mario Kart 8 Deluxe extra course is named after a pinball game?', 'Waluigi Pinball', 'Peach Gardens', 'Shroom Ridge', 'Kalimari Desert', 'DS Waluigi Pinball appears in the Turnip Cup.', 'The DS prefix identifies the game in which that course first appeared.', 'booster'],
+  ['Which Mario Kart 8 Deluxe course launches racers into a giant arcade table with flashing lights?', 'Waluigi Pinball', 'Ribbon Road', 'Music Park', 'Electrodrome', 'The racers become part of an oversized arcade game. Its bright lights and sound effects make it feel different from an ordinary road race.', 'The original version appeared on Nintendo DS.', 'wave2'],
   ['Which Mario Kart 8 Deluxe extra course has “Mountain” in its name?', 'Choco Mountain', 'Sky Garden', 'Coconut Mall', 'Shroom Ridge', 'N64 Choco Mountain is listed in the Golden Dash Cup.', 'The N64 prefix points to its earlier Nintendo 64 appearance.', 'booster'],
   ['Which mode in Mario Kart World lets you race against the clock?', 'Time Trials', 'Free Roam', 'Balloon Battle', 'Coin Runners', 'Time Trials is the mode for racing against the clock.', 'World lets players compare against online ghost data in Time Trials.', 'world'],
 ];
@@ -128,7 +129,7 @@ function createRows(topic: Topic, difficulty: Difficulty, rows: readonly Row[], 
     explanation,
     funFact,
     sourceUrl: SOURCES[source],
-    sourceReview: source === 'history' ? { checkedOn: '2026-10-04', status: 'source-checked' as const, gameVersion: 'Nintendo’s US Mario release timeline' } : topic === 'mario' && difficulty === 'explorer'
+    sourceReview: source === 'wave2' ? { checkedOn: '2026-10-11', status: 'source-checked' as const, gameVersion: 'Mario Kart 8 Deluxe — DS Waluigi Pinball' } : source === 'history' ? { checkedOn: '2026-10-04', status: 'source-checked' as const, gameVersion: 'Nintendo’s US Mario release timeline' } : topic === 'mario' && difficulty === 'explorer'
       ? { checkedOn: '2026-10-04', status: 'source-checked' as const, gameVersion: 'Super Mario series — Nintendo character guide' }
       : undefined,
   }));
@@ -138,6 +139,15 @@ function createRows(topic: Topic, difficulty: Difficulty, rows: readonly Row[], 
 const KNOWLEDGE_EQUIVALENTS: Readonly<Record<string, string>> = {
   'mario-explorer-6': 'mario-explorer-6-v2',
   'mario-explorer-10': 'expanded-14',
+  'kart-explorer-8': 'kart-explorer-8-v2',
+};
+// Difficulty is about game knowledge, not obscure cup recall. Keep IDs stable
+// so reclassification does not reset a player's history or matching links.
+const LEVEL_REVIEW: Readonly<Record<string, Difficulty>> = {
+  'kart-scientist-1': 'professor', 'kart-scientist-2': 'professor',
+  'kart-scientist-3': 'professor', 'kart-scientist-4': 'professor',
+  'kart-professor-8': 'scientist', 'kart-professor-9': 'scientist',
+  'kart-professor-10': 'scientist', 'fresh-31': 'scientist',
 };
 export const QUESTIONS: readonly TriviaQuestion[] = [
   ...createRows('mario', 'explorer', marioExplorer, ['characters','characters','baddies','characters','characters','baddies','characters','characters','characters','characters']),
@@ -150,7 +160,7 @@ export const QUESTIONS: readonly TriviaQuestion[] = [
   ...FRESH_QUESTIONS,
   ...GAMEPLAY_QUESTIONS,
   ...MARIO_SIDE_QUESTIONS,
-].map(question => ({ ...question, knowledgeId: canonicalKnowledge(KNOWLEDGE_EQUIVALENTS[question.id] ?? question.knowledgeId) }));
+].map(question => ({ ...question, difficulty: LEVEL_REVIEW[question.id] ?? question.difficulty, knowledgeId: canonicalKnowledge(KNOWLEDGE_EQUIVALENTS[question.id] ?? question.knowledgeId) }));
 
 export function shuffled<T>(values: readonly T[], random = Math.random): T[] {
   const result = [...values];
