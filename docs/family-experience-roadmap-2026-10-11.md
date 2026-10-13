@@ -22,7 +22,7 @@ challenge, discover interesting Mario details and rarely have to fight the UI.
 
 ## Verified baseline
 
-Release: **7d038e6**, pushed and deployed. Local full gate: **123 browser tests**,
+Last verified deployment before this audit: **7d038e6**. Local full gate: **123 browser tests**,
 content/rules audit and production build passed. [GitHub tests and deployment
 also passed](https://github.com/Swon404/MarioTriviaQuiz/actions/runs/38294296384).
 This review inspected code and test coverage; it is **not a new physical-iPhone
@@ -54,6 +54,13 @@ Final local verification on 13 October 2026: `npm run test:all` passed the
 content/rules audit (170 records, 900 generated quizzes), all 123 browser tests,
 TypeScript and production/PWA build. Release requires the matching GitHub run's
 test and deployment jobs to pass as well.
+
+Release follow-up: the first audit push (`56214a8`) passed locally but GitHub caught
+a nondeterministic history-test assumption: both Rosalina clue wordings now belong
+to Rookie. The test now checks the exact four unseen canonical facts and their
+stored history, rather than one particular wording. All 12 focused repeat runs
+and the final complete local gate passed (123 browser tests, content audit and
+production/PWA build). A successful new GitHub run is required before deployment.
 
 ### Done—do not rebuild these
 

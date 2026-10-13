@@ -104,8 +104,12 @@ verification continued on 13 October.
 - Result: 170 reviewed records, 159 distinct knowledge IDs, 170 Learning Zone cards. Difficulty counts: 61 Rookie / 58 Pro / 51 Legend. This is review, not 75 new questions.
 - Regression checks cover explicit review scope, edition/source presence, replacement identities, revised matching answers, picture-source links, all 170 Learning Zone cards and the App Store source label. Full release verification is recorded below after completion.
 - Verification on 13 October 2026: `npm run test:all` passed the content/rules audit (170 questions, 900 generated quizzes, 48 tracks), all 123 browser tests, TypeScript and production/PWA build (88 precache entries). No physical-iPhone or family acceptance claim. GitHub verification is required for the pushed commit.
+- CI follow-up: [the first push](https://github.com/Swon404/MarioTriviaQuiz/actions/runs/38465884603) caught a history-test assumption missed by the local random run: either same-level Rosalina clue can represent the same canonical fact. Fix the test to require the exact four unseen fact IDs, their saved history and the familiar-board label after reload, rather than one arbitrary clue wording. All 12 focused repeat runs passed. Do not treat the failed run as a deployed release.
 
 ## Remaining work after the original audit
+
+After the CI assertion fix, the final complete local `npm run test:all` passed
+again: 123 browser tests, content/rules audit and production/PWA build.
 
 - [x] Review the other 75 original records: 32 base, 26 expanded and 17 fresh questions.
 - [x] Specify fixed versions in all four patch-note questions; retain automated coverage for their review metadata.

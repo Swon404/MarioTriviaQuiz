@@ -40,15 +40,24 @@ for (const mode of ['Clue Duel', 'Track Finder', 'Category Finder']) {
 }
 
 test('Matching prefers knowledge not already seen in Quiz Battle and labels reused boards', async ({ page }) => {
-  const fresh = MATCH_CLUES.filter(item => item.difficulty === 'explorer').slice(0, 4);
-  const freshIds = fresh.map(item => item.question.knowledgeId);
+  const freshIds = [...new Set(MATCH_CLUES.filter(item => item.difficulty === 'explorer').map(item => item.question.knowledgeId))].slice(0, 4);
   await page.goto('./');
   await page.evaluate(({ key, ids }) => localStorage.setItem(key, JSON.stringify({ ada: ids })), { key: KEY, ids: QUESTIONS.map(question => question.knowledgeId).filter(id => !freshIds.includes(id)) });
   await open(page, 'Clue Match Up');
   await page.getByLabel('Player name', { exact: true }).fill('Ada');
   await page.getByRole('button', { name: 'Start!', exact: true }).click();
   const shown = await page.locator('.match-column').last().locator('button').allTextContents();
-  expect(new Set(shown)).toEqual(new Set(fresh.map(item => item.clue)));
+  expect(shown).toHaveLength(4);
+  const shownIds = shown.map(text => {
+    const clue = MATCH_CLUES.find(item => item.clue === text);
+    expect(clue, `Visible clue must come from the catalogue: ${text}`).toBeDefined();
+    expect(clue!.difficulty).toBe('explorer');
+    return clue!.question.knowledgeId;
+  });
+  // A fact may have more than one valid clue wording at the same level.
+  // Require exactly the four unseen facts, not one randomly selected wording.
+  expect(new Set(shownIds)).toEqual(new Set(freshIds));
+  expect(new Set((await history(page)).ada.slice(0, 4))).toEqual(new Set(freshIds));
   await expect(page.locator('.review-note')).toHaveCount(0);
   await page.reload();
   await open(page, 'Clue Match Up');
