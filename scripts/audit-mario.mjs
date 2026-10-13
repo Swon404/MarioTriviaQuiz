@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
 import { QUESTIONS, createQuiz } from '../src/mario/questions.ts';
+import { ORIGINAL_REVIEW_GROUPS, withCompletedOriginalReview } from '../src/mario/originalReview.ts';
 import { MARIO_SIDE_QUESTIONS, MARIO_SIDE_MATCH_CLUES } from '../src/mario/marioSideQuestions.ts';
 import { canonicalKnowledge } from '../src/mario/knowledge.ts';
 import { GAMEPLAY_QUESTIONS, GAMEPLAY_REVIEW } from '../src/mario/gameplayQuestions.ts';
@@ -134,6 +135,67 @@ assert.deepEqual(computerChampionshipAnswers(computerRounds, 'explorer', () => 0
 assert.ok(computerChampionshipAnswers(computerRounds, 'explorer', () => 0.99).every((answer, index) => answer !== computerRounds[index].question.answer));
 
 assert.equal(QUESTIONS.length, 170, 'Existing 166 Mario questions plus four Luigi’s Mansion questions');
+const finalReviewIds = ORIGINAL_REVIEW_GROUPS.flatMap(([, ids]) => ids);
+assert.equal(finalReviewIds.length, 75);
+assert.equal(new Set(finalReviewIds).size, 75, 'Review groups cannot hide duplicate records');
+for (const id of finalReviewIds) {
+  const question = QUESTIONS.find(question => question.id === id);
+  assert.ok(question, `Reviewed record exists: ${id}`);
+  assert.equal(question.sourceReview.checkedOn, '2026-10-12');
+}
+assert.ok(QUESTIONS.every(question => question.sourceReview?.status === 'source-checked'));
+assert.ok(QUESTIONS.every(question => question.sourceReview.gameVersion && new URL(question.sourceUrl).protocol === 'https:'));
+const unreviewedAddition = { ...QUESTIONS[0], id: 'future-question', sourceReview: undefined };
+assert.equal(withCompletedOriginalReview(unreviewedAddition), unreviewedAddition, 'Future content must not inherit a blanket source review');
+for (const id of ['kart-explorer-1', 'kart-explorer-7', 'kart-explorer-9', 'expanded-12', 'expanded-17', 'fresh-21', 'fresh-23', 'fresh-24']) {
+  assert.equal(QUESTIONS.find(question => question.id === id).knowledgeId, `${id}-v2`);
+  assert.equal(canonicalKnowledge(id), id, 'Old exposure does not cover a replacement fact');
+}
+assert.deepEqual(QUESTIONS.find(question => question.id === 'fresh-21').choices, ['Cow', 'Goomba', 'Spike', 'Pokey']);
+for (const [id, answer, clueText] of [
+  ['fresh-19', 'Coin Runners', /most coins/],
+  ['fresh-20', 'Balloon Battle', /balloons/],
+  ['kart-professor-8', '24 racers', /Maximum number/],
+]) {
+  assert.equal(QUESTIONS.find(question => question.id === id).answer, answer);
+  const match = MATCH_CLUES.find(clue => clue.id === id);
+  assert.equal(match.name, answer);
+  assert.match(match.clue, clueText);
+}
+for (const id of ['expanded-24', 'expanded-25', 'expanded-31', 'expanded-32', 'expanded-38', 'expanded-39']) {
+  const question = QUESTIONS.find(question => question.id === id);
+  assert.equal(question.sourceReview?.checkedOn, '2026-10-12');
+  assert.equal(question.sourceReview?.status, 'source-checked');
+  assert.match(question.sourceReview.gameVersion, /Mario Kart 8 Deluxe/);
+  assert.match(question.prompt, /Mario Kart 8 Deluxe/);
+  assert.equal(new Set(question.choices).size, 4);
+  assert.equal(question.knowledgeId, canonicalKnowledge(id), 'Inverting an item/effect question still tests the same fact');
+  assert.equal(MATCH_CLUES.find(clue => clue.id === id).name, question.answer);
+}
+assert.equal(QUESTIONS.find(question => question.id === 'expanded-32').answer, 'Two');
+assert.match(MATCH_CLUES.find(clue => clue.id === 'expanded-32').clue, /Number of coins/);
+assert.equal(QUESTIONS.find(question => question.id === 'expanded-39').answer, 'A small speed boost');
+assert.match(MATCH_CLUES.find(clue => clue.id === 'expanded-39').clue, /Extra movement effect/);
+assert.ok(!QUESTIONS.find(question => question.id === 'expanded-31').prompt.includes('honk'), 'Do not give away Super Horn through its sound');
+for (const id of ['fresh-1', 'fresh-3', 'fresh-4', 'fresh-8', 'fresh-9']) {
+  const question = QUESTIONS.find(question => question.id === id);
+  assert.equal(question.sourceReview?.checkedOn, '2026-10-12');
+  assert.equal(question.sourceReview?.status, 'source-checked');
+  assert.match(question.sourceReview.gameVersion, /original Nintendo Switch game \(2023\)/);
+  assert.match(question.prompt, /Super Mario Bros. Wonder/);
+  assert.equal(new Set(question.choices).size, 4);
+  assert.ok(!question.choices.some(choice => /pause menu|Speed Badge|Coin Badge/.test(choice)));
+  assert.equal(question.knowledgeId, id === 'fresh-3' ? 'fresh-3-v2' : canonicalKnowledge(id));
+}
+const badgeQuestion = QUESTIONS.find(question => question.id === 'fresh-3');
+assert.deepEqual(badgeQuestion.choices, ['One', 'Two', 'Three', 'Four']);
+assert.equal(canonicalKnowledge('fresh-3'), 'fresh-3', 'Old parachute exposure must not count as the new shared-badge fact');
+const badgeClue = MATCH_CLUES.find(clue => clue.id === 'fresh-3');
+assert.equal(badgeClue.name, 'One');
+assert.match(badgeClue.clue, /whole team equips/);
+assert.equal(badgeClue.question.knowledgeId, 'fresh-3-v2');
+assert.deepEqual(QUESTIONS.find(question => question.id === 'fresh-4').choices, ['Nabbit', 'Mario', 'Luigi', 'Peach'], 'Nabbit distractors must be other playable characters without his protection');
+assert.deepEqual(QUESTIONS.find(question => question.id === 'fresh-9').choices, ['Three', 'One', 'Two', 'Four'], 'Co-op choices use adjacent plausible player counts');
 for (const id of ['fresh-22', 'fresh-26', 'fresh-27', 'kart-explorer-8']) {
   const question = QUESTIONS.find(question => question.id === id);
   assert.equal(question.sourceReview?.checkedOn, '2026-10-11');
@@ -267,7 +329,16 @@ assert.equal(MARIO_TIMELINE.length, 22, 'Expanded source-checked Game Order pool
 assert.equal(new Set(MARIO_TIMELINE.map(game => game.id)).size, MARIO_TIMELINE.length);
 assert.equal(ICON_PAIRS.length, 40);
 assert.equal(new Set(ICON_PAIRS.map(pair => pair.id)).size, ICON_PAIRS.length);
-assert.ok(ICON_PAIRS.every(pair => pair.icon && pair.name === pair.question.answer));
+for (const pair of ICON_PAIRS) {
+  assert.ok(pair.icon);
+  assert.ok(QUESTIONS.includes(pair.question), 'Picture feedback must use a real bank record');
+  const effectSource = { Coin: 'expanded-32', 'Piranha Plant': 'expanded-39', 'Grand Prix': 'kart-professor-8' }[pair.name];
+  if (effectSource) {
+    assert.equal(pair.id, `kart-${pair.name}`, 'Item card identity must survive quiz wording changes');
+    assert.equal(pair.question.id, effectSource);
+    assert.ok(pair.question.prompt.includes(pair.name));
+  } else assert.equal(pair.name, pair.question.answer);
+}
 assert.ok(ICON_PAIRS.every(pair => ['emoji', 'svg', 'image', 'text'].includes(pair.iconKind)));
 for (const pair of ICON_PAIRS.filter(item => item.iconKind === 'svg' || item.iconKind === 'image')) {
   assert.ok(existsSync(new URL(`../public/${pair.icon}`, import.meta.url)), `${pair.name}: missing icon`);

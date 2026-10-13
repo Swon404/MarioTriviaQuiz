@@ -4,6 +4,7 @@ import { GAMEPLAY_QUESTIONS } from './gameplayQuestions.ts';
 import { MARIO_SIDE_QUESTIONS } from './marioSideQuestions.ts';
 import { canonicalKnowledge, normalizeKnowledge } from './knowledge.ts';
 import { withVariedFunFacts } from './funFacts.ts';
+import { withCompletedOriginalReview } from './originalReview.ts';
 
 export type Difficulty = 'explorer' | 'scientist' | 'professor';
 export type Topic = 'mario' | 'kart';
@@ -32,6 +33,8 @@ const SOURCES = {
   booster: 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/57858/',
   world: 'https://www.nintendo.com/us/whatsnew/mario-kart-world-direct-revs-up-new-details-on-the-biggest-mario-kart-ever-coming-to-nintendo-switch-2-at-launch/',
   wave2: 'https://www.nintendo.com/us/whatsnew/mario-kart-8-deluxe-booster-course-pass-wave-2-approaches-the-starting-line-on-aug-4/',
+  wiiRoutes: 'https://www.nintendo.com/en-za/Support/Legacy-system/Shave-seconds-off-your-time-in-Mario-Kart-Wii-613215.html',
+  kart64: 'https://www.nintendo.com/en-za/Games/Nintendo-64/Mario-Kart-64-269558.html',
 } as const;
 
 type SourceId = keyof typeof SOURCES;
@@ -77,15 +80,15 @@ const marioProfessor: readonly Row[] = [
 ];
 
 const kartExplorer: readonly Row[] = [
-  ['Which Mario Kart World course has “Cinema” in its name?', 'Boo Cinema', 'Crown City', 'Starview Peak', 'Mario Bros. Circuit', 'Boo Cinema is one of the new Mario Kart World courses named by Nintendo.', 'Nintendo also names Starview Peak as a snowy course.', 'world'],
+  ['Which course debuted in Mario Kart World rather than returning from an older game?', 'Boo Cinema', 'Coconut Mall', 'Waluigi Pinball', 'Peach Gardens', 'This was a new course for World. The other choices had already appeared in earlier Mario Kart games.', 'World mixes newly designed courses with reimagined returning ones.', 'world'],
   ['Which Mario Kart World course is described as snowy?', 'Starview Peak', 'Crown City', 'Boo Cinema', 'Mario Bros. Circuit', 'Starview Peak has snowy trails. Nintendo names it among the new World courses.', 'Crown City is described as having modern streets.', 'world'],
   ['Which Mario Kart World course is set among modern city streets?', 'Crown City', 'Starview Peak', 'Boo Cinema', 'Mario Bros. Circuit', 'Crown City is the modern city course named in Nintendo’s World preview.', 'World also has roads linking its courses together.', 'world'],
-  ['What can you explore without racing in Mario Kart World?', 'Free Roam', 'Grand Prix', 'Time Trials', 'Knockout Tour', 'Free Roam lets you explore the connected world at your own pace.', 'You can find hidden coins and P Switch missions while exploring.', 'world'],
+  ['Which Mario Kart World mode lets you explore without entering a race?', 'Free Roam', 'Grand Prix', 'Time Trials', 'Knockout Tour', 'You can drive off the usual racing route and explore at your own pace. There is no need to chase first place.', 'P Switch missions give you driving challenges while exploring.', 'world'],
   ['Which Mario Kart World mode eliminates racers at checkpoints?', 'Knockout Tour', 'Free Roam', 'Time Trials', 'Balloon Battle', 'Knockout Tour is a long rally with checkpoints. Racers who fall below the cut are eliminated.', 'It can feature up to 24 racers.', 'world'],
-  ['What does an Ice Flower do in Mario Kart World?', 'Makes rivals spin', 'Builds a bridge', 'Changes the weather', 'Unlocks a cup', 'The Ice Flower chills opponents and sends them spinning.', 'The game also includes a Coin Shell that makes coins appear.', 'world'],
-  ['Which Mario Kart 8 Deluxe extra course is named after a shopping centre?', 'Coconut Mall', 'Choco Mountain', 'Sky Garden', 'Shroom Ridge', 'Wii Coconut Mall appears in the Golden Dash Cup of the Booster Course Pass.', 'It is one of the returning Wii courses in that pass.', 'booster'],
+  ['What happens to rivals hit by an Ice Flower in Mario Kart World?', 'They spin after being chilled', 'They shrink and slow down', 'Their view is covered in ink', 'They change into another racer', 'The cold attack sends the other kart spinning. Shrinking, ink and transformations belong to different items.', 'World also has a Mega Mushroom that lets its user squash rivals.', 'world'],
+  ['In Mario Kart Wii, which course has escalators whose direction you need to watch?', 'Coconut Mall', 'Maple Treeway', 'Mushroom Gorge', 'Koopa Cape', 'Choose the escalator moving the way you want to go. Fighting its direction slows your progress.', 'After the first escalator, a route to the right can save time.', 'wiiRoutes'],
   ['Which Mario Kart 8 Deluxe course launches racers into a giant arcade table with flashing lights?', 'Waluigi Pinball', 'Ribbon Road', 'Music Park', 'Electrodrome', 'The racers become part of an oversized arcade game. Its bright lights and sound effects make it feel different from an ordinary road race.', 'The original version appeared on Nintendo DS.', 'wave2'],
-  ['Which Mario Kart 8 Deluxe extra course has “Mountain” in its name?', 'Choco Mountain', 'Sky Garden', 'Coconut Mall', 'Shroom Ridge', 'N64 Choco Mountain is listed in the Golden Dash Cup.', 'The N64 prefix points to its earlier Nintendo 64 appearance.', 'booster'],
+  ['Which Mario Kart 64 course makes racers dodge bouncing boulders?', 'Choco Mountain', 'Toad’s Turnpike', 'Moo Moo Farm', 'Koopa Troopa Beach', 'Large rocks are hazards on this foggy route. Leave space to steer around them.', 'In Mario Kart 64, it belongs to the Flower Cup.', 'kart64'],
   ['Which mode in Mario Kart World lets you race against the clock?', 'Time Trials', 'Free Roam', 'Balloon Battle', 'Coin Runners', 'Time Trials is the mode for racing against the clock.', 'World lets players compare against online ghost data in Time Trials.', 'world'],
 ];
 
@@ -110,7 +113,7 @@ const kartProfessor: readonly Row[] = [
   ['Which cup has Tour London Loop in Mario Kart 8 Deluxe?', 'Rock Cup', 'Moon Cup', 'Fruit Cup', 'Feather Cup', 'London Loop opens the Rock Cup of the Booster Course Pass.', 'That cup closes with Wii Maple Treeway.', 'booster'],
   ['Which course comes just before 3DS Rainbow Road in the Mario Kart 8 Deluxe Moon Cup?', 'Merry Mountain', 'DS Peach Gardens', 'Tour Berlin Byways', 'Wii Maple Treeway', 'Merry Mountain is third in the Moon Cup, immediately before 3DS Rainbow Road.', 'Berlin Byways opens the Moon Cup.', 'booster'],
   ['Which Booster Course Pass wave added the Spiny Cup?', 'Wave 6', 'Wave 3', 'Wave 4', 'Wave 5', 'The Spiny Cup came in Wave 6, the final wave of the pass.', 'Wave 6 also added the Acorn Cup.', 'booster'],
-  ['Which Mario Kart World race can have up to 24 drivers?', 'Grand Prix', 'Four-player split screen', 'Time Trials ghost', 'Single-player Free Roam', 'Nintendo says Grand Prix and Knockout Tour can reach 24 racers.', 'World also supports four players sharing one screen locally.', 'world'],
+  ['In Mario Kart World, what is the maximum field in a Grand Prix race?', '24 racers', '12 racers', '16 racers', '20 racers', 'The field can be much larger than in earlier Mario Kart games. That means more rivals competing for space and items.', 'Knockout Tour also starts with up to 24 racers.', 'world'],
   ['In Mario Kart World Grand Prix, what links one course to the next?', 'Driveable roads', 'A loading-only menu', 'A teleporting pipe', 'A ferry ride', 'World connects courses with roads that racers drive during a Grand Prix.', 'The Mushroom Cup starts at Mario Bros. Circuit before heading toward Crown City.', 'world'],
   ['In Mario Kart World, what happens when you use Rewind?', 'Your vehicle returns while rivals keep moving', 'Every racer moves backward together', 'The whole race restarts', 'The timer pauses for everyone', 'Rewind resets your vehicle’s position after a mistake. Rivals continue racing, so it can cost you places.', 'World lets players use Rewind in Free Roam or single-player modes.', 'world'],
 ];
@@ -140,6 +143,9 @@ const KNOWLEDGE_EQUIVALENTS: Readonly<Record<string, string>> = {
   'mario-explorer-6': 'mario-explorer-6-v2',
   'mario-explorer-10': 'expanded-14',
   'kart-explorer-8': 'kart-explorer-8-v2',
+  'kart-explorer-1': 'kart-explorer-1-v2',
+  'kart-explorer-7': 'kart-explorer-7-v2',
+  'kart-explorer-9': 'kart-explorer-9-v2',
 };
 // Difficulty is about game knowledge, not obscure cup recall. Keep IDs stable
 // so reclassification does not reset a player's history or matching links.
@@ -148,6 +154,10 @@ const LEVEL_REVIEW: Readonly<Record<string, Difficulty>> = {
   'kart-scientist-3': 'professor', 'kart-scientist-4': 'professor',
   'kart-professor-8': 'scientist', 'kart-professor-9': 'scientist',
   'kart-professor-10': 'scientist', 'fresh-31': 'scientist',
+  'mario-professor-7': 'scientist', 'mario-professor-8': 'explorer',
+  'mario-professor-9': 'scientist', 'expanded-21': 'explorer',
+  'expanded-18': 'explorer', 'expanded-11': 'explorer',
+  'expanded-22': 'scientist',
 };
 export const QUESTIONS: readonly TriviaQuestion[] = [
   ...createRows('mario', 'explorer', marioExplorer, ['characters','characters','baddies','characters','characters','baddies','characters','characters','characters','characters']),
@@ -160,7 +170,7 @@ export const QUESTIONS: readonly TriviaQuestion[] = [
   ...FRESH_QUESTIONS,
   ...GAMEPLAY_QUESTIONS,
   ...MARIO_SIDE_QUESTIONS,
-].map(question => ({ ...question, difficulty: LEVEL_REVIEW[question.id] ?? question.difficulty, knowledgeId: canonicalKnowledge(KNOWLEDGE_EQUIVALENTS[question.id] ?? question.knowledgeId) }));
+].map(question => withCompletedOriginalReview({ ...question, difficulty: LEVEL_REVIEW[question.id] ?? question.difficulty, knowledgeId: canonicalKnowledge(KNOWLEDGE_EQUIVALENTS[question.id] ?? question.knowledgeId) }));
 
 export function shuffled<T>(values: readonly T[], random = Math.random): T[] {
   const result = [...values];

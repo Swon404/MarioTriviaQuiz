@@ -135,9 +135,13 @@ test('Explore opens searchable source-checked Learning Zone cards', async ({ pag
   await page.getByRole('button', { name: 'Explore Learning Zone' }).click();
   await expect(page.getByRole('heading', { name: 'Learning Zone' })).toBeVisible();
   const reviewed = QUESTIONS.filter(question => question.sourceReview?.status === 'source-checked');
-  expect(reviewed.length).toBeGreaterThanOrEqual(23);
+  expect(reviewed.length).toBe(170);
   await expect(page.locator('.learning-topic-card')).toHaveCount(reviewed.length);
-  await expect(page.getByRole('link', { name: 'Read Nintendo’s guide' })).toHaveCount(reviewed.length);
+  await expect(page.getByRole('link', { name: 'Read Nintendo’s guide' })).toHaveCount(169);
+  await expect(page.getByRole('link', { name: 'Read App Store guide' })).toHaveAttribute('href', 'https://apps.apple.com/at/story/id1555639062?l=en-GB');
+  await page.getByLabel('Search learning cards').fill('tiled roof');
+  await expect(page.locator('.learning-topic-card')).toHaveCount(1);
+  await expect(page.locator('.learning-topic-card h3')).toHaveText('Ninja Hideaway');
   await page.getByLabel('Search learning cards').fill('Cappy');
   await expect(page.locator('.learning-topic-card')).toHaveCount(1);
   await page.getByLabel('Learning topic').selectOption('kart');

@@ -1,6 +1,6 @@
 # Mario family experience: the road to a 10/10
 
-Updated 11 October 2026. **This is the active experience and content plan.**
+Updated 13 October 2026. **This is the active experience and content plan.**
 It supersedes the remaining-work lists in the October 2 family plan and the
 original implementation plan; those documents remain historical records.
 
@@ -22,17 +22,17 @@ challenge, discover interesting Mario details and rarely have to fight the UI.
 
 ## Verified baseline
 
-Release: **54517a4**, pushed and deployed. Local full gate: **122 browser tests**,
+Release: **7d038e6**, pushed and deployed. Local full gate: **123 browser tests**,
 content/rules audit and production build passed. [GitHub tests and deployment
-also passed](https://github.com/Swon404/MarioTriviaQuiz/actions/runs/38165160446).
+also passed](https://github.com/Swon404/MarioTriviaQuiz/actions/runs/38294296384).
 This review inspected code and test coverage; it is **not a new physical-iPhone
 or family playtest**.
 
 | Area | Current coverage, measured from code |
 | --- | --- |
-| Quiz Battle | 170 records, 159 distinct knowledge IDs; 58 Rookie / 56 Pro / 56 Legend records |
-| Editorial/source review | 84 reviewed records: 52 original + 28 gameplay + 4 Luigi's Mansion; 86 originals remain |
-| Learning Zone | 84 reviewed cards, plus the separate track guide |
+| Quiz Battle | 170 records, 159 distinct knowledge IDs; 61 Rookie / 58 Pro / 51 Legend records |
+| Editorial/source review | All 170 reviewed: 138 original + 28 gameplay + 4 Luigi's Mansion |
+| Learning Zone | 170 reviewed cards, plus the separate track guide |
 | Clue Match Up | 108 dedicated clues derived from quiz knowledge, not 108 extra facts |
 | Clue Duel | 24 subjects: 12 characters and 12 tracks |
 | Track Finder | 48 Booster Course Pass courses; 23 tasks: cup, origin and feature questions |
@@ -43,11 +43,17 @@ or family playtest**.
 Counts are not a quality rating. Rewordings, duplicated knowledge across levels
 and matching versions must not be counted as genuinely new facts.
 
-The four-record Wonder editorial batch is a local continuation after release
-54517a4, not yet published. Counts above include this working-tree batch.
-Verification for this batch: `npm run test:all` passed on 11 October 2026
-(content/rules audit, all 122 browser tests and production/PWA build).
+Counts above include the completed original-question audit after release 7d038e6:
+five Wonder records, six Kart item records and the remaining 75 original records.
+The final batch replaces giveaways, corrects matching links, preserves picture-card
+identities and moves basic recognition out of Legend. Source review is complete;
+broader content expansion and family difficulty calibration are not.
 Physical iPhone and family acceptance checks remain outstanding.
+
+Final local verification on 13 October 2026: `npm run test:all` passed the
+content/rules audit (170 records, 900 generated quizzes), all 123 browser tests,
+TypeScript and production/PWA build. Release requires the matching GitHub run's
+test and deployment jobs to pass as well.
 
 ### Done—do not rebuild these
 
@@ -70,7 +76,7 @@ Physical iPhone and family acceptance checks remain outstanding.
 
 Do this before adding features. Preserve the short interface the family requested.
 
-### Screenshot follow-up — 11 October 2026 (local, not yet published)
+### Screenshot follow-up — 11 October 2026 (released in a4eb75c)
 
 - [x] Keep timed Top 5 tables open; compact rows show rank, player, Replay and time without checks/moves clutter.
 - [x] Replace visible EP terminology with points across play, results, championships and lifetime progress. Keep existing earned points and saved history unchanged: lifetime progress is the sum of game awards, not a separate currency.
@@ -80,7 +86,7 @@ Do this before adding features. Preserve the short interface the family requeste
 - [x] Final full regression gate: content/rules audit, all 122 browser tests and production/PWA build passed on 11 October 2026.
 - [ ] Continue broader Mario-world question expansion and family difficulty checks; moving four records does not complete that work.
 
-### Matching follow-up — 11 October 2026 (local)
+### Matching follow-up — 11 October 2026 (released in a4eb75c)
 
 - [x] Reserve a two-line feedback area in Clue Match Up so retry messages do not move the board.
 - [x] Set new Clue Match Up games to two rounds per player, including all championship lengths. Existing saved sessions retain their original boards; timed picture Match & Hunt still has three rounds.
@@ -118,9 +124,13 @@ device/iOS/browser, settings and any failure so it can become a regression test.
 - [x] Review four Wonder power-up records (`expanded-1`, `expanded-2`, `expanded-8`, `expanded-9`) against Nintendo's gameplay guide. Improve wording and useful feedback, preserve knowledge history, and expose reviewed Learning Zone cards. This is an editorial batch, not four new facts.
 - [x] Follow-up batch: improve Dash Food, Hammer and Charge Jump choices/feedback; replace the Waluigi Pinball name giveaway with a course-feature question and matching clue. Four records source-checked; no increase to the 170-record bank.
 - [x] Move four cup-location records from Pro to Legend and four broader World racing records to Pro. Pro cup questions reduced from 13 to nine; retain history and matching difficulty links. This does not complete level calibration.
-- [ ] **Finish the remaining 86-record original audit.** Check question, all four choices,
-  answer, explanation, fun fact, source and edition. Fix or remove ambiguous,
-  giveaway or thin entries; a source URL alone does not establish accuracy.
+- [x] Review five more Wonder records: kingdom, shared badge, Nabbit, Drill movement and local co-op. Replace the badge-name giveaway with a team-play rule; use playable-character distractors, neighbouring player counts and no pause-menu joke. Preserve existing knowledge history except the genuinely replaced badge fact; update matching clues. Source details are in original-question audit batch 6.
+- [x] Review six MK8 Deluxe item records: Mushroom, Blooper, Super Horn, Coin, Feather and Piranha Plant. Ask for Coin's count and the plant's movement effect; remove Horn's sound giveaway and unrelated item facts. Preserve fact history, synchronise matching clues and decouple the two effect-answer records from picture-card names. Original-question audit batch 7 records source evidence and limitations.
+- [x] **Finish the remaining 75-record original audit.** Check question, all four choices,
+  answer, explanation, fun fact, source and edition. Replace course-name and Galaxy
+  giveaways, fix World item/mode choices, retain source-supported cup facts and
+  synchronise matching clues. All 170 records now have explicit review metadata;
+  future additions do not inherit it. See original-question audit batch 8.
 - [ ] **Ask which 3–5 Mario games each player loves/knows.** Start the next batches
   there; do not guess their favourites or add a topic-button row to the play screen.
 - [ ] **Expand in reviewed batches of about 20 distinct facts**, spanning all

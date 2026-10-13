@@ -10,7 +10,7 @@ export function LearningCard({ id }: { id: string }) {
     <p>{card.prompt}</p>
     <p>{card.explanation}</p>
     <p><strong>Did you know?</strong> {card.funFact}</p>
-    <a href={card.sourceUrl} target="_blank" rel="noreferrer">Read Nintendo’s guide ↗</a>
+    <a href={card.sourceUrl} target="_blank" rel="noreferrer">{new URL(card.sourceUrl).hostname === 'apps.apple.com' ? 'Read App Store guide ↗' : 'Read Nintendo’s guide ↗'}</a>
     <p><small>{card.sourceReview?.gameVersion} · Source checked {card.sourceReview?.checkedOn}</small></p>
   </article>;
 }
