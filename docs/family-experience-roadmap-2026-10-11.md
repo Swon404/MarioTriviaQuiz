@@ -1,6 +1,6 @@
 # Mario family experience: the road to a 10/10
 
-Updated 13 October 2026. **This is the active experience and content plan.**
+Updated 14 October 2026. **This is the active experience and content plan.**
 It supersedes the remaining-work lists in the October 2 family plan and the
 original implementation plan; those documents remain historical records.
 
@@ -22,9 +22,9 @@ challenge, discover interesting Mario details and rarely have to fight the UI.
 
 ## Verified baseline
 
-Last verified deployment before this audit: **7d038e6**. Local full gate: **123 browser tests**,
+Last verified deployment: **b5fd106**. Local full gate: **123 browser tests**,
 content/rules audit and production build passed. [GitHub tests and deployment
-also passed](https://github.com/Swon404/MarioTriviaQuiz/actions/runs/38294296384).
+also passed](https://github.com/Swon404/MarioTriviaQuiz/actions/runs/38467229670).
 This review inspected code and test coverage; it is **not a new physical-iPhone
 or family playtest**.
 
@@ -60,7 +60,7 @@ a nondeterministic history-test assumption: both Rosalina clue wordings now belo
 to Rookie. The test now checks the exact four unseen canonical facts and their
 stored history, rather than one particular wording. All 12 focused repeat runs
 and the final complete local gate passed (123 browser tests, content audit and
-production/PWA build). A successful new GitHub run is required before deployment.
+production/PWA build). Follow-up b5fd106 passed both GitHub tests and deployment.
 
 ### Done—do not rebuild these
 
@@ -82,6 +82,34 @@ production/PWA build). A successful new GitHub run is required before deployment
 ## Priority 1 — make every go comfortable and dependable
 
 Do this before adding features. Preserve the short interface the family requested.
+
+### Scoreboard and replay follow-up — 14 October 2026 (local, not published)
+
+- [x] Replay clocks tick between recorded actions; Stop freezes, Start restarts,
+  closing cancels playback and the final timestamp stays fixed. Both replay types
+  have clock-controlled browser tests; scores are unchanged by replaying.
+- [x] Result table combines Player / Current game / Championship, with smaller
+  correct/completed counts beneath names and readable aligned totals on a phone.
+- [x] User-approved answer scoring: one point per correct answer at every level;
+  no streak multiplier or bonus. Streak achievements and historical scores remain.
+  Timed-round and picture-matching rules are unchanged.
+- [x] Both standalone live score displays include the current answer immediately,
+  agree for either player, reverse on Rewind and do not double-count on Next.
+- [x] Remove automatic truncation of timed records at 1,000 entries. Older bests
+  and their replays stay intact; quota failures return failure and preserve the
+  previous store. Existing visible save warnings and manual cleanup/undo remain.
+  Synthetic tests cover both games, 1,001 entries, duplicates and full storage.
+- [ ] Replace the mixed finished-games ranking with comparable Top 5 groups.
+  Keep old bonus-scored results separate from new one-point games; do not silently
+  rewrite old points. Stored records currently lack an explicit scoring version.
+- [ ] Correct championship ranking to account for Player 2 as well as Player 1;
+  separate incomparable game selections, sizes, levels and formats.
+- [ ] Complete real-iPhone and family acceptance checks. Browser tests are not
+  a claim of physical Safari validation or a family rating.
+
+The combined replay/table/scoring and score-integrity changes passed the full
+content/rules audit, all 128 browser tests and the production/PWA build locally
+on 14 October 2026. These changes are not yet committed or published.
 
 ### Screenshot follow-up — 11 October 2026 (released in a4eb75c)
 
@@ -138,8 +166,14 @@ device/iOS/browser, settings and any failure so it can become a regression test.
   giveaways, fix World item/mode choices, retain source-supported cup facts and
   synchronise matching clues. All 170 records now have explicit review metadata;
   future additions do not inherit it. See original-question audit batch 8.
-- [ ] **Ask which 3–5 Mario games each player loves/knows.** Start the next batches
-  there; do not guess their favourites or add a topic-button row to the play screen.
+- [x] **Ask which 3–5 Mario games the family loves/knows.** Confirmed 14 October:
+  Super Mario Bros. Wonder, Mario Kart World, New Super Mario Bros., Super Mario
+  Odyssey and the original Super Mario Bros. Exact New Super Mario Bros. edition
+  is not yet confirmed; avoid assuming Wii/U-specific knowledge.
+  Priority modes: Game Order, Match & Hunt, Quiz Battle and Clue Duel.
+  Start content expansion there; do not add a topic-button row to the play screen.
+- [x] Add Goomba to Match & Hunt as a picture/name pair and selectable Hunt target,
+  with locally stored thumbnail artwork and a source-checked Rookie quiz fact.
 - [ ] **Expand in reviewed batches of about 20 distinct facts**, spanning all
   levels and several subjects. First coverage milestone: approximately **240
   distinct reviewed facts** across the Mario bank, then assess repetition before

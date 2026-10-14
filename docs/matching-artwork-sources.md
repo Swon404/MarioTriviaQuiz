@@ -1,5 +1,12 @@
 # Match & Hunt artwork sources
 
+14 October addition: Goomba brings the active catalogue to 41 pairs (39 web images
+and two mode symbols). The local 200px PNG is 44,002 bytes, visually inspected,
+and uses [New Super Mario Bros. artwork](https://www.mariowiki.com/File:NSMBDS_Goomba_Artwork.png).
+The manifest retains the pinned source URL. Its feedback fact was checked against
+[Nintendo's Goomba guide](https://play.nintendo.com/themes/friends/goomba/).
+This addition does not change the rights limitations below.
+
 Latest selection: track screenshots are no longer used on new matching boards. Their nine places now contain Luigi, Wario, Waluigi, Bowser Jr., Dry Bones, Cow, Birdo, Funky Kong and Kamek. The active catalogue stays at 40 pairs (38 web images and two mode symbols). Track Finder and quiz content are unchanged. The nine archived track assets and their source entries below remain available for old saved games/replays; there are 47 web assets in the manifest altogether.
 
 Selected 4 October 2026 at the user's request to replace the hand-drawn matching art with recognisable web artwork. Images are stored locally for offline play, not hotlinked. Nintendo character/item renders, console photographs and course screenshots were obtained via Super Mario Wiki. Source pages below identify the original files and their attribution/licensing details; downloading does not grant redistribution rights. This is not a rights-clearance record.

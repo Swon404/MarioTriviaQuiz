@@ -160,6 +160,15 @@ const LEVEL_REVIEW: Readonly<Record<string, Difficulty>> = {
   'expanded-22': 'scientist',
 };
 export const QUESTIONS: readonly TriviaQuestion[] = [
+  {
+    id: 'goomba-jump', knowledgeId: 'goomba-jump', topic: 'mario', difficulty: 'explorer', category: 'baddies',
+    prompt: 'Which mushroom-shaped member of Bowser’s army can usually be defeated by jumping on it?',
+    choices: ['Goomba', 'Boo', 'Blooper', 'Bullet Bill'], answer: 'Goomba',
+    explanation: 'A well-timed jump onto a Goomba is usually enough to defeat it. Watch where you land rather than walking straight into it.',
+    funFact: 'Goombas belong to Bowser’s army, even though they are not its most fearsome fighters.',
+    sourceUrl: 'https://play.nintendo.com/themes/friends/goomba/',
+    sourceReview: { checkedOn: '2026-10-14', status: 'source-checked', gameVersion: 'Super Mario series — Nintendo Goomba character guide' },
+  } satisfies TriviaQuestion,
   ...createRows('mario', 'explorer', marioExplorer, ['characters','characters','baddies','characters','characters','baddies','characters','characters','characters','characters']),
   ...createRows('mario', 'scientist', marioScientist, ['consoles','consoles','consoles','consoles','consoles','consoles','consoles','consoles','consoles','consoles']),
   ...createRows('mario', 'professor', marioProfessor, ['games','games','games','games','consoles','games','characters','characters','characters','games']),

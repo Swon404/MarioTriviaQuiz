@@ -25,7 +25,9 @@ export function saveOrderTime(value: OrderTime): boolean {
   if (isOrderPractice(value.id)) return false;
   try {
     const existing = getOrderTimes();
-    if (!existing.some(item => item.id === value.id)) localStorage.setItem(KEY, JSON.stringify([{ ...value, ruleset: ORDER_RULESET }, ...existing].slice(0, 1000)));
+    // Keep older best times and their replays. If storage is full, the failed
+    // atomic write leaves existing records intact and the caller shows a warning.
+    if (!existing.some(item => item.id === value.id)) localStorage.setItem(KEY, JSON.stringify([{ ...value, ruleset: ORDER_RULESET }, ...existing]));
     return true;
   } catch { return false; }
 }

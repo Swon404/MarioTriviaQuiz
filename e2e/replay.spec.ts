@@ -1,5 +1,63 @@
 import { expect, test } from '@playwright/test';
 
+for (const kind of ['order', 'pairs'] as const) {
+  test(`${kind} replay clock ticks between actions, freezes on Stop and finishes at the recorded time`, async ({ page }) => {
+    await page.clock.install({ time: new Date('2026-10-14T12:00:00Z') });
+    await page.clock.pauseAt(new Date('2026-10-14T12:00:01Z'));
+    await page.goto('./');
+    const key = kind === 'order' ? 'mariotrivia_order_times_v1' : 'mariotrivia_pair_times_v1';
+    await page.evaluate(({ kind, key }) => {
+      const tiles = [{ id: 'a', label: 'Mario', state: 'shown' }, { id: 'b', label: 'Luigi', state: 'shown' }];
+      const replay = { version: 1, kind, title: 'Dad replay', frames: [
+        { atMs: 0, event: 'Timer started', tiles },
+        { atMs: 2000, event: 'Tile selected', tiles: [{ ...tiles[0], state: 'selected' }, tiles[1]] },
+        { atMs: 4000, event: 'Board complete', tiles: tiles.map(tile => ({ ...tile, state: 'correct' })) },
+      ] };
+      const common = { id: 'clock-test', player: 'Dad', difficulty: 'explorer', elapsedMs: 4000, completedAt: '2026-10-14T12:00:00Z', replay };
+      localStorage.setItem(key, JSON.stringify([kind === 'order'
+        ? { ...common, ruleset: 'order-v2', challenge: 'easy', tiles: 4, attempts: 1 }
+        : { ...common, ruleset: 'pairs-v1', variant: 'time-trial', pairs: 12, goal: 4, target: null, unlockPairs: 0, moves: 4 }]));
+    }, { kind, key });
+    const stored = await page.evaluate(key => localStorage.getItem(key), key);
+    await page.getByRole('button', { name: 'High Scores' }).click();
+    await page.getByRole('button', { name: 'Replay', exact: false }).click();
+    const dialog = page.getByRole('dialog');
+    const clock = dialog.getByRole('timer', { name: 'Replay time' });
+    await expect(clock).toHaveText('0.0s');
+    await dialog.getByRole('button', { name: 'Start replay' }).click();
+    await page.clock.runFor(500);
+    await expect(clock).toHaveText('0.5s');
+    await expect(dialog).toContainText('Timer started');
+    await page.clock.runFor(500);
+    await expect(clock).toHaveText('1.0s');
+    await dialog.getByRole('button', { name: 'Stop replay' }).click();
+    await page.clock.runFor(3000);
+    await expect(clock).toHaveText('1.0s');
+    await expect(dialog).toContainText('Timer started');
+    await dialog.getByRole('button', { name: 'Start replay' }).click();
+    await expect(clock).toHaveText('0.0s');
+    await page.clock.runFor(2000);
+    await expect(dialog).toContainText('Tile selected');
+    await page.clock.runFor(500);
+    await expect(clock).toHaveText('2.5s');
+    await page.clock.runFor(1500);
+    await expect(clock).toHaveText('4.0s');
+    await expect(dialog).toContainText('Replay finished');
+    await expect(dialog.getByRole('button', { name: 'Stop replay' })).toBeDisabled();
+    await page.clock.runFor(3000);
+    await expect(clock).toHaveText('4.0s');
+    await dialog.getByRole('button', { name: 'Start replay' }).click();
+    await page.clock.runFor(500);
+    await dialog.getByRole('button', { name: 'Back', exact: false }).click();
+    await page.clock.runFor(5000);
+    await page.getByRole('button', { name: 'Replay', exact: false }).click();
+    await expect(clock).toHaveText('0.0s');
+    await page.clock.runFor(500);
+    await expect(clock).toHaveText('0.0s');
+    expect(await page.evaluate(key => localStorage.getItem(key), key)).toBe(stored);
+  });
+}
+
 test('Replay plays selections and completion on a phone; cleanup confirms and can be undone', async ({ page }) => {
   await page.clock.install({ time: new Date('2026-10-11T12:00:00Z') });
   await page.clock.pauseAt(new Date('2026-10-11T12:00:01Z'));

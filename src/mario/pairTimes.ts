@@ -36,7 +36,9 @@ export function savePairTime(item: PairTime, eligible: boolean): boolean {
   if (!eligible) return false;
   try {
     const existing = getPairTimes();
-    if (!existing.some(value => value.id === item.id)) localStorage.setItem(KEY, JSON.stringify([item, ...existing].slice(0, 1000)));
+    // Never discard an older best/replay just because newer boards were played.
+    // Storage failure returns false without overwriting the existing records.
+    if (!existing.some(value => value.id === item.id)) localStorage.setItem(KEY, JSON.stringify([item, ...existing]));
     return true;
   } catch { return false; }
 }

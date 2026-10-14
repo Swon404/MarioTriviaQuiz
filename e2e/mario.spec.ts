@@ -135,9 +135,9 @@ test('Explore opens searchable source-checked Learning Zone cards', async ({ pag
   await page.getByRole('button', { name: 'Explore Learning Zone' }).click();
   await expect(page.getByRole('heading', { name: 'Learning Zone' })).toBeVisible();
   const reviewed = QUESTIONS.filter(question => question.sourceReview?.status === 'source-checked');
-  expect(reviewed.length).toBe(170);
+  expect(reviewed.length).toBe(171);
   await expect(page.locator('.learning-topic-card')).toHaveCount(reviewed.length);
-  await expect(page.getByRole('link', { name: 'Read Nintendo’s guide' })).toHaveCount(169);
+  await expect(page.getByRole('link', { name: 'Read Nintendo’s guide' })).toHaveCount(170);
   await expect(page.getByRole('link', { name: 'Read App Store guide' })).toHaveAttribute('href', 'https://apps.apple.com/at/story/id1555639062?l=en-GB');
   await page.getByLabel('Search learning cards').fill('tiled roof');
   await expect(page.locator('.learning-topic-card')).toHaveCount(1);
@@ -607,7 +607,7 @@ test('solo championship carries points into two Clue Match Up rounds and saves t
     await page.locator('.answer-grid').getByText(answer, { exact: true }).click();
     await page.getByRole('button', { name: i === 2 ? 'See result' : 'Next question' }).click();
   }
-  await expect(page.locator('.champ-live-total')).toContainText('36 points');
+  await expect(page.getByRole('table', { name: 'Game results' }).locator('tbody td')).toHaveText(['3', '3']);
   await page.getByRole('button', { name: 'Next: Clue Match Up' }).click();
   for (let i = 0; i < 2; i += 1) {
     await expect(page.getByText(`Question ${i + 1} of 2`)).toBeVisible();
@@ -619,19 +619,20 @@ test('solo championship carries points into two Clue Match Up rounds and saves t
     }
     await page.getByRole('button', { name: i === 1 ? 'See result' : 'Next question' }).click();
   }
+  await expect(page.getByRole('table', { name: 'Game results' }).locator('tbody td')).toHaveText(['2', '5']);
   await page.getByRole('button', { name: 'See championship result' }).click();
   await expect(page.getByText('CHAMPIONSHIP COMPLETE')).toBeVisible();
-  await expect(page.locator('.result-card')).toContainText('60');
+  await expect(page.locator('.result-card')).toContainText('5');
   const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('mariotrivia_championships_v1') || '[]'));
-  expect(saved[0].points).toBe(60);
+  expect(saved[0].points).toBe(5);
   expect(saved[0].games.map((game: { correct: number }) => game.correct)).toEqual([3, 2]);
   await page.getByRole('button', { name: 'High Scores' }).click();
   await expect(page.getByText('Championships')).toBeVisible();
-  await expect(page.locator('.score-list').last()).toContainText('60 points');
+  await expect(page.locator('.score-list').last()).toContainText('5 points');
   await page.getByRole('button', { name: 'Back to games' }).click();
   await page.getByRole('button', { name: 'Home' }).click();
-  await expect(page.getByText('60 points', { exact: true })).toBeVisible();
-  await expect(page.getByText('Coin Collector')).toBeVisible();
+  await expect(page.getByText('5 points', { exact: true })).toBeVisible();
+  await expect(page.getByText('Rookie Racer', { exact: false })).toBeVisible();
 });
 
 test('voice settings persist and points rank progress appears on the home screen', async ({ page }) => {

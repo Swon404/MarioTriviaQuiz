@@ -91,9 +91,12 @@ const largeHunt = createRounds('pair-match', 'mixed', 'explorer', Math.random, {
 assert.ok(computerRoundTime(largeHunt, 'explorer', () => 0.5) > computerRoundTime(smallHunt, 'explorer', () => 0.5));
 assert.ok(computerRoundTime(smallHunt, 'professor', () => 0.5) < computerRoundTime(smallHunt, 'explorer', () => 0.5));
 
-assert.equal(calculatePoints('explorer', true, 0), 12);
-assert.equal(calculatePoints('scientist', true, 3), 50);
-assert.equal(calculatePoints('professor', false, 12), 0);
+for (const level of ['explorer', 'scientist', 'professor']) {
+  for (const streak of [0, 3, 5, 8, 12, 20]) {
+    assert.equal(calculatePoints(level, true, streak), 1);
+    assert.equal(calculatePoints(level, false, streak), 0);
+  }
+}
 for (const [difficulty, retries] of [['explorer', 3], ['scientist', 1], ['professor', 0]]) {
   let solo = startSession(createRounds('quiz', 'mixed', difficulty), difficulty);
   let duel = startVersusQuiz('mixed', difficulty, 'human');
@@ -134,7 +137,7 @@ const computerRounds = createRounds('quiz', 'mario', 'explorer').slice(0, 3);
 assert.deepEqual(computerChampionshipAnswers(computerRounds, 'explorer', () => 0), computerRounds.map(round => round.question.answer));
 assert.ok(computerChampionshipAnswers(computerRounds, 'explorer', () => 0.99).every((answer, index) => answer !== computerRounds[index].question.answer));
 
-assert.equal(QUESTIONS.length, 170, 'Existing 166 Mario questions plus four Luigi’s Mansion questions');
+assert.equal(QUESTIONS.length, 171, 'Existing 170 questions plus a source-checked Goomba fact');
 const finalReviewIds = ORIGINAL_REVIEW_GROUPS.flatMap(([, ids]) => ids);
 assert.equal(finalReviewIds.length, 75);
 assert.equal(new Set(finalReviewIds).size, 75, 'Review groups cannot hide duplicate records');
@@ -327,7 +330,7 @@ for (const cup of new Set(BOOSTER_COURSES.map(course => course.cup))) {
 assert.equal(new Set(MARIO_TIMELINE.map(game => game.year)).size, MARIO_TIMELINE.length);
 assert.equal(MARIO_TIMELINE.length, 22, 'Expanded source-checked Game Order pool');
 assert.equal(new Set(MARIO_TIMELINE.map(game => game.id)).size, MARIO_TIMELINE.length);
-assert.equal(ICON_PAIRS.length, 40);
+assert.equal(ICON_PAIRS.length, 41);
 assert.equal(new Set(ICON_PAIRS.map(pair => pair.id)).size, ICON_PAIRS.length);
 for (const pair of ICON_PAIRS) {
   assert.ok(pair.icon);
@@ -344,7 +347,19 @@ for (const pair of ICON_PAIRS.filter(item => item.iconKind === 'svg' || item.ico
   assert.ok(existsSync(new URL(`../public/${pair.icon}`, import.meta.url)), `${pair.name}: missing icon`);
   assert.ok(pair.iconAlt.length > 8, `${pair.name}: missing accessible description`);
 }
-assert.equal(ICON_PAIRS.filter(pair => pair.iconKind === 'image').length, 38);
+assert.equal(ICON_PAIRS.filter(pair => pair.iconKind === 'image').length, 39);
+for (const section of ['mario', 'mixed']) {
+  const rounds = createRounds('pair-match', section, 'explorer', Math.random, {
+    ...DEFAULT_PAIR_OPTIONS, targetMode: 'choose', chosenTargetId: 'mario-Goomba', huntTimed: true,
+  });
+  for (const round of rounds) {
+    assert.equal(round.targetPairId, 'mario-Goomba');
+    const cards = round.cards.filter(card => card.pairId === 'mario-Goomba');
+    assert.equal(cards.length, 2, 'Chosen Goomba target always has an icon and word card');
+    assert.equal(cards.find(card => card.kind === 'word').label, 'Goomba');
+    assert.equal(cards.find(card => card.kind === 'icon').label, 'match-icons/web-goomba.png');
+  }
+}
 for (const name of ['Coconut Mall', 'Choco Mountain', 'Rainbow Road', 'Merry Mountain', 'Sky-High Sundae', 'Ninja Hideaway', 'Boo Cinema', 'Starview Peak', 'Crown City']) {
   assert.ok(!ICON_PAIRS.some(pair => pair.name === name), `${name}: track scenery must not return to matching`);
 }
@@ -509,7 +524,7 @@ assert.equal(versus.submission, null);
 versus = answerVersusQuiz(versus, versus.turns[0].question.answer);
 versus = advanceVersusQuiz(versus);
 assert.deepEqual(versus.scores, [1, 0]);
-assert.deepEqual(versus.points, [12, 0]);
+assert.deepEqual(versus.points, [1, 0]);
 const plannedComputerAnswer = versus.turns[1].computerAnswer;
 assert.equal(answerVersusQuiz(versus, 'not-an-option'), versus);
 versus = answerVersusQuiz(versus, plannedComputerAnswer);
@@ -518,7 +533,7 @@ assert.equal(versus.turns[1].computerAnswer, plannedComputerAnswer, 'Rewind must
 versus = answerVersusQuiz(versus, plannedComputerAnswer);
 versus = advanceVersusQuiz(versus);
 assert.deepEqual(versus.scores, [1, 1]);
-assert.deepEqual(versus.points, [12, 12]);
+assert.deepEqual(versus.points, [1, 1]);
 assert.equal(CLUE_SUBJECTS.length, 24);
 for (const id of ['expanded-1', 'expanded-2', 'expanded-8', 'expanded-9']) {
   const question = QUESTIONS.find(question => question.id === id);
@@ -614,7 +629,7 @@ game = submit(game, sampleRound.correctIds);
 assert.equal(game.submission.correct, true);
 game = advance(game);
 assert.equal(game.correct, 1);
-assert.equal(game.points, 12);
+assert.equal(game.points, 1);
 assert.equal(game.bestStreak, 1);
 assert.equal(game.complete, true);
 assert.equal(rewind(game), game, 'Rewind is locked after Next');

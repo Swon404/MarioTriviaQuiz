@@ -15,6 +15,7 @@ const ITEM_QUESTION_IDS: Readonly<Record<string, string>> = {
 };
 const ICON_NAMES: Record<Topic, readonly IconRow[]> = {
   mario: [
+    ['Goomba', 'GOOMBA', 'text', 'Goomba'],
     ['Elephant Fruit', 'match-icons/elephant-fruit.svg', 'svg', 'red Elephant Fruit with ears and a trunk'], ['Bubble Flower', 'match-icons/bubble-flower.svg', 'svg', 'pink Bubble Flower with eyes'], ['Fire Flower', 'match-icons/fire-flower.svg', 'svg', 'red and yellow Fire Flower with eyes'],
     ['Drill Mushroom', 'match-icons/drill-mushroom.svg', 'svg', 'silver spiral Drill Mushroom'], ['Super Bell', 'match-icons/super-bell.svg', 'svg', 'golden cat-eared Super Bell'], ['Boo', 'match-icons/boo.svg', 'svg', 'white Boo ghost with a tongue'],
     ['Koopa Troopa', 'match-icons/koopa-troopa.svg', 'svg', 'upright yellow Koopa with a green shell and shoes'], ['Hammer Bro', 'match-icons/hammer-bro.svg', 'svg', 'green helmeted Hammer Bro holding a hammer'], ['Donkey Kong', 'match-icons/donkey-kong.svg', 'svg', 'brown Donkey Kong with a red DK tie'],

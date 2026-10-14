@@ -48,10 +48,18 @@ test('phone championship shows game and total scores through rewind, handovers a
   const results = page.getByRole('table', { name: 'Game results' });
   await expect(results).toBeVisible();
   for (const [index, name] of ['Blaize', 'Dad'].entries()) {
-    await expect(results.getByRole('row').filter({ has: page.getByRole('rowheader', { name, exact: true }) }).locator('td').last()).toHaveText(String(points[index]));
+    const cells = results.getByRole('row').filter({ has: page.getByRole('rowheader', { name: new RegExp(`^${name}`) }) }).locator('td');
+    await expect(cells.nth(0)).toHaveText(String(points[index]));
+    await expect(cells.nth(1)).toHaveText(String(points[index]));
   }
-  await expect(page.getByLabel('Championship total')).toContainText(`Blaize: ${points[0]} points`);
-  await expect(page.getByLabel('Championship total')).toContainText(`Dad: ${points[1]} points`);
+  await expect(results.getByRole('columnheader')).toHaveText(['Player', 'Current game', 'Championship']);
+  await expect(page.getByLabel('Championship total')).toHaveCount(0);
+  await page.getByText('How points work', { exact: true }).click();
+  await expect(page.locator('.result-scoring-help')).toContainText('1 point per correct answer');
+  await expect(page.locator('.result-scoring-help')).toContainText('No streak multipliers or bonuses');
+  expect(points).toEqual([3, 3]);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page.screenshot({ path: 'test-results/phone-game-result-scores.png', fullPage: true });
   await page.getByRole('button', { name: 'Next: Track Finder' }).click();
   await check([0, 0], points);
   await check([0, 0], points);

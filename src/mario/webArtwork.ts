@@ -1,5 +1,6 @@
 // Web-sourced artwork, reviewed 2026-10-04. See docs/matching-artwork-sources.md.
 export const WEB_ARTWORK: Readonly<Record<string, { path: string; source: string; file: string; url: string }>> = {
+  "Goomba": {"path":"match-icons/web-goomba.png","source":"https://www.mariowiki.com/Goomba","file":"https://www.mariowiki.com/File:NSMBDS_Goomba_Artwork.png","url":"https://mario.wiki.gallery/images/thumb/8/86/NSMBDS_Goomba_Artwork.png/200px-NSMBDS_Goomba_Artwork.png"},
   "Luigi": {"path":"match-icons/web-luigi.png","source":"https://www.mariowiki.com/Luigi","url":"https://mario.wiki.gallery/images/thumb/7/76/SMPJ_Luigi.png/180px-SMPJ_Luigi.png","file":"https://www.mariowiki.com/File:SMPJ_Luigi.png"},
   "Wario": {"path":"match-icons/web-wario.png","source":"https://www.mariowiki.com/Wario","url":"https://mario.wiki.gallery/images/thumb/2/29/SMPWario.png/250px-SMPWario.png","file":"https://www.mariowiki.com/File:SMPWario.png"},
   "Waluigi": {"path":"match-icons/web-waluigi.png","source":"https://www.mariowiki.com/Waluigi","url":"https://mario.wiki.gallery/images/thumb/2/27/SuperMarioParty_Waluigi.png/230px-SuperMarioParty_Waluigi.png","file":"https://www.mariowiki.com/File:SuperMarioParty_Waluigi.png"},

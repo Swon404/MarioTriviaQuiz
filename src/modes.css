@@ -34,7 +34,13 @@
 .game-result-scores caption { font-weight: 700; margin-bottom: 12px; }
 .game-result-scores th, .game-result-scores td { padding: 8px 4px; text-align: right; }
 .game-result-scores th:first-child { text-align: left; overflow-wrap: anywhere; }
-.game-result-scores tbody td:last-child { font-weight: 800; font-size: 1.5rem; color: var(--accent); }
+.game-result-scores tbody td { font-weight: 800; font-size: 1.5rem; color: var(--text-primary); font-variant-numeric: tabular-nums; }
+.game-result-scores tbody td:last-child { color: #ffe66d; }
+.game-result-scores tbody tr + tr { border-top: 1px solid rgba(255,255,255,.2); }
+.game-result-scores th small { display: block; font-size: .8rem; font-weight: 400; margin-top: 4px; }
+.game-result-scores thead th { font-size: .85rem; }
+.result-scoring-help { margin-top: 12px; text-align: left; font-size: .85rem; }
+.result-scoring-help summary { cursor: pointer; min-height: 44px; display: flex; align-items: center; text-decoration: underline; }
 .champ-options-group .diff-btn span { display: block; font-size: .85rem; margin-top: 5px; }
 .finder-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .finder-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }

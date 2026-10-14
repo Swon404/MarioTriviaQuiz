@@ -24,14 +24,9 @@ export const MILESTONES = [
 export function getRank(ep: number) { return [...RANKS].reverse().find(rank => ep >= rank.minEP) ?? RANKS[0]; }
 export function getNextRank(ep: number) { return RANKS.find(rank => ep < rank.minEP) ?? null; }
 
-export function calculatePoints(difficulty: Difficulty, correct: boolean, streakBeforeAnswer: number): number {
-  if (!correct) return 0;
-  const base = { explorer: 10, scientist: 20, professor: 30 }[difficulty];
-  const multiplier = streakBeforeAnswer >= 12 ? 5 : streakBeforeAnswer >= 8 ? 4 : streakBeforeAnswer >= 5 ? 3 : streakBeforeAnswer >= 3 ? 2 : 1;
-  const points = base * multiplier;
-  // The original untimed quiz awards a fixed 25% bonus. Mario's optional timer
-  // is a stopwatch, so it cannot award a countdown-based speed bonus yet.
-  return points + Math.floor(points * 0.25);
+export function calculatePoints(_difficulty: Difficulty, correct: boolean, _streakBeforeAnswer: number): number {
+  // Keep streaks for achievements, not extra points. All levels score equally.
+  return correct ? 1 : 0;
 }
 
 export type ProgressResult = Pick<QuizResult, 'id' | 'player' | 'correct' | 'total' | 'points' | 'bestStreak' | 'opponent' | 'opponentCorrect' | 'opponentPoints' | 'opponentBestStreak' | 'format'>;

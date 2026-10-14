@@ -930,7 +930,7 @@ export default function MarioApp() {
         ? <span className="versus-now-playing" role="status">{activeName}'s turn · 🏆 {championship.index + 1}/{championship.modes.length}</span>
         : <span className="score-display">{activeName} · {round.mode === 'pair-match' ? `${foundPairs.length} pairs` : `${(turnScores ? turnScores.correct[activePlayer] : session.correct) + (session.submission?.correct ? 1 : 0)} correct`} · {gamePointsNow} points</span>}</div>
       {renderTotals(true)}
-      {turnScores && !championship && <div className="versus-now-playing" role="status">{activeName}'s turn · {player}: {turnScores.points[0]} points · {opponentName}: {turnScores.points[1]} points</div>}
+      {turnScores && !championship && <div className="versus-now-playing" role="status">{activeName}'s turn · {player}: {activePlayer === 0 ? gamePointsNow : turnScores.points[0]} points · {opponentName}: {activePlayer === 1 ? gamePointsNow : turnScores.points[1]} points</div>}
       <div className="quiz-topline"><span>{MODE_ICONS[mode]} {MODE_LABELS[mode]}{round.mode === 'pair-match' ? ` · ${round.variant === 'hunt' ? 'Hunt' : 'Time Trial'}` : ` · ${DIFFICULTY_LABELS[difficulty]}`}</span><span>{turnScores && !sharedHunt ? 'Round' : mode === 'pair-match' ? 'Board' : 'Question'} {turnScores && !sharedHunt ? Math.floor(session.index / 2) + 1 : session.index + 1} of {turnScores && !sharedHunt ? session.rounds.length / 2 : session.rounds.length}{turnScores && !sharedHunt ? ' each' : ''}</span>{timed && mode !== 'game-order' && <span aria-label="Elapsed time">{((elapsedMs - (mode === 'pair-match' ? previousRoundMs.current : 0)) / 1000).toFixed(1)}s</span>}</div>
       <div className="progress-track"><div style={{ width: `${(session.index / session.rounds.length) * 100}%` }} /></div>
       <div className="game-question"><h1>{round.prompt}</h1>
@@ -996,7 +996,7 @@ export default function MarioApp() {
 
       {round.mode === 'clue-duel' && <>
         <GameHelp key={round.id} first={session.index === 0} hint={turnScores ? 'Guess, or pass for another clue.' : 'Guess now, or ask for another clue.'}>
-          {turnScores ? 'Asking for a clue passes the turn. A wrong guess gives your opponent one bonus chance.' : 'Each new clue makes the answer clearer. Earlier guesses earn more points.'}
+          {turnScores ? 'Asking for a clue passes the turn. A wrong guess gives your opponent one bonus chance.' : 'Each new clue makes the answer clearer. A correct answer earns 1 point.'}
         </GameHelp>
         <p className="clue-count">Clue {clueIndex + 1} of 5</p>
         <ol className="clue-list">{round.clues.slice(0, clueIndex + 1).map((clue, index) => <li key={index}>{clue}</li>)}</ol>
@@ -1024,13 +1024,17 @@ export default function MarioApp() {
       <p className="eyebrow">{championship ? `CHAMPIONSHIP · GAME ${championship.index + 1} OF ${championship.modes.length}` : 'GAME COMPLETE'}</p>
       <h1>{latestResult.opponent ? latestResult.points === latestResult.opponentPoints ? "It's a draw!" : `${(latestResult.points ?? 0) > (latestResult.opponentPoints ?? 0) ? latestResult.player : latestResult.opponent} wins!` : `Nice work, ${latestResult.player}!`}</h1>
       <div className="result-card">
-        <table className="game-result-scores" aria-label="Game results"><caption>{modeLabel(latestResult.mode)} · Points earned</caption><thead><tr><th scope="col">Player</th><th scope="col">Correct</th><th scope="col">Points</th></tr></thead><tbody>
-          <tr><th scope="row">{latestResult.player}</th><td>{latestResult.correct}/{latestResult.total}</td><td>{latestResult.points ?? latestResult.correct}</td></tr>
-          {latestResult.opponent && <tr><th scope="row">{latestResult.opponent}</th><td>{latestResult.opponentCorrect}/{latestResult.total}</td><td>{latestResult.opponentPoints ?? 0}</td></tr>}
+        <table className="game-result-scores" aria-label="Game results"><caption>{modeLabel(latestResult.mode)} · Total points</caption><thead><tr><th scope="col">Player</th><th scope="col">Current game</th>{championship && <th scope="col">Championship</th>}</tr></thead><tbody>
+          <tr><th scope="row">{latestResult.player}<small>{latestResult.correct}/{latestResult.total} {latestResult.mode === 'pair-match' || latestResult.mode === 'game-order' ? 'completed' : 'correct'}</small></th><td>{latestResult.points ?? latestResult.correct}</td>{championship && <td>{liveTotals[0]}</td>}</tr>
+          {latestResult.opponent && <tr><th scope="row">{latestResult.opponent}<small>{latestResult.opponentCorrect}/{latestResult.total} {latestResult.mode === 'pair-match' || latestResult.mode === 'game-order' ? 'completed' : 'correct'}</small></th><td>{latestResult.opponentPoints ?? 0}</td>{championship && <td>{liveTotals[1]}</td>}</tr>}
         </tbody></table>
+        {latestResult.mode === 'quiz' && <details className="result-scoring-help"><summary>How points work</summary>
+          <p>1 point per correct answer. No streak multipliers or bonuses, at any level.</p>
+          <p>Current game adds up your correct answers. Championship adds your completed games, including this one.</p>
+        </details>}
         <p>{DIFFICULTY_LABELS[latestResult.difficulty]}{timed ? ` · ${(latestResult.elapsedMs / 1000).toFixed(1)}s` : ''}</p>
       </div>
-      {championship ? <>{renderTotals()}<button className="start-btn" onClick={continueChampionship}>{championship.index + 1 === championship.modes.length ? 'See championship result' : 'Next: ' + MODE_LABELS[championship.modes[championship.index + 1]]}</button></> : <button className="start-btn" onClick={start}>Play again</button>}
+      {championship ? <button className="start-btn" onClick={continueChampionship}>{championship.index + 1 === championship.modes.length ? 'See championship result' : 'Next: ' + MODE_LABELS[championship.modes[championship.index + 1]]}</button> : <button className="start-btn" onClick={start}>Play again</button>}
       <button className="back-btn" onClick={leaveGame}>← Back to games</button>
       {!championship && <button className="high-scores-link" onClick={() => setScreen('scores')}>🏆 High Scores</button>}
     </section>}
