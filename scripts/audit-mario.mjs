@@ -137,7 +137,7 @@ const computerRounds = createRounds('quiz', 'mario', 'explorer').slice(0, 3);
 assert.deepEqual(computerChampionshipAnswers(computerRounds, 'explorer', () => 0), computerRounds.map(round => round.question.answer));
 assert.ok(computerChampionshipAnswers(computerRounds, 'explorer', () => 0.99).every((answer, index) => answer !== computerRounds[index].question.answer));
 
-assert.equal(QUESTIONS.length, 171, 'Existing 170 questions plus a source-checked Goomba fact');
+assert.equal(QUESTIONS.length, 191, '171 existing questions plus 20 family-favourite gameplay facts');
 const finalReviewIds = ORIGINAL_REVIEW_GROUPS.flatMap(([, ids]) => ids);
 assert.equal(finalReviewIds.length, 75);
 assert.equal(new Set(finalReviewIds).size, 75, 'Review groups cannot hide duplicate records');
@@ -534,7 +534,7 @@ versus = answerVersusQuiz(versus, plannedComputerAnswer);
 versus = advanceVersusQuiz(versus);
 assert.deepEqual(versus.scores, [1, 1]);
 assert.deepEqual(versus.points, [1, 1]);
-assert.equal(CLUE_SUBJECTS.length, 24);
+assert.equal(CLUE_SUBJECTS.length, 28);
 for (const id of ['expanded-1', 'expanded-2', 'expanded-8', 'expanded-9']) {
   const question = QUESTIONS.find(question => question.id === id);
   assert.equal(question.sourceReview?.checkedOn, '2026-10-11');
@@ -549,7 +549,7 @@ for (const id of ['expanded-1', 'expanded-2', 'expanded-8', 'expanded-9']) {
 }
 assert.equal(new Set(CLUE_SUBJECTS.map(subject => subject.id)).size, CLUE_SUBJECTS.length);
 assert.equal(new Set(CLUE_SUBJECTS.map(subject => subject.answer)).size, CLUE_SUBJECTS.length);
-for (const topic of ['mario', 'kart']) assert.equal(CLUE_SUBJECTS.filter(subject => subject.topic === topic).length, 12);
+for (const topic of ['mario', 'kart']) assert.equal(CLUE_SUBJECTS.filter(subject => subject.topic === topic).length, topic === 'mario' ? 16 : 12);
 for (const id of ['expanded-22', 'expanded-23', 'expanded-26', 'expanded-27']) {
   const question = QUESTIONS.find(question => question.id === id);
   assert.equal(question.knowledgeId, canonicalKnowledge(`${id}-v2`), 'Rewritten facts must use the replacement knowledge, including genuine equivalents');

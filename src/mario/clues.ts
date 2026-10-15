@@ -23,6 +23,9 @@ const explorationTour = 'https://www.nintendo.com/us/whatsnew/mobilenews-discove
 // Editorial similarity groups, not extra facts shown to players. Prefer related
 // alternatives so a broad opening clue does not leave one obvious candidate.
 export const CLUE_CHOICE_GROUPS: readonly (readonly string[])[] = [
+  ['char-toad', 'char-cappy', 'char-mario', 'char-luigi', 'char-yoshi'],
+  ['char-diddy', 'char-dk', 'char-mario', 'char-yoshi'],
+  ['char-goomba', 'char-boo', 'char-bowser', 'char-junior'],
   ['char-mario', 'char-luigi', 'char-wario', 'char-waluigi'], // caps/overalls
   ['char-peach', 'char-daisy', 'char-rosalina'], // princess characters
   ['char-bowser', 'char-junior', 'char-dk', 'char-wario'], // powerful rivals
@@ -43,6 +46,30 @@ export function clueSimilarity(subjectId: string, candidateId: string): number {
 // Clues move from shared traits to distinctive details. The first two must not
 // contain words from the answer, so a multiple-choice label cannot give them away.
 export const CLUE_SUBJECTS: readonly ClueSubject[] = [
+  {
+    id: 'char-toad', topic: 'mario', answer: 'Toad',
+    clues: ['Helping others can put me in danger.', 'I stand by friends when trouble arrives.', 'I serve a princess.', 'Others of my kind come in several colours.', 'The red spots on my head are a familiar sight beside Peach.'],
+    explanation: 'Toad supports Peach and the brothers when their kingdom needs help.',
+    funFact: 'Nintendo describes him as cheerful and loyal.', sourceUrl: characters,
+  },
+  {
+    id: 'char-diddy', topic: 'mario', answer: 'Diddy Kong',
+    clues: ['Speed helps me support my friends.', 'I make up for size with agility.', 'I help protect a supply of bananas.', 'My red shirt has yellow stars.', 'I am Donkey Kong’s smaller partner in a red cap.'],
+    explanation: 'Diddy is quick and agile rather than as powerful as his larger friend.',
+    funFact: 'He is also a skilled jumper.', sourceUrl: characters,
+  },
+  {
+    id: 'char-cappy', topic: 'mario', answer: 'Cappy',
+    clues: ['Helping a hero is my role.', 'I bring abilities that my partner lacks.', 'Objects as well as enemies respond to my power.', 'My home is the Cap Kingdom.', 'I am the hat-shaped partner who gives Mario his Capture ability.'],
+    explanation: 'Cappy lets Mario take control of creatures and objects in Odyssey.',
+    funFact: 'A throw can turn an obstacle into a useful new form.', sourceUrl: 'https://play.nintendo.com/themes/friends/cappy/',
+  },
+  {
+    id: 'char-goomba', topic: 'mario', answer: 'Goomba',
+    clues: ['I am not the most fearsome foe.', 'I belong to a much larger force.', 'That force works for the Koopa king.', 'A well-timed landing can defeat me.', 'I am the familiar mushroom-shaped enemy usually beaten with a jump.'],
+    explanation: 'Goombas are ordinary members of Bowser’s forces, usually vulnerable to a stomp.',
+    funFact: 'Even a small enemy is dangerous if Mario runs into it.', sourceUrl: 'https://play.nintendo.com/themes/friends/goomba/',
+  },
   {
     id: 'char-mario', topic: 'mario', answer: 'Mario',
     clues: ['Helping friends keeps me busy.', 'Jumping is one of my strengths.', 'I wear overalls and a cap.', 'My cap is red and my overalls are blue.', 'My brother is Luigi.'],

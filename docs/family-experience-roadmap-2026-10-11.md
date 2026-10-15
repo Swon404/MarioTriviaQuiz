@@ -1,8 +1,22 @@
 # Mario family experience: the road to a 10/10
 
-Updated 14 October 2026. **This is the active experience and content plan.**
+Updated 16 October 2026. **This is the active experience and content plan.**
 It supersedes the remaining-work lists in the October 2 family plan and the
 original implementation plan; those documents remain historical records.
+
+## 15 October implementation snapshot
+
+- Comparable Top 5 score groups and both-player championship ranking implemented.
+- First favourite-game batch adds 20 reviewed facts: Wii co-op/powers, Odyssey
+  captures/secrets, Wonder actions/help, World racing and original SMB gameplay.
+  Current bank: **191 questions / 180 distinct facts** (69 Rookie, 65 Pro, 57 Legend).
+  Each new record carries its source, exact game context and review date.
+- Clue Duel now has **28 subjects**: 16 characters and 12 tracks. Added Goomba,
+  Cappy, Toad and Diddy Kong with related distractor groups and five-step clues.
+- Track Finder is still **48 DLC courses**. The base-course expansion was researched,
+  not implemented; **Mario Kart World takes priority** following family feedback.
+- These are completed batches, not completion of the whole plan. The 240-fact
+  milestone, World course coverage and remaining audits/playtests are still open.
 
 ## Who this is for
 
@@ -99,17 +113,29 @@ Do this before adding features. Preserve the short interface the family requeste
   and their replays stay intact; quota failures return failure and preserve the
   previous store. Existing visible save warnings and manual cleanup/undo remain.
   Synthetic tests cover both games, 1,001 entries, duplicates and full storage.
-- [ ] Replace the mixed finished-games ranking with comparable Top 5 groups.
-  Keep old bonus-scored results separate from new one-point games; do not silently
-  rewrite old points. Stored records currently lack an explicit scoring version.
-- [ ] Correct championship ranking to account for Player 2 as well as Player 1;
-  separate incomparable game selections, sizes, levels and formats.
+- [x] Replace the mixed finished-games ranking with comparable Top 5 groups.
+  New records save a scoring version and board configuration; group by mode,
+  topic, level, format, length and configuration. Unversioned records remain
+  unchanged in a separate history section, including older resumed games.
+  Old bonus scores are never relabelled as one-point results. Championship legs
+  remain in progress history but do not compete as standalone games.
+- [x] Correct championship ranking to account for Player 2 as well as Player 1.
+  Two-player results rank by the higher human score and show both players plus
+  the leading player/draw. Shroomer cannot raise the human ranking. Separate game
+  selections, sizes, levels, formats and configurations; equal points use the
+  earlier completion, not an undocumented speed tiebreaker.
 - [ ] Complete real-iPhone and family acceptance checks. Browser tests are not
   a claim of physical Safari validation or a family rating.
 
 The combined replay/table/scoring and score-integrity changes passed the full
 content/rules audit, all 128 browser tests and the production/PWA build locally
-on 14 October 2026. These changes are not yet committed or published.
+on 14 October 2026. These changes and Goomba were committed as `217ef47`, not
+published. The leaderboard grouping and favourite-game content batches are
+included in this commit, not published. Final verification on 16 October 2026:
+`npm run test:all` passed the content/rules audit (191 questions, 900 generated
+quizzes, 48 tracks), all 132 browser tests and the production/PWA build. Four new
+tests cover grouping, Player 2/bot ranking, unchanged legacy history, phone width
+and older-game recovery. Learning Zone assertions include the expanded content.
 
 ### Screenshot follow-up — 11 October 2026 (released in a4eb75c)
 
@@ -168,8 +194,12 @@ device/iOS/browser, settings and any failure so it can become a regression test.
   future additions do not inherit it. See original-question audit batch 8.
 - [x] **Ask which 3–5 Mario games the family loves/knows.** Confirmed 14 October:
   Super Mario Bros. Wonder, Mario Kart World, New Super Mario Bros., Super Mario
-  Odyssey and the original Super Mario Bros. Exact New Super Mario Bros. edition
-  is not yet confirmed; avoid assuming Wii/U-specific knowledge.
+  Odyssey and the original Super Mario Bros. Clarified 15 October: New Super Mario
+  Bros. Wii, Super Mario 3D World and some Bowser’s Fury; also CTGP and Retro Rewind
+  on Wii. Keep mod-specific facts labelled and independently source-checked.
+  **Mario Kart World is played the most and is the highest content priority.**
+  Prioritise its courses, landmarks, items, racers and gameplay over expanding
+  MK8 Deluxe base-course coverage. The latter stays in the backlog, not the next batch.
   Priority modes: Game Order, Match & Hunt, Quiz Battle and Clue Duel.
   Start content expansion there; do not add a topic-button row to the play screen.
 - [x] Add Goomba to Match & Hunt as a picture/name pair and selectable Hunt target,
@@ -272,8 +302,10 @@ levels, retry changes and score weighting require an explicit family decision.
 ## Recommended implementation order
 
 1. Physical-phone/rapid-tap audit and any real blocking bugs.
-2. Original-question review plus the first favourite-game content batch.
-3. Track Finder base-course expansion and Clue Duel/clue-choice review.
+2. Mario Kart World-first content batches, then the other confirmed favourites
+   (the original-question review is complete).
+3. World Track Finder coverage and Clue Duel/clue-choice review; MK8 Deluxe
+   base-course expansion follows the family's most-played game.
 4. Remaining mode polish, fact-history links and championship/Shroomer fairness.
 5. Family acceptance sessions, targeted fixes and verified release.
 

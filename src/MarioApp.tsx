@@ -29,6 +29,8 @@ import './phone.css';
 import LearningCards, { LearningFeedback } from './LearningCards.tsx';
 import PairLeaderboards, { PairTimeList } from './PairLeaderboard.tsx';
 import OrderLeaderboards from './OrderLeaderboards.tsx';
+import FinishedScoreTables from './FinishedScoreTables.tsx';
+import { SCORE_VERSION, scoreConfiguration } from './mario/scoreGroups.ts';
 import type { ReplayFrame } from './mario/replay.ts';
 import { pairConfiguration, pairLeaderboard, savePairTime } from './mario/pairTimes.ts';
 
@@ -81,6 +83,7 @@ export default function MarioApp() {
   const [orderReset, setOrderReset] = useState(0);
   const [orderCheckpoint, setOrderCheckpoint] = useState<OrderCheckpoint | null>(null);
   const [runId, setRunId] = useState(() => crypto.randomUUID());
+  const [scoringVersion, setScoringVersion] = useState<string | undefined>(SCORE_VERSION);
   const [turnScores, setTurnScores] = useState<TurnScores | null>(null);
   const [clueBonus, setClueBonus] = useState(false);
   const [pairVariant, setPairVariant] = useSavedSetting<PairVariant>('pair-variant', 'hunt', oneOf(['hunt', 'time-trial']));
@@ -189,7 +192,7 @@ export default function MarioApp() {
   const nextRank = getNextRank(progress.totalEP);
   const rankProgress = nextRank ? (progress.totalEP - rank.minEP) / (nextRank.minEP - rank.minEP) * 100 : 100;
   const homeTip = useMemo(() => 'Hi, I’m Shroomer! Ready for an adventure? Play together, challenge me, or beat your best score!', []);
-  const championshipScores = useMemo(() => getChampionshipResults().sort((a, b) => b.points - a.points || a.completedAt.localeCompare(b.completedAt)), [screen]);
+  const championshipScores = useMemo(() => getChampionshipResults(), [screen]);
   const chosenChampionshipModes = (Object.keys(MODE_LABELS) as GameMode[]).filter(item => championshipModes.includes(item) && availableModes(section).includes(item));
   const championshipEarned = championship ? [championshipPoints(championship.legs.filter(leg => leg.player === player)), championshipPoints(championship.legs.filter(leg => leg.player === championship.opponent))] : [0, 0];
   const matchRetriesLeft = Math.max(0, MATCH_RETRIES[difficulty] - matchMistakes);
@@ -205,7 +208,7 @@ export default function MarioApp() {
   const [botTimes, setBotTimes] = useState<number[]>([]);
   const [clueWrongIds, setClueWrongIds] = useState<string[]>([]);
   const recoveryCheckpoint = { kind: 'game-recovery-v1', orderCheckpoint, player, opponentName, mode, difficulty, quizFormat, timerEnabled,
-    screen, session, versus, versusReady, runId, turnScores, championship, standalone, latestResult,
+    screen, session, versus, versusReady, runId, scoringVersion, turnScores, championship, standalone, latestResult,
     orderChallenge, orderCounts, pairVariant, pairCount, trialTarget, huntTimed, huntTargetMode, huntChosenTarget, huntUnlockPairs,
     matchedIds, selectedMatchName, selectedMatchClue, matchMessage, matchMistakes,
     flippedCards, foundPairs, pairMoves, pairLocked, pairMessage, pairScore, pairTimerReady,
@@ -234,6 +237,7 @@ export default function MarioApp() {
   const resumeGame = () => {
     if (!pendingResume) return;
     const saved = pendingResume;
+    setScoringVersion(saved.scoringVersion);
     setPlayer(saved.player); savePlayer(saved.player); setOpponentName((saved.championship?.format ?? saved.standalone?.format ?? saved.quizFormat) === 'computer' ? MUSHBOT : saved.opponentName);
     setMode(saved.mode); setDifficulty(saved.difficulty); setQuizFormat(saved.quizFormat); setTimerEnabled(saved.timerEnabled);
     setSession(saved.session); setVersus(saved.versus); setVersusReady(saved.versusReady);
@@ -318,6 +322,7 @@ export default function MarioApp() {
   };
 
   const start = () => {
+    setScoringVersion(SCORE_VERSION);
     clearCheckpoint(); setPendingResume(null); lastCheckpoint.current = '';
     const name = draftName.trim().slice(0, 24) || 'Player';
     savePlayer(name);
@@ -394,6 +399,7 @@ export default function MarioApp() {
       modes: chosenChampionshipModes, index: 0, legs: [], pairOptions: { ...pairOptions },
       format: championshipFormat, opponent: other, turnIndex: 0, rounds: [], computerAnswers: [],
     };
+    setScoringVersion(SCORE_VERSION);
     setFinishedChampionship(null);
     setStandalone(null);
     prepareChampionshipTurn(run);
@@ -404,6 +410,8 @@ export default function MarioApp() {
     const playerLegs = legs.filter(leg => leg.player === player);
     const opponentLegs = legs.filter(leg => leg.player === run.opponent);
     const completed: ChampionshipResult = {
+      scoringVersion: legs.every(leg => leg.scoringVersion === SCORE_VERSION) ? SCORE_VERSION : undefined,
+      scoreConfiguration: playerLegs.map(leg => `${leg.mode}: ${leg.scoreConfiguration ?? 'Earlier rules'}`).sort().join(' / '),
       id: run.id, player, topic: run.topic, difficulty: run.difficulty,
       size: run.size, format: run.format,
       games: playerLegs.map(leg => ({ mode: leg.mode!, variant: leg.variant, correct: leg.correct, total: leg.total, points: leg.points ?? leg.correct })),
@@ -446,6 +454,8 @@ export default function MarioApp() {
         return;
       }
       const results = [player, opponentName].map((name, index): QuizResult => ({
+        scoringVersion, scoreConfiguration: scoreConfiguration(updated.rounds, orderOptions), championshipLeg: !!championship,
+        format: championship?.format ?? standalone?.format ?? 'solo',
         id: `${runId}:player-${index}`, mode, variant: round.mode === 'pair-match' ? round.variant : undefined,
         player: name, topic: section, difficulty, correct: totals.correct[index], total: sharedHunt ? updated.rounds.reduce((sum, item) => sum + (item.mode === 'pair-match' ? item.pairs.length : 0), 0) : mode === 'clue-duel' ? updated.rounds.length : updated.rounds.length / 2,
         points: totals.points[index], bestStreak: totals.bestStreaks[index], elapsedMs: totals.elapsed[index], completedAt: new Date().toISOString(),
@@ -473,6 +483,7 @@ export default function MarioApp() {
     startTime.current = Date.now();
     if (!updated.complete) return;
     const result: QuizResult = {
+      scoringVersion, scoreConfiguration: scoreConfiguration(updated.rounds, orderOptions), championshipLeg: !!championship, format: 'solo',
       id: `${runId}:result`, mode, variant: round.mode === 'pair-match' ? round.variant : undefined,
       player, topic: section, difficulty, correct: updated.correct, total: updated.rounds.length,
       points: updated.points, bestStreak: updated.bestStreak, elapsedMs: totalMs, completedAt: new Date().toISOString(),
@@ -504,6 +515,7 @@ export default function MarioApp() {
       return;
     }
     const result: QuizResult = {
+      scoringVersion, scoreConfiguration: 'Questions',
       id: `${runId}:result`, mode: 'quiz', player, topic: section, difficulty,
       correct: updated.scores[0], total: 5, opponent: opponentName,
       points: updated.points[0], bestStreak: updated.bestStreaks[0],
@@ -1049,10 +1061,10 @@ export default function MarioApp() {
 
     {screen === 'scores' && <section className="high-scores-screen">
       <div className="high-scores-header"><button className="back-btn" onClick={() => setScreen('hub')}>← Back to games</button><div><h2>🏆 High Scores</h2><p>Your finished games</p></div></div>
-      {scores.length === 0 ? <p>No completed games yet.</p> : <ol className="score-list">{scores.slice(0, 20).map(result => <li key={result.id}><span><strong>{result.opponent ? `${result.player} vs ${result.opponent}` : result.player}</strong><small>{modeLabel(result.mode)}{result.variant ? ` · ${result.variant === 'hunt' ? 'Hunt' : 'Time Trial'}` : ''} · {LABELS[result.topic]} · {DIFFICULTY_LABELS[result.difficulty]} · {result.opponent ? `${result.correct}–${result.opponentCorrect}` : `${result.correct}/${result.total}`} correct</small></span><strong>{result.opponent ? `${result.points ?? result.correct}–${result.opponentPoints ?? result.opponentCorrect} points` : `${result.points ?? result.correct} points`}</strong></li>)}</ol>}
+      {scores.filter(result => !result.championshipLeg).length === 0 ? <p>No completed games yet.</p> : <FinishedScoreTables records={scores.filter(result => !result.championshipLeg)} />}
       <PairLeaderboards />
       <OrderLeaderboards />
-      <h3>Championships</h3>{championshipScores.length === 0 ? <p>No completed championships yet.</p> : <ol className="score-list">{championshipScores.slice(0, 20).map(result => <li key={result.id}><span><strong>{result.opponent ? `${result.player} vs ${result.opponent}` : result.player}</strong><small>{result.size} · {LABELS[result.topic]} · {DIFFICULTY_LABELS[result.difficulty]} · {result.games.length} games</small></span><strong>{result.opponent ? `${result.points}–${result.opponentPoints} points` : `${result.points} points`}</strong></li>)}</ol>}
+      <h3>Championships</h3>{championshipScores.length === 0 ? <p>No completed championships yet.</p> : <FinishedScoreTables records={championshipScores} />}
     </section>}
 
     {screen === 'explore' && <section className="mario-learning-zone">

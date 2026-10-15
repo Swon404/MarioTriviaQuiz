@@ -7,6 +7,8 @@ const RESULTS_KEY = 'mariotrivia_results_v1';
 const CHAMPIONSHIPS_KEY = 'mariotrivia_championships_v1';
 
 export type ChampionshipResult = {
+  scoringVersion?: string;
+  scoreConfiguration?: string;
   id: string;
   player: string;
   topic: Topic | 'mixed';
@@ -22,6 +24,9 @@ export type ChampionshipResult = {
 };
 
 export type QuizResult = {
+  scoringVersion?: string;
+  scoreConfiguration?: string;
+  championshipLeg?: boolean;
   id: string;
   mode?: GameMode;
   variant?: PairVariant;

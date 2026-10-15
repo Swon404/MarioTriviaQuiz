@@ -2,6 +2,7 @@ import { EXPANDED_QUESTIONS } from './expandedQuestions.ts';
 import { FRESH_QUESTIONS } from './freshQuestions.ts';
 import { GAMEPLAY_QUESTIONS } from './gameplayQuestions.ts';
 import { MARIO_SIDE_QUESTIONS } from './marioSideQuestions.ts';
+import { FAMILY_QUESTIONS } from './familyQuestions.ts';
 import { canonicalKnowledge, normalizeKnowledge } from './knowledge.ts';
 import { withVariedFunFacts } from './funFacts.ts';
 import { withCompletedOriginalReview } from './originalReview.ts';
@@ -179,6 +180,7 @@ export const QUESTIONS: readonly TriviaQuestion[] = [
   ...FRESH_QUESTIONS,
   ...GAMEPLAY_QUESTIONS,
   ...MARIO_SIDE_QUESTIONS,
+  ...FAMILY_QUESTIONS,
 ].map(question => withCompletedOriginalReview({ ...question, difficulty: LEVEL_REVIEW[question.id] ?? question.difficulty, knowledgeId: canonicalKnowledge(KNOWLEDGE_EQUIVALENTS[question.id] ?? question.knowledgeId) }));
 
 export function shuffled<T>(values: readonly T[], random = Math.random): T[] {

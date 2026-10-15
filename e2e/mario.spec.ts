@@ -95,6 +95,8 @@ test('completed results survive reload and stay in a separate storage namespace'
   expect(keys).toContain('mariotrivia_results_v1');
   expect(keys.some(key => key.startsWith('elementalquiz_'))).toBe(false);
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem('mariotrivia_results_v1') || '[]')[0].topic)).toBe('mixed');
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('mariotrivia_results_v1') || '[]')[0].scoringVersion)).toBe('one-point-v1');
+  await expect(page.locator('.finished-score-group h4')).toContainText('Top 5');
 });
 
 test('quiz remains readable on a narrow phone screen', async ({ page }) => {
@@ -135,15 +137,16 @@ test('Explore opens searchable source-checked Learning Zone cards', async ({ pag
   await page.getByRole('button', { name: 'Explore Learning Zone' }).click();
   await expect(page.getByRole('heading', { name: 'Learning Zone' })).toBeVisible();
   const reviewed = QUESTIONS.filter(question => question.sourceReview?.status === 'source-checked');
-  expect(reviewed.length).toBe(171);
+  expect(reviewed.length).toBe(191);
   await expect(page.locator('.learning-topic-card')).toHaveCount(reviewed.length);
-  await expect(page.getByRole('link', { name: 'Read Nintendo’s guide' })).toHaveCount(170);
+  await expect(page.getByRole('link', { name: 'Read Nintendo’s guide' })).toHaveCount(190);
   await expect(page.getByRole('link', { name: 'Read App Store guide' })).toHaveAttribute('href', 'https://apps.apple.com/at/story/id1555639062?l=en-GB');
   await page.getByLabel('Search learning cards').fill('tiled roof');
   await expect(page.locator('.learning-topic-card')).toHaveCount(1);
   await expect(page.locator('.learning-topic-card h3')).toHaveText('Ninja Hideaway');
   await page.getByLabel('Search learning cards').fill('Cappy');
-  await expect(page.locator('.learning-topic-card')).toHaveCount(1);
+  await expect(page.locator('.learning-topic-card')).toHaveCount(3);
+  await expect(page.locator('.learning-topic-card h3')).toHaveText(['Cappy', 'Cheep Cheep', 'Throw Cappy at it']);
   await page.getByLabel('Learning topic').selectOption('kart');
   await expect(page.getByText('No matching cards yet.', { exact: false })).toBeVisible();
   await page.getByLabel('Search learning cards').fill('');
