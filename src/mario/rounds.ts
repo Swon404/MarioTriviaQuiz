@@ -2,7 +2,7 @@ import { BOOSTER_COURSES, type CourseAppearance } from './courses.ts';
 import { TRACK_CHALLENGES, trackLabel, type TrackChallenge } from './trackChallenges.ts';
 import { createQuiz, shuffled, type Difficulty, type Topic, type TriviaQuestion } from './questions.ts';
 import { CLUE_SUBJECTS, clueSimilarity } from './clues.ts';
-import { CATEGORY_ITEMS, CATEGORY_LABELS, categoryMemberships, categoryContext, fitsCategory, type CategoryItem, type FinderCategory } from './categoryCatalog.ts';
+import { CATEGORY_ITEMS, CATEGORY_LABELS, CATEGORY_CHALLENGES, categoryContext, fitsCategory, type CategoryItem, type FinderCategory } from './categoryCatalog.ts';
 import { ICON_PAIRS, type IconKind, type IconPair } from './pairCatalog.ts';
 import type { OrderOptions } from './gameOrder.ts';
 import { MATCH_CLUES, knowledgeLevel } from './matchClues.ts';
@@ -116,11 +116,30 @@ function makePairRounds(section: Section, options: PairMatchOptions, random: () 
 }
 
 function makeCategoryRounds(difficulty: Difficulty, random: () => number, count = 3, recent: readonly string[] = []): CategoryRound[] {
-  const width = difficulty === 'explorer' ? 3 : difficulty === 'scientist' ? 4 : 5;
+  if (difficulty !== 'explorer') {
+    const tasks = shuffled(Object.entries(CATEGORY_CHALLENGES).filter(([, task]) => task!.levels.includes(difficulty)), random)
+      .sort(([a], [b]) => knowledgeRank(`category-v2-${difficulty}-${a}`, recent) - knowledgeRank(`category-v2-${difficulty}-${b}`, recent));
+    return Array.from({ length: count }, (_, index) => {
+      const [category, task] = tasks[index % tasks.length];
+      const targetCategory = category as FinderCategory;
+      const pool = CATEGORY_ITEMS.filter(item => task!.pool === 'character' ? ['friend', 'baddie'].includes(item.category) : item.category === task!.pool);
+      const correct = shuffled(pool.filter(item => fitsCategory(item, targetCategory)), random);
+      const wrong = shuffled(pool.filter(item => !fitsCategory(item, targetCategory)), random);
+      // Plausible alternatives, not systems mixed with games. Keep nine readable tiles.
+      const matches = correct.slice(0, Math.max(9 - wrong.length, Math.min(difficulty === 'scientist' ? 3 : 2, correct.length)));
+      const tiles = shuffled([...matches, ...wrong.slice(0, 9 - matches.length)], random);
+      const id = `category-v2-${difficulty}-${category}`;
+      return { id, mode: 'category-finder', review: recent.includes(id), width: 3, tiles, targetCategory,
+        prompt: `Find one ${CATEGORY_LABELS[targetCategory]}.`,
+        explanation: `${matches.map(item => item.name).join(', ')} ${matches.length === 1 ? 'fits' : 'fit'}. ${task!.note}`,
+        funFact: task!.note, sourceUrl: task!.sourceUrl };
+    });
+  }
+  const width = 3;
   const size = width * width;
   const candidates = shuffled(Array.from({ length: CATEGORY_ITEMS.length - size + 1 }, (_, start) => {
     const tiles = CATEGORY_ITEMS.slice(start, start + size);
-    return [...new Set(tiles.flatMap(tile => difficulty === 'explorer' ? [tile.category] : categoryMemberships(tile)))].filter(targetCategory => tiles.some(tile => !fitsCategory(tile, targetCategory))).map(targetCategory => ({ start, tiles, targetCategory }));
+    return [...new Set(tiles.map(tile => tile.category))].filter(targetCategory => tiles.some(tile => !fitsCategory(tile, targetCategory))).map(targetCategory => ({ start, tiles, targetCategory }));
   }).flat(), random).sort((a, b) => knowledgeRank(`category-${width}-${a.start}-${a.targetCategory}`, recent) - knowledgeRank(`category-${width}-${b.start}-${b.targetCategory}`, recent));
   const usedStarts = new Set<number>();
   const usedCategories = new Set<FinderCategory>();

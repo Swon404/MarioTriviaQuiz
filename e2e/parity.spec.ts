@@ -151,7 +151,7 @@ test('Category Finder has explicit feedback without arbitrary visible numbers', 
   await expect(page.locator('.category-grid button small')).toHaveCount(0);
   await page.locator('.category-grid').getByText(wrong.name, { exact: true }).click();
   await expect(page.locator('.finder-verdict')).toContainText('Not this time');
-  await expect(page.locator('.wrong-answer .tile-verdict')).toContainText('Different type');
+  await expect(page.locator('.wrong-answer .tile-verdict')).toContainText("Doesn't fit");
   expect(await page.locator('.right-answer .tile-verdict').count()).toBeGreaterThan(0);
 });
 

@@ -18,6 +18,17 @@ original implementation plan; those documents remain historical records.
 - These are completed batches, not completion of the whole plan. The 240-fact
   milestone, World course coverage and remaining audits/playtests are still open.
 
+## 16 October Category Finder follow-up
+
+- [x] Remove basic type-recognition prompts from Pro and Legend.
+- [x] Use nine shuffled, same-type choices on advanced boards; keep Rookie's mixed recognition boards.
+- [x] Add seven relationships covering World racing newcomers, Wonder powers/characters,
+  3D World abilities/start characters, and pre-2000 handheld releases, alongside four original-release groups.
+- [x] Expand the catalogue from 46 to 52 tiles, including Cow, Spike and New Super Mario Bros. Wii.
+- [x] Accept every valid answer, explain the relationship using its Nintendo source, and remember the challenge rather than the shuffle.
+- [x] Final local verification: content/rules audit, all 137 tests and production/PWA build passed; phone-sized Pro and Legend screenshots inspected. Included in the Category Finder release commit; check its GitHub Actions run for publication status.
+- [ ] Family playtest: confirm Pro is interesting and Legend challenging without obscure trivia.
+
 ## Who this is for
 
 Two Mario fans: a parent and an eight-year-old who reads at roughly an

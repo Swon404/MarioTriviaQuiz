@@ -4,7 +4,7 @@ import { BOOSTER_COURSES } from '../src/mario/courses.ts';
 import { QUESTIONS } from '../src/mario/questions.ts';
 import { MATCH_CLUES } from '../src/mario/matchClues.ts';
 import { CLUE_SUBJECTS } from '../src/mario/clues.ts';
-import { CATEGORY_ITEMS, CATEGORY_LABELS, categoryMemberships, fitsCategory } from '../src/mario/categoryCatalog.ts';
+import { CATEGORY_ITEMS, CATEGORY_LABELS, fitsCategory } from '../src/mario/categoryCatalog.ts';
 
 async function answerQuizCorrectly(page: Page) {
   const prompt = await page.locator('.quiz-playing h1').textContent();
@@ -471,7 +471,7 @@ test('Clue Duel reveals five clues, accepts a guess, and rewinds before Next', a
   await expect(page.getByRole('button', { name: '↶ Rewind', exact: true })).toHaveCount(0);
 });
 
-test('Category Finder shows a consecutive 5×5 window with a valid target', async ({ page }) => {
+test('Category Finder Legend shows nine plausible choices with a valid target', async ({ page }) => {
   await page.setViewportSize({ width: 360, height: 740 });
   await page.goto('./');
   await page.getByRole('button', { name: 'Play Games' }).click();
@@ -479,12 +479,12 @@ test('Category Finder shows a consecutive 5×5 window with a valid target', asyn
   if (await page.locator('.setup-settings:not([open])').count()) await page.locator('.setup-settings > summary').click();
   await page.getByRole('button', { name: 'Legend' }).click();
   await page.getByRole('button', { name: 'Start!' }).click();
-  await expect(page.locator('.category-grid button')).toHaveCount(25);
+  await expect(page.locator('.category-grid button')).toHaveCount(9);
   expect(await page.locator('.category-grid button').first().evaluate(button => parseFloat(getComputedStyle(button).fontSize))).toBeGreaterThanOrEqual(14);
   await page.screenshot({ path: 'test-results/category-legend-phone.png', fullPage: true });
   const numbers = await page.locator('.category-grid button').evaluateAll(tiles => tiles.map(tile => Number(tile.getAttribute('data-catalog-number'))));
   await expect(page.locator('.category-grid button small')).toHaveCount(0);
-  expect(numbers).toEqual(Array.from({ length: 25 }, (_, index) => numbers[0] + index));
+  expect(new Set(numbers).size).toBe(9);
   const label = (await page.locator('.quiz-panel h1').textContent())!.replace(/^Find one /, '').replace(/\.$/, '');
   const category = Object.entries(CATEGORY_LABELS).find(([, value]) => value === label)![0];
   const visible = await page.locator('.category-grid button span').allTextContents();
@@ -493,16 +493,15 @@ test('Category Finder shows a consecutive 5×5 window with a valid target', asyn
   await expect(page.getByText('Correct!')).toBeVisible();
   expect(await page.locator('.category-grid button.right-answer').count()).toBeGreaterThan(0);
   await page.getByRole('button', { name: '↶ Rewind', exact: true }).click();
-  await expect(page.locator('.category-grid button:not([disabled])')).toHaveCount(25);
+  await expect(page.locator('.category-grid button:not([disabled])')).toHaveCount(9);
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth > innerWidth);
   expect(overflow).toBe(false);
 });
 
 test('Category Finder accepts overlapping original-release groups', async ({ page }) => {
   await page.goto('./');
-  const target = 'category-4-30-handheld-game';
-  const seen = Array.from({ length: CATEGORY_ITEMS.length - 15 }, (_, start) =>
-    [...new Set(CATEGORY_ITEMS.slice(start, start + 16).flatMap(categoryMemberships))].map(category => `category-4-${start}-${category}`)).flat().filter(id => id !== target);
+  const target = 'category-v2-scientist-handheld-game';
+  const seen = Object.keys(CATEGORY_LABELS).map(category => `category-v2-scientist-${category}`).filter(id => id !== target);
   await page.evaluate(ids => localStorage.setItem('mariotrivia_question_history_v1', JSON.stringify({ ada: ids })), seen);
   await page.getByRole('button', { name: 'Play Games' }).click();
   await page.getByRole('button', { name: 'Category Finder' }).click();
@@ -512,10 +511,13 @@ test('Category Finder accepts overlapping original-release groups', async ({ pag
   await page.getByRole('button', { name: 'Start!', exact: true }).click();
   await expect(page.locator('.quiz-panel h1')).toContainText('Game Boy, DS or 3DS');
   await expect(page.locator('.category-context')).toContainText('not a later port');
-  await page.locator('.category-grid button').filter({ hasText: /^Super Mario Land$/ }).click();
+  const visible = await page.locator('.category-grid button span').allTextContents();
+  const valid = CATEGORY_ITEMS.filter(item => fitsCategory(item, 'handheld-game') && visible.includes(item.name)).map(item => item.name);
+  expect(valid).toHaveLength(3);
+  await page.locator('.category-grid button').filter({ hasText: new RegExp(`^${valid[0]}$`) }).click();
   await expect(page.getByText('Correct!', { exact: true })).toBeVisible();
   const correct = await page.locator('.category-grid button.right-answer span').allTextContents();
-  expect(correct).toEqual(expect.arrayContaining(['Super Mario Land', 'New Super Mario Bros.', 'Super Mario 3D Land']));
+  expect(correct.sort()).toEqual(valid.sort());
 });
 
 test('two-player Quiz Battle alternates hidden turns and saves both scores', async ({ page }) => {

@@ -471,7 +471,7 @@ for (const section of ['mario', 'kart', 'mixed']) {
     }
   }
 }
-assert.equal(CATEGORY_ITEMS.length, 46);
+assert.equal(CATEGORY_ITEMS.length, 52);
 assert.deepEqual(CATEGORY_ITEMS.map(item => item.number), Array.from({ length: CATEGORY_ITEMS.length }, (_, index) => index + 1));
 assert.equal(new Set(CATEGORY_ITEMS.map(item => item.name)).size, CATEGORY_ITEMS.length);
 const land = CATEGORY_ITEMS.find(item => item.name === 'Super Mario Land');
@@ -480,7 +480,7 @@ assert.ok(!fitsCategory(land, 'switch-game'), 'Later availability does not chang
 const contextualSeen = new Set();
 assert.equal(availableModes('mixed').length, 7, 'All games must be available with mixed content');
 for (const difficulty of ['explorer', 'scientist', 'professor']) {
-  const width = difficulty === 'explorer' ? 3 : difficulty === 'scientist' ? 4 : 5;
+  const width = 3;
   for (const section of ['mario', 'mixed']) for (let run = 0; run < 30; run += 1) {
     const rounds = createRounds('category-finder', section, difficulty);
     assert.equal(rounds.length, 3);
@@ -492,7 +492,13 @@ for (const difficulty of ['explorer', 'scientist', 'professor']) {
       assert.equal(round.mode, 'category-finder');
       assert.equal(round.width, width);
       assert.equal(round.tiles.length, width * width);
-      assert.deepEqual(round.tiles.map(tile => tile.number), Array.from({ length: width * width }, (_, index) => round.tiles[0].number + index));
+      if (difficulty === 'explorer') assert.deepEqual(round.tiles.map(tile => tile.number), Array.from({ length: width * width }, (_, index) => round.tiles[0].number + index));
+      else {
+        assert.ok(!['friend', 'baddie', 'game', 'system', 'power-up'].includes(round.targetCategory), 'Advanced levels never ask basic type recognition');
+        assert.equal(new Set(round.tiles.map(tile => ['friend', 'baddie'].includes(tile.category) ? 'character' : tile.category)).size, 1, 'All alternatives have the same broad type');
+        assert.ok(round.tiles.filter(tile => fitsCategory(tile, round.targetCategory)).length <= 3, 'Answers must not dominate the board');
+      }
+      assert.equal(new Set(round.tiles.map(tile => tile.id)).size, 9);
       assert.ok(round.tiles.some(tile => fitsCategory(tile, round.targetCategory)));
       assert.ok(round.tiles.some(tile => !fitsCategory(tile, round.targetCategory)));
       assert.ok(round.tiles.every(tile => isCorrect(round, tile.id) === fitsCategory(tile, round.targetCategory)));

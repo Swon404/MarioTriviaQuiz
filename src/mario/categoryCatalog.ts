@@ -1,5 +1,6 @@
 export type BaseCategory = 'friend' | 'baddie' | 'power-up' | 'game' | 'system';
-export type FinderCategory = BaseCategory | 'classic-game' | 'wii-game' | 'switch-game' | 'handheld-game';
+export type FinderCategory = BaseCategory | 'classic-game' | 'wii-game' | 'switch-game' | 'handheld-game'
+  | 'wonder-power' | 'world-newcomer' | '3d-power' | 'wonder-player' | '3d-starter' | 'wonder-safe' | 'classic-handheld';
 export const CATEGORY_LABELS: Record<FinderCategory, string> = {
   friend: 'friendly character', baddie: 'baddie', 'power-up': 'power-up',
   game: 'Mario game', system: 'Nintendo system',
@@ -7,6 +8,13 @@ export const CATEGORY_LABELS: Record<FinderCategory, string> = {
   'wii-game': 'Mario game originally released for Wii',
   'switch-game': 'Mario game originally released for Nintendo Switch',
   'handheld-game': 'Mario game originally released for Game Boy, DS or 3DS',
+  'wonder-power': 'power-up introduced in Super Mario Bros. Wonder',
+  'world-newcomer': 'driver who made their Mario Kart racing debut in World',
+  '3d-power': 'power-up for cloning yourself or climbing walls in Super Mario 3D World',
+  'wonder-player': 'playable character in the original Switch version of Wonder',
+  '3d-starter': 'character available before any unlocks in Super Mario 3D World',
+  'wonder-safe': 'character who takes no enemy damage in the original Wonder',
+  'classic-handheld': 'Mario game first released on a handheld before 2000',
 };
 
 export type CategoryItem = {
@@ -25,6 +33,8 @@ const powers = 'https://supermariobroswonder.nintendo.com/';
 const extraPowers = 'https://www.nintendo.com/us/whatsnew/wahoo-see-the-platforming-history-of-super-mario-and-even-get-a-few-fun-facts/';
 const history = 'https://www.nintendo.com/us/explore/characters/mario/history/';
 const wonder = 'https://supermariobroswonder.nintendo.com/';
+const world = 'https://www.nintendo.com/us/whatsnew/mario-kart-world-direct-revs-up-new-details-on-the-biggest-mario-kart-ever-coming-to-nintendo-switch-2-at-launch/';
+const world3d = 'https://www.nintendo.com/sg/switch/auzp/3dworld/index.html';
 
 type Entry = readonly [name: string, detail: string, sourceUrl: string];
 const groups: Record<BaseCategory, readonly Entry[]> = {
@@ -98,16 +108,38 @@ const extraGames = [
   ['maker2', 'Super Mario Maker 2', 'Nintendo Switch, 2019.'],
   ['land2', 'Super Mario Land 2: 6 Golden Coins', 'Game Boy, 1992.'],
   ['land3d', 'Super Mario 3D Land', 'Nintendo 3DS, 2011.'],
+  ['new-wii', 'New Super Mario Bros. Wii', 'Wii, 2009.'],
 ] as const;
 const contextual: Partial<Record<FinderCategory, readonly string[]>> = {
   'classic-game': ['Super Mario Bros.', 'Super Mario World', 'Super Mario 64', 'Super Mario Land', 'Super Mario Land 2: 6 Golden Coins'],
-  'wii-game': ['Super Mario Galaxy', 'Super Mario Galaxy 2'],
+  'wii-game': ['Super Mario Galaxy', 'Super Mario Galaxy 2', 'New Super Mario Bros. Wii'],
   'switch-game': ['Super Mario Odyssey', 'Super Mario Bros. Wonder', 'Super Mario Maker 2'],
   'handheld-game': ['Super Mario Land', 'Super Mario Land 2: 6 Golden Coins', 'New Super Mario Bros.', 'Super Mario 3D Land'],
+  'wonder-power': ['Elephant Fruit', 'Bubble Flower', 'Drill Mushroom'],
+  'world-newcomer': ['Goomba', 'Cow', 'Spike'],
+  '3d-power': ['Super Bell', 'Double Cherry'],
+  'wonder-player': ['Mario', 'Luigi', 'Princess Peach', 'Toad', 'Yoshi', 'Daisy', 'Toadette'],
+  '3d-starter': ['Mario', 'Luigi', 'Princess Peach', 'Toad'],
+  'wonder-safe': ['Yoshi'],
+  'classic-handheld': ['Super Mario Land', 'Super Mario Land 2: 6 Golden Coins'],
+};
+// Sources and pools describe the relationship, not just the selected character.
+export const CATEGORY_CHALLENGES: Partial<Record<FinderCategory, { pool: 'game' | 'character' | 'power-up'; levels: readonly string[]; sourceUrl: string; note: string }>> = {
+  ...Object.fromEntries(['classic-game', 'wii-game', 'switch-game', 'handheld-game'].map(id => [id, { pool: 'game' as const, levels: ['scientist', 'professor'], sourceUrl: history, note: 'Use the original release, not a later port or collection.' }])),
+  'wonder-power': { pool: 'power-up', levels: ['scientist'], sourceUrl: wonder, note: 'Elephant Fruit, Bubble Flower and Drill Mushroom were new in Wonder.' },
+  'world-newcomer': { pool: 'character', levels: ['scientist', 'professor'], sourceUrl: world, note: 'Goomba, Spike and Cow joined the racing roster in Mario Kart World.' },
+  '3d-power': { pool: 'power-up', levels: ['scientist'], sourceUrl: world3d, note: 'The Super Bell gives you wall-climbing claws; the Double Cherry makes a copy of you.' },
+  'wonder-player': { pool: 'character', levels: ['scientist'], sourceUrl: wonder, note: 'This asks about the original Switch game, without the Switch 2 expansion.' },
+  '3d-starter': { pool: 'character', levels: ['professor'], sourceUrl: world3d, note: 'Mario, Luigi, Peach and Toad are available from the start. Rosalina must be unlocked.' },
+  'wonder-safe': { pool: 'character', levels: ['professor'], sourceUrl: wonder, note: 'Yoshi and Nabbit avoid enemy damage, but can still fall into pits. Only Yoshi is on these boards.' },
+  'classic-handheld': { pool: 'game', levels: ['professor'], sourceUrl: history, note: 'Super Mario Land and Land 2 began on Game Boy, before 2000.' },
 };
 export const CATEGORY_ITEMS: readonly CategoryItem[] = [
   ...CATALOG_ORDER.map(index => entries[index]),
   ...extraGames.map(([id, name, detail]) => ({ id: `game-${id}`, name, detail: `Nintendo's US timeline lists this game for ${detail}`, category: 'game' as const, sourceUrl: history })),
+  ...(['Super Bell', 'Double Cherry', 'Mega Mushroom'] as const).map((name, index) => ({ id: `power-extra-${index}`, name, detail: ['The Super Bell gives you cat claws for climbing.', 'The Double Cherry makes another copy of your character.', 'The Mega Mushroom makes you enormous.'][index], category: 'power-up' as const, sourceUrl: world3d })),
+  { id: 'friend-cow', name: 'Cow', detail: 'Cow joins the drivers in Mario Kart World.', category: 'friend' as const, sourceUrl: world },
+  { id: 'baddie-spike', name: 'Spike', detail: 'Spike is another new racer in Mario Kart World.', category: 'baddie' as const, sourceUrl: world },
 ].map((item, position) => ({ ...item, number: position + 1,
   memberships: [item.category, ...Object.entries(contextual).filter(([, names]) => names!.includes(item.name)).map(([category]) => category as FinderCategory)],
 }));
