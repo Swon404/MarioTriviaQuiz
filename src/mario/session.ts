@@ -36,7 +36,10 @@ export function submit(session: GameSession, answer: Answer, pointsOverride?: nu
   if (session.complete || session.submission) return session;
   const round = session.rounds[session.index];
   const correct = isCorrect(round, answer);
-  return { ...session, submission: { answer, correct, correctLabel: correctLabel(round), points: correct && pointsOverride !== undefined ? pointsOverride : calculatePoints(session.difficulty, correct, session.streak) } };
+  const points = round.mode === 'match-hunt'
+    ? Math.max(0, Math.min(round.pairs.length, pointsOverride ?? (correct ? round.pairs.length : 0)))
+    : correct && pointsOverride !== undefined ? pointsOverride : calculatePoints(session.difficulty, correct, session.streak);
+  return { ...session, submission: { answer, correct, correctLabel: correctLabel(round), points } };
 }
 
 export function rewind(session: GameSession): GameSession {

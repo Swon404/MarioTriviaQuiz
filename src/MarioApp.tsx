@@ -203,8 +203,12 @@ export default function MarioApp() {
   const activePlayer = turnScores?.active ?? 0;
   const activeName = activePlayer === 0 ? player : opponentName;
   const isBotTurn = activePlayer === 1 && (championship?.format ?? standalone?.format) === 'computer';
-  const gamePointsNow = (turnScores ? turnScores.points[activePlayer] : session?.points ?? 0) + (round?.mode === 'pair-match' && !turnScores ? session?.submission?.points ?? pairScore : session?.submission?.points ?? 0);
-  const liveTotals = [0, 1].map(index => championshipEarned[index] + (turnScores ? turnScores.points[index] + (index === activePlayer ? round?.mode === 'pair-match' && !turnScores ? session?.submission?.points ?? pairScore : session?.submission?.points ?? 0 : 0) : championship?.format === 'solo' ? index === 0 ? gamePointsNow : 0 : 0));
+  const pendingPoints = session?.submission?.points ?? (round?.mode === 'match-hunt' ? matchedIds.length : round?.mode === 'pair-match' && !round.timed && !turnScores ? pairScore : 0);
+  const previewTurns = turnScores && session?.submission && round
+    ? scoreTurn(turnScores, session.index, sharedHunt ? false : session.submission.correct, session.submission.points, pairRoundCompletedMs.current ?? 0, round.mode === 'game-order' || (round.mode === 'pair-match' && round.timed), round.mode === 'clue-duel') : null;
+  const displayedGamePoints = [0, 1].map(index => previewTurns ? previewTurns.points[index] : (turnScores?.points[index] ?? (index === 0 ? session?.points ?? 0 : 0)) + (index === activePlayer ? pendingPoints : 0));
+  const gamePointsNow = displayedGamePoints[activePlayer];
+  const liveTotals = [0, 1].map(index => championshipEarned[index] + (screen === 'game' || (screen === 'result' && championship?.format === 'solo') ? displayedGamePoints[index] : 0));
   const [botTimes, setBotTimes] = useState<number[]>([]);
   const [clueWrongIds, setClueWrongIds] = useState<string[]>([]);
   const recoveryCheckpoint = { kind: 'game-recovery-v1', orderCheckpoint, player, opponentName, mode, difficulty, quizFormat, timerEnabled,
@@ -237,7 +241,7 @@ export default function MarioApp() {
   const resumeGame = () => {
     if (!pendingResume) return;
     const saved = pendingResume;
-    setScoringVersion(saved.scoringVersion);
+    setScoringVersion(saved.scoringVersion === SCORE_VERSION ? SCORE_VERSION : undefined);
     setPlayer(saved.player); savePlayer(saved.player); setOpponentName((saved.championship?.format ?? saved.standalone?.format ?? saved.quizFormat) === 'computer' ? MUSHBOT : saved.opponentName);
     setMode(saved.mode); setDifficulty(saved.difficulty); setQuizFormat(saved.quizFormat); setTimerEnabled(saved.timerEnabled);
     setSession(saved.session); setVersus(saved.versus); setVersusReady(saved.versusReady);
@@ -269,7 +273,7 @@ export default function MarioApp() {
     ? <table className="champ-live-total champ-scoreboard" aria-label="Championship scores">
       <thead><tr><th scope="col">Player</th><th scope="col">This game</th><th scope="col">Championship</th></tr></thead>
       <tbody>{[player, ...(championship.format === 'solo' ? [] : [opponentName])].map((name, index) => <tr key={index} data-player-index={index}>
-        <th scope="row">{name}</th><td>{index === activePlayer ? gamePointsNow : turnScores?.points[index] ?? 0} points</td><td>{liveTotals[index]} points</td>
+        <th scope="row">{name}</th><td>{displayedGamePoints[index]} points</td><td>{liveTotals[index]} points</td>
       </tr>)}</tbody>
     </table>
     : <div className="champ-live-total" aria-label="Championship total"><span>Championship total</span><span>{player}: {liveTotals[0]} points</span>{championship.format !== 'solo' && <strong>{opponentName}: {liveTotals[1]} points</strong>}</div>);
@@ -556,7 +560,7 @@ export default function MarioApp() {
     if (name !== clue) {
       if (matchMistakes >= MATCH_RETRIES[difficulty]) {
         setMatchMessage('Not a pair — round over.');
-        setSession(submit(session, 'wrong-pair'));
+        setSession(submit(session, 'wrong-pair', matchedIds.length));
       } else {
         const nextMistakes = matchMistakes + 1;
         setMatchMistakes(nextMistakes);
@@ -615,7 +619,7 @@ export default function MarioApp() {
     if (first.pairId === card.pairId) {
       const nextFound = [...foundPairs, card.pairId];
       const targetFound = round.variant === 'hunt' && card.pairId === round.targetPairId;
-      const gained = targetFound ? 4 : 1;
+      const gained = round.timed ? 0 : 1;
       const nextScore = pairScore + gained;
       setFoundPairs(nextFound);
       recordPairFrame(targetFound ? 'Hunt target found' : 'Pair matched', [], nextFound);
@@ -630,7 +634,7 @@ export default function MarioApp() {
         setSharedMatches(values => { const next: [number, number] = [...values]; next[activePlayer] += 1; return next; });
       }
       setFlippedCards([]);
-      setPairMessage(targetFound ? 'Target found! +2 for the pair and +2 Hunt bonus.' : 'Pair found! +1 point.');
+      setPairMessage(round.timed ? 'Pair found!' : targetFound ? 'Target found! +1 point.' : 'Pair found! +1 point.');
       if (targetFound || nextFound.length >= round.goal) {
         pairRoundCompletedMs.current = Math.max(1, Date.now() - startTime.current);
         if (round.timed && !isBotTurn) {
@@ -639,7 +643,7 @@ export default function MarioApp() {
           const saved = savePairTime({ id, player: activeName, ...pairConfiguration(round, difficulty), elapsedMs: pairRoundCompletedMs.current, moves: pairMoves + 1, completedAt: new Date().toISOString(), replay: pairFrames.current.length < 2000 ? { version: 1, kind: 'pairs', title: `${activeName} · ${round.variant === 'hunt' ? 'Hunt' : 'Time Trial'}`, target: round.pairs.find(pair => pair.id === round.targetPairId)?.name, targetUnlockPairs: round.unlockPairs, frames: pairFrames.current } : undefined }, eligible);
           setPairMessage(!eligible ? 'Practice complete — restarted boards do not enter the leaderboard.' : saved ? 'Time saved to the leaderboard!' : 'Time could not be saved on this device.');
         }
-        setSession(submit(session, round.completionId, turnScores ? 0 : nextScore));
+        setSession(submit(session, round.completionId, turnScores ? 0 : round.timed ? 1 : nextScore));
       }
       return;
     }
@@ -655,7 +659,7 @@ export default function MarioApp() {
   };
 
   const timedResultMessage = turnScores && session?.submission && pairRoundCompletedMs.current !== null
-    ? session.index % 2 === 0 ? 'Time recorded. The other player has a different puzzle next.'
+    ? session.index % 2 === 0 ? 'Waiting for the other player’s time — fastest earns 1 point.'
       : turnScores.previousOrderMs === pairRoundCompletedMs.current ? 'Equal times — one point each!'
         : (turnScores.previousOrderMs! < pairRoundCompletedMs.current ? player : opponentName) + ' wins this round — +1 point!'
     : undefined;
@@ -940,9 +944,9 @@ export default function MarioApp() {
     {screen === 'game' && round && session && <section className="quiz-playing mario-game quiz-panel">
       <div className="game-topbar"><button className="back-btn" onClick={leaveGame}>← Games</button>{championship
         ? <span className="versus-now-playing" role="status">{activeName}'s turn · 🏆 {championship.index + 1}/{championship.modes.length}</span>
-        : <span className="score-display">{activeName} · {round.mode === 'pair-match' ? `${foundPairs.length} pairs` : `${(turnScores ? turnScores.correct[activePlayer] : session.correct) + (session.submission?.correct ? 1 : 0)} correct`} · {gamePointsNow} points</span>}</div>
+        : <span className="score-display">{activeName} · {round.mode === 'pair-match' ? `${foundPairs.length} pairs` : round.mode === 'match-hunt' ? `${matchedIds.length} pairs` : `${(turnScores ? turnScores.correct[activePlayer] : session.correct) + (session.submission?.correct ? 1 : 0)} correct`} · {gamePointsNow} points</span>}</div>
       {renderTotals(true)}
-      {turnScores && !championship && <div className="versus-now-playing" role="status">{activeName}'s turn · {player}: {activePlayer === 0 ? gamePointsNow : turnScores.points[0]} points · {opponentName}: {activePlayer === 1 ? gamePointsNow : turnScores.points[1]} points</div>}
+      {turnScores && !championship && <div className="versus-now-playing" role="status">{activeName}'s turn · {player}: {displayedGamePoints[0]} points · {opponentName}: {displayedGamePoints[1]} points</div>}
       <div className="quiz-topline"><span>{MODE_ICONS[mode]} {MODE_LABELS[mode]}{round.mode === 'pair-match' ? ` · ${round.variant === 'hunt' ? 'Hunt' : 'Time Trial'}` : ` · ${DIFFICULTY_LABELS[difficulty]}`}</span><span>{turnScores && !sharedHunt ? 'Round' : mode === 'pair-match' ? 'Board' : 'Question'} {turnScores && !sharedHunt ? Math.floor(session.index / 2) + 1 : session.index + 1} of {turnScores && !sharedHunt ? session.rounds.length / 2 : session.rounds.length}{turnScores && !sharedHunt ? ' each' : ''}</span>{timed && mode !== 'game-order' && <span aria-label="Elapsed time">{((elapsedMs - (mode === 'pair-match' ? previousRoundMs.current : 0)) / 1000).toFixed(1)}s</span>}</div>
       <div className="progress-track"><div style={{ width: `${(session.index / session.rounds.length) * 100}%` }} /></div>
       <div className="game-question"><h1>{round.prompt}</h1>
@@ -997,7 +1001,7 @@ export default function MarioApp() {
           {round.variant === 'time-trial' ? `Find ${round.goal} pairs as fast as you can.` : round.targetPairId ? 'Find the target pair after unlocking it.' : 'Find every pair.'}
         </GameHelp>
         {round.variant === 'hunt' && <HuntTarget name={round.pairs.find(pair => pair.id === round.targetPairId)?.name} unlockPairs={round.unlockPairs} matchedPairs={foundPairs.length} />}
-        <p className="match-progress" aria-live="polite">{foundPairs.length}/{round.goal} pairs found · {pairMoves} {pairMoves === 1 ? 'move' : 'moves'} · {pairScore} points</p>
+        <p className="match-progress" aria-live="polite">{foundPairs.length}/{round.goal} pairs found · {pairMoves} {pairMoves === 1 ? 'move' : 'moves'}{!round.timed && ` · ${pairScore} points`}</p>
         {!session.submission && pairTimerReady && <button className="back-btn match-restart" onClick={undo}>↶ Restart go</button>}
         {!pairTimerReady && <p className="help-copy">Ready? The cards appear on Go!</p>}
         {round.timed && <TimerCountdown key={round.id} autoStart={isBotTurn} ready={!pairTimerReady} onGo={() => { startTime.current = Date.now(); pairFrames.current = []; recordPairFrame('Timer started', [], [], 0); setElapsedMs(previousRoundMs.current); setPairTimerReady(true); }} />}
@@ -1020,11 +1024,11 @@ export default function MarioApp() {
       </>}
       {session.submission && round.mode !== 'game-order' && <div className="quiz-explanation feedback" aria-live="polite">
         <h2>{session.submission.correct ? 'Correct!' : round.mode === 'match-hunt' ? 'Round over' : `Answer: ${session.submission.correctLabel}`}</h2>
-        {round.mode === 'pair-match' && round.timed && timedResultMessage && !timedResultMessage.startsWith('Time recorded.') && <p className="order-feedback">{timedResultMessage}</p>}
+        {round.mode === 'pair-match' && round.timed && timedResultMessage && <p className="order-feedback">{timedResultMessage}</p>}
         {isBotTurn && round.mode === 'pair-match' && round.timed && <p>Shroomer’s time: {((pairRoundCompletedMs.current ?? 0) / 1000).toFixed(1)} seconds.</p>}
         <p>{round.explanation}</p>
         <p><strong>Fun fact:</strong> {round.funFact}</p>
-        <p className="mario-earned">+{session.submission.points} points</p>
+        {!(turnScores && round.mode === 'pair-match' && round.timed) && <p className="mario-earned">+{session.submission.points} points</p>}
         {speechAvailable() && <button className="tts-btn tts-btn-small" title="Read explanation aloud" aria-label="Read explanation aloud" onClick={() => speakText(`${round.explanation} Fun fact: ${round.funFact}`)}>🔊</button>}
         <a href={round.sourceUrl} target="_blank" rel="noreferrer">Check the source ↗</a>
         <LearningFeedback id={round.id} />
@@ -1037,13 +1041,15 @@ export default function MarioApp() {
       <h1>{latestResult.opponent ? latestResult.points === latestResult.opponentPoints ? "It's a draw!" : `${(latestResult.points ?? 0) > (latestResult.opponentPoints ?? 0) ? latestResult.player : latestResult.opponent} wins!` : `Nice work, ${latestResult.player}!`}</h1>
       <div className="result-card">
         <table className="game-result-scores" aria-label="Game results"><caption>{modeLabel(latestResult.mode)} · Total points</caption><thead><tr><th scope="col">Player</th><th scope="col">Current game</th>{championship && <th scope="col">Championship</th>}</tr></thead><tbody>
-          <tr><th scope="row">{latestResult.player}<small>{latestResult.correct}/{latestResult.total} {latestResult.mode === 'pair-match' || latestResult.mode === 'game-order' ? 'completed' : 'correct'}</small></th><td>{latestResult.points ?? latestResult.correct}</td>{championship && <td>{liveTotals[0]}</td>}</tr>
-          {latestResult.opponent && <tr><th scope="row">{latestResult.opponent}<small>{latestResult.opponentCorrect}/{latestResult.total} {latestResult.mode === 'pair-match' || latestResult.mode === 'game-order' ? 'completed' : 'correct'}</small></th><td>{latestResult.opponentPoints ?? 0}</td>{championship && <td>{liveTotals[1]}</td>}</tr>}
+          <tr><th scope="row">{latestResult.player}<small>{latestResult.correct}/{latestResult.total} {latestResult.mode === 'match-hunt' ? 'boards completed' : latestResult.mode === 'pair-match' || latestResult.mode === 'game-order' ? 'completed' : 'correct'}</small></th><td>{latestResult.points ?? latestResult.correct}</td>{championship && <td>{liveTotals[0]}</td>}</tr>
+          {latestResult.opponent && <tr><th scope="row">{latestResult.opponent}<small>{latestResult.opponentCorrect}/{latestResult.total} {latestResult.mode === 'match-hunt' ? 'boards completed' : latestResult.mode === 'pair-match' || latestResult.mode === 'game-order' ? 'completed' : 'correct'}</small></th><td>{latestResult.opponentPoints ?? 0}</td>{championship && <td>{liveTotals[1]}</td>}</tr>}
         </tbody></table>
-        {latestResult.mode === 'quiz' && <details className="result-scoring-help"><summary>How points work</summary>
-          <p>1 point per correct answer. No streak multipliers or bonuses, at any level.</p>
-          <p>Current game adds up your correct answers. Championship adds your completed games, including this one.</p>
-        </details>}
+        <details className="result-scoring-help"><summary>How points work</summary>
+          <p>{latestResult.mode === 'game-order' || (latestResult.mode === 'pair-match' && session?.rounds[0]?.mode === 'pair-match' && session.rounds[0].timed)
+            ? latestResult.opponent ? '1 point for the fastest time in each round. Equal times earn 1 each.' : '1 point per completed timed board.'
+            : latestResult.mode === 'match-hunt' || latestResult.mode === 'pair-match' ? '1 point per matched pair. The Hunt target is worth 1 too. Keep earned pairs if a Clue Match Up board ends early.' : '1 point per correct answer.'} No streak multipliers or bonuses, at any level.</p>
+          <p>This game shows points earned here. Championship adds your completed games, including this one.</p>
+        </details>
         <p>{DIFFICULTY_LABELS[latestResult.difficulty]}{timed ? ` · ${(latestResult.elapsedMs / 1000).toFixed(1)}s` : ''}</p>
       </div>
       {championship ? <button className="start-btn" onClick={continueChampionship}>{championship.index + 1 === championship.modes.length ? 'See championship result' : 'Next: ' + MODE_LABELS[championship.modes[championship.index + 1]]}</button> : <button className="start-btn" onClick={start}>Play again</button>}

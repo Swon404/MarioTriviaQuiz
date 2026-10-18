@@ -8,7 +8,7 @@ export function playComputerRounds(rounds: readonly GameRound[], difficulty: Dif
   for (const answer of answers) {
     const round = game.rounds[game.index];
     const pairPoints = round.mode === 'pair-match'
-      ? round.variant === 'time-trial' ? round.goal : round.targetPairId ? round.pairs.length + 3 : round.pairs.length
+      ? round.timed ? 1 : round.targetPairId ? round.unlockPairs + 1 : round.pairs.length
       : undefined;
     game = advance(submit(game, answer, pairPoints));
   }

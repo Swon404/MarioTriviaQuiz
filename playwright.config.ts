@@ -10,7 +10,7 @@ export default defineConfig({
   fullyParallel: false,
   // Keep browser load predictable on developer machines as well as CI.
   // Six simultaneous browsers can exhaust the per-test timeout during startup.
-  workers: 2,
+  workers: process.env.PLAYWRIGHT_WORKERS === '1' ? 1 : 2,
   reporter: 'list',
   use: {
     baseURL: 'http://127.0.0.1:4192/MarioTriviaQuiz/',

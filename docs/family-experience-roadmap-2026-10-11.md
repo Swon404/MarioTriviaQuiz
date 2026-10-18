@@ -1,6 +1,6 @@
 # Mario family experience: the road to a 10/10
 
-Updated 16 October 2026. **This is the active experience and content plan.**
+Updated 18 October 2026. **This is the active experience and content plan.**
 It supersedes the remaining-work lists in the October 2 family plan and the
 original implementation plan; those documents remain historical records.
 
@@ -28,6 +28,16 @@ original implementation plan; those documents remain historical records.
 - [x] Accept every valid answer, explain the relationship using its Nintendo source, and remember the challenge rather than the shuffle.
 - [x] Final local verification: content/rules audit, all 137 tests and production/PWA build passed; phone-sized Pro and Legend screenshots inspected. Included in the Category Finder release commit; check its GitHub Actions run for publication status.
 - [ ] Family playtest: confirm Pro is interesting and Legend challenging without obscure trivia.
+
+## 18 October simple-points follow-up
+
+- [x] Answers earn 1 point. Clue Match Up earns 1 per pair, including pairs earned before a failed board.
+- [x] Untimed Hunt earns 1 per pair, including the target; no target bonus.
+- [x] Solo timed boards earn 1 on completion. Competitive timed rounds award 1 to the faster player, or 1 each on an exact tie.
+- [x] Show timed awards immediately after the second result, without double-counting on Next; first results explicitly wait for the other time.
+- [x] Keep prior scoring records separate using `simple-points-v2`; recovered earlier runs remain unranked history rather than being relabelled.
+- [x] Final `npm run test:all`: content audit, all 142 tests and production/PWA build passed. Used `PLAYWRIGHT_WORKERS=1` after local two-browser timeout contention; assertions and timeouts unchanged. New scoring tests cover partial pairs, rewind, timed wins/ties and immediate totals without duplicate awards.
+- [ ] Family scoring playtest. Included in the simple-points release commit; check its GitHub Actions run for publication status.
 
 ## Who this is for
 

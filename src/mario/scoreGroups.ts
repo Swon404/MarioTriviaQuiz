@@ -2,7 +2,7 @@ import type { ChampionshipResult, QuizResult } from './storage.ts';
 import type { GameRound } from './rounds.ts';
 import type { OrderOptions } from './gameOrder.ts';
 
-export const SCORE_VERSION = 'one-point-v1';
+export const SCORE_VERSION = 'simple-points-v2';
 export type FinishedScore = QuizResult | ChampionshipResult;
 export function scoreConfiguration(rounds: readonly GameRound[], order: OrderOptions): string {
   return [...new Set(rounds.map(round => {

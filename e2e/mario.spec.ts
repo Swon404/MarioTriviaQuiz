@@ -95,7 +95,7 @@ test('completed results survive reload and stay in a separate storage namespace'
   expect(keys).toContain('mariotrivia_results_v1');
   expect(keys.some(key => key.startsWith('elementalquiz_'))).toBe(false);
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem('mariotrivia_results_v1') || '[]')[0].topic)).toBe('mixed');
-  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('mariotrivia_results_v1') || '[]')[0].scoringVersion)).toBe('one-point-v1');
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('mariotrivia_results_v1') || '[]')[0].scoringVersion)).toBe('simple-points-v2');
   await expect(page.locator('.finished-score-group h4')).toContainText('Top 5');
 });
 
@@ -281,7 +281,7 @@ test('Match & Hunt locks its target until two other pairs are found', async ({ p
     await flip(targetId);
     await expect(page.getByText('Target found!')).toBeVisible();
     await expect(page.getByText('Fun fact:')).toBeVisible();
-    await expect(page.locator('.score-display')).toContainText('6 points');
+    await expect(page.locator('.score-display')).toContainText('3 points');
     await page.getByRole('button', { name: 'See result' }).click();
   }
   await expect(page.locator('.result-card')).toContainText('1/1');
@@ -316,7 +316,7 @@ test('chosen timed Hunt keeps its target through three boards and rewind restart
       await page.locator(`.pair-card[data-pair-id="${id}"][data-kind="icon"]`).click();
       await page.locator(`.pair-card[data-pair-id="${id}"][data-kind="word"]`).click();
     }
-    await expect(page.locator('.score-display')).toContainText(`${(board + 1) * 5} points`);
+    await expect(page.locator('.score-display')).toContainText(`${board + 1} points`);
     const records = await page.evaluate(() => JSON.parse(localStorage.getItem('mariotrivia_pair_times_v1') ?? '[]'));
     expect(records).toHaveLength(board);
     if (board === 0) await expect(page.getByText('Practice complete', { exact: false })).toBeVisible();
@@ -328,7 +328,7 @@ test('chosen timed Hunt keeps its target through three boards and rewind restart
     }
     await page.getByRole('button', { name: board === 2 ? 'See result' : 'Next board' }).click();
   }
-  await expect(page.locator('.result-card')).toContainText('15');
+  await expect(page.getByRole('table', { name: 'Game results' }).locator('tbody td')).toHaveText(['3']);
 });
 
 test('Track Finder accepts a course that fits the clue', async ({ page }) => {
@@ -624,19 +624,19 @@ test('solo championship carries points into two Clue Match Up rounds and saves t
     }
     await page.getByRole('button', { name: i === 1 ? 'See result' : 'Next question' }).click();
   }
-  await expect(page.getByRole('table', { name: 'Game results' }).locator('tbody td')).toHaveText(['2', '5']);
+  await expect(page.getByRole('table', { name: 'Game results' }).locator('tbody td')).toHaveText(['8', '11']);
   await page.getByRole('button', { name: 'See championship result' }).click();
   await expect(page.getByText('CHAMPIONSHIP COMPLETE')).toBeVisible();
-  await expect(page.locator('.result-card')).toContainText('5');
+  await expect(page.locator('.result-card')).toContainText('11');
   const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('mariotrivia_championships_v1') || '[]'));
-  expect(saved[0].points).toBe(5);
+  expect(saved[0].points).toBe(11);
   expect(saved[0].games.map((game: { correct: number }) => game.correct)).toEqual([3, 2]);
   await page.getByRole('button', { name: 'High Scores' }).click();
   await expect(page.getByText('Championships')).toBeVisible();
-  await expect(page.locator('.score-list').last()).toContainText('5 points');
+  await expect(page.locator('.score-list').last()).toContainText('11 points');
   await page.getByRole('button', { name: 'Back to games' }).click();
   await page.getByRole('button', { name: 'Home' }).click();
-  await expect(page.getByText('5 points', { exact: true })).toBeVisible();
+  await expect(page.getByText('11 points', { exact: true })).toBeVisible();
   await expect(page.getByText('Rookie Racer', { exact: false })).toBeVisible();
 });
 
