@@ -1,6 +1,6 @@
 import { OrderTiles, PairCards, HuntTarget } from './GameBoards.tsx';
 import { createPortal } from 'react-dom';
-import { memo, useEffect, useState, useRef, type CSSProperties } from 'react';
+import { memo, useEffect, useLayoutEffect, useState, useRef, type CSSProperties } from 'react';
 import { validReplay, type BoardReplay } from './mario/replay.ts';
 
 function ReplayViewer({ replay }: { replay: BoardReplay | undefined }) {
@@ -12,12 +12,17 @@ function ReplayViewer({ replay }: { replay: BoardReplay | undefined }) {
   const [host, setHost] = useState<HTMLElement | null>(null);
   const dialog = useRef<HTMLDialogElement>(null);
   const valid = validReplay(replay);
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (opened && dialog.current) {
+      // Classic scrollbars consume layout width in some WebKit environments.
+      // Preserve the live board's content width, within the viewport limit.
+      dialog.current.style.width = `${surfaceStyle.width}px`;
       dialog.current.showModal();
+      const gutter = dialog.current.offsetWidth - dialog.current.clientWidth;
+      if (gutter > 0) dialog.current.style.width = `${Number(surfaceStyle.width) + gutter}px`;
       dialog.current.scrollTop = 0;
     }
-  }, [opened]);
+  }, [opened, surfaceStyle]);
   useEffect(() => {
     if (!valid || !opened || !playing) return;
     if (position >= replay.frames.length - 1) {

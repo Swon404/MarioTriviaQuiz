@@ -21,5 +21,12 @@ export default defineConfig({
   },
   projects: [
     { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
+    {
+      name: 'webkit-phone',
+      // Reuse behavioural assertions, not weaker Safari-only copies. Physical
+      // iPhone/Safari and Home Screen acceptance testing is still required.
+      testMatch: /(?:phone-flow|countdown|resume|shared-board-replay|simple-points|championship-header)\.spec\.ts$/,
+      use: { ...devices['iPhone 13'], browserName: 'webkit' },
+    },
   ],
 });

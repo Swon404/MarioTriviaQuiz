@@ -19,9 +19,15 @@ for (const game of ['Quiz Battle', 'Game Order', 'Match & Hunt', 'Clue Match Up'
         return { label: button.textContent, width: rect.width, height: rect.height };
       }));
       expect(sizes.filter(size => size.width < 44 || size.height < 44), stage).toEqual([]);
+      // Native controls can use a browser-specific default (including a serif
+      // font in WebKit). Keep tiles and buttons in the game's readable font.
+      const gameFont = await page.locator('.mario-app').evaluate(node => getComputedStyle(node).fontFamily);
+      const controlFonts = await page.locator('button:visible, input:visible, select:visible, textarea:visible')
+        .evaluateAll(nodes => [...new Set(nodes.map(node => getComputedStyle(node).fontFamily))]);
+      expect(controlFonts, `${stage} control fonts`).toEqual([gameFont]);
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), stage).toBe(true);
     }
-    await page.screenshot({ path: `test-results/phone-${game.replaceAll(' ', '-')}.png`, fullPage: true });
+    await page.screenshot({ path: test.info().outputPath(`phone-${game.replaceAll(' ', '-')}.png`), fullPage: true });
   });
 }
 
@@ -75,6 +81,9 @@ test('phone timed Hunt keeps Next above the board and hides repeated instruction
 });
 
 test('phone settings summary restores names, difficulty and matching rules after reload', async ({ page }) => {
+  // This test checks restored settings, not real-time countdown scheduling.
+  // Drive the countdown explicitly so a busy runner cannot consume its budget.
+  await page.clock.install();
   await page.goto('./');
   await page.getByRole('button', { name: 'Play Games' }).click();
   await page.getByRole('button', { name: 'Match & Hunt' }).click();
@@ -97,7 +106,10 @@ test('phone settings summary restores names, difficulty and matching rules after
   await expect(page.getByLabel('Selected settings')).toContainText('16 pairs · find 3');
   await page.getByRole('button', { name: 'Start!', exact: true }).click();
   await expect(page.locator('.quiz-panel h1')).toContainText('3');
+  await page.clock.pauseAt(new Date(Date.now() + 60000));
   await page.getByRole('button', { name: 'Start Timer', exact: true }).click();
+  await expect(page.locator('.timer-countdown strong')).toHaveText('3');
+  await page.clock.runFor(3000);
   await expect(page.locator('.pair-card')).toHaveCount(32);
 });
 
@@ -107,7 +119,7 @@ test('phone championship summary preserves choices and prevents starting with fe
   await page.getByRole('button', { name: 'Championship', exact: false }).click();
   await expect(page.locator('.setup-settings')).not.toHaveAttribute('open', '');
   await expect(page.getByLabel('Selected settings')).toContainText('7 games');
-  await page.screenshot({ path: 'test-results/phone-championship-compact.png', fullPage: true });
+  await page.screenshot({ path: test.info().outputPath('phone-championship-compact.png'), fullPage: true });
   await page.locator('.setup-settings > summary').click();
   await page.getByRole('button', { name: 'Quick', exact: true }).click();
   for (const game of ['Game Order', 'Match & Hunt', 'Clue Match Up', 'Clue Duel', 'Track Finder', 'Category Finder']) {

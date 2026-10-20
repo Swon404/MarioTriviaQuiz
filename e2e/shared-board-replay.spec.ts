@@ -3,6 +3,7 @@ import { MARIO_TIMELINE } from '../src/mario/rounds.ts';
 import { validReplay } from '../src/mario/replay.ts';
 
 async function snapshot(board: Locator) {
+  await expect(board).toBeVisible();
   return board.locator('button').evaluateAll(nodes => nodes.map(node => {
     const style = getComputedStyle(node);
     const rect = node.getBoundingClientRect();
@@ -27,9 +28,22 @@ async function open(page: Page, game: string) {
   await page.getByRole('button', { name: game, exact: false }).click();
 }
 
-async function playTo(page: Page, frames: { atMs: number }[], index: number) {
+async function advanceFrame(page: Page, frames: { atMs: number; event: string }[], index: number) {
+  // Advance in small steps so React can commit and schedule the next frame
+  // between callbacks. One large clock jump races passive effects in WebKit.
+  const event = `${(frames[index].atMs / 1000).toFixed(1)}s · ${frames[index].event}`;
+  const label = page.getByRole('dialog').locator('p[aria-live]');
+  const budget = Math.max(80, frames[index].atMs - frames[index - 1].atMs) + 1000;
+  for (let elapsed = 0; elapsed < budget; elapsed += 20) {
+    await page.clock.runFor(20);
+    if ((await label.innerText()).includes(event)) break;
+  }
+  await expect(label).toContainText(event);
+}
+
+async function playTo(page: Page, frames: { atMs: number; event: string }[], index: number) {
   await page.getByRole('dialog').getByRole('button', { name: 'Start replay' }).click();
-  for (let i = 1; i <= index; i++) await page.clock.runFor(Math.max(80, frames[i].atMs - frames[i - 1].atMs));
+  for (let i = 1; i <= index; i++) await advanceFrame(page, frames, i);
   await page.getByRole('dialog').getByRole('button', { name: 'Stop replay' }).click();
 }
 
@@ -68,10 +82,10 @@ test('Order replay uses the live board, including selected feedback, years and c
   await playTo(page, frames, frames.findIndex((frame: { event: string }) => frame.event === 'Tile selected'));
   expect(await snapshot(replay.locator('[data-board="order"]'))).toEqual(selected);
   await replay.getByRole('button', { name: 'Start replay' }).click();
-  for (let i = 1; i < frames.length; i++) await page.clock.runFor(Math.max(80, frames[i].atMs - frames[i - 1].atMs));
+  for (let i = 1; i < frames.length; i++) await advanceFrame(page, frames, i);
   expect(await snapshot(replay.locator('[data-board="order"]'))).toEqual(solved);
   await expect(replay.locator('.order-correct').first()).toHaveCSS('background-color', 'rgb(40, 87, 73)');
-  await page.screenshot({ path: 'test-results/shared-order-replay.png' });
+  await page.screenshot({ path: test.info().outputPath('shared-order-replay.png') });
   await replay.getByRole('button', { name: 'Back', exact: false }).click();
   await page.clock.runFor(10000);
   expect(await snapshot(board)).toEqual(solved);
@@ -114,7 +128,7 @@ test('Hunt replay retains live card sizes, pictures, matched colours and target 
   await playTo(page, saved.frames, 1);
   expect(await snapshot(replay.locator('[data-board="pairs"]'))).toEqual(flipped);
   await replay.getByRole('button', { name: 'Start replay' }).click();
-  for (let i = 1; i < saved.frames.length; i++) await page.clock.runFor(Math.max(80, saved.frames[i].atMs - saved.frames[i - 1].atMs));
+  for (let i = 1; i < saved.frames.length; i++) await advanceFrame(page, saved.frames, i);
   await expect(replay.locator('.hunt-target-banner')).toContainText('Nintendo DS');
   await expect(replay.locator('.hunt-target-banner')).toContainText('Unlocked!');
   expect(await snapshot(replay.locator('[data-board="pairs"]'))).toEqual(completed);
@@ -122,9 +136,14 @@ test('Hunt replay retains live card sizes, pictures, matched colours and target 
   const back = await replay.getByRole('button', { name: 'Back', exact: false }).boundingBox();
   expect(back!.y).toBeGreaterThanOrEqual(0);
   expect(back!.y + back!.height).toBeLessThan(844);
-  await page.screenshot({ path: 'test-results/shared-hunt-replay.png' });
+  await page.screenshot({ path: test.info().outputPath('shared-hunt-replay.png') });
   await replay.getByRole('button', { name: 'Back', exact: false }).click();
   expect(await snapshot(board)).toEqual(completed);
+  expect(await page.evaluate(() => localStorage.getItem('mariotrivia_pair_times_v1'))).toBe(records);
+  // Reopening must reset the measured width, not add another scrollbar gutter.
+  await page.locator('.board-replay > button').click();
+  expect(await snapshot(replay.locator('[data-board="pairs"]'))).toEqual(initial);
+  await replay.getByRole('button', { name: 'Back', exact: false }).click();
   expect(await page.evaluate(() => localStorage.getItem('mariotrivia_pair_times_v1'))).toBe(records);
 });
 

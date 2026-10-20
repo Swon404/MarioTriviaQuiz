@@ -1,6 +1,10 @@
 # Mario family experience: the road to a 10/10
 
-Updated 18 October 2026. **This is the active experience and content plan.**
+**Superseded 18 October 2026:** use the [main experience plan](family-experience-plan-2026-10-18.md).
+All unfinished workstreams and acceptance checks are carried forward there, together
+with the latest audit. Counts and publication notes below are historical snapshots.
+
+Updated 18 October 2026. **Historical experience and content roadmap.**
 It supersedes the remaining-work lists in the October 2 family plan and the
 original implementation plan; those documents remain historical records.
 

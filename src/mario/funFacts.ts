@@ -5,26 +5,26 @@ export const FUN_FACT_REVIEW = {
   sourceUrl: 'https://www.nintendo.com/en-ca/explore/characters/mario/friends/',
 } as const;
 
-const luigiMoustache = 'Look closely: Luigi’s moustache has a different shape from Mario’s.';
-const luigiGhosts = 'Even a hero gets nervous: ghosts can give Luigi a fright.';
+const luigiMoustache = 'Try telling the brothers apart without their hats: their moustaches have different shapes too.';
+const luigiGhosts = 'Luigi can be frightened of ghosts and still face danger. Being brave does not mean never feeling scared.';
 export const QUESTION_FUN_FACTS: Readonly<Record<string, readonly string[]>> = {
   'mario-explorer-1': [luigiMoustache, luigiGhosts],
-  'mario-explorer-4': [luigiMoustache, luigiGhosts, 'Luigi is taller than Mario and can jump higher.'],
+  'mario-explorer-4': [luigiMoustache, luigiGhosts, 'Luigi is taller and known for higher jumps: the green outfit is not his only difference from Mario.'],
   'mario-explorer-2': [
-    'Peach enjoys cooking and baking when she is not adventuring.',
-    'Peach wants a kingdom where everyone can live happily together.',
+    'Peach enjoys cooking and baking—a quieter side to someone who also races and plays sports with Mario.',
+    'Peach’s goal is a kingdom where everyone lives happily together, not simply keeping a crown for herself.',
   ],
   'mario-explorer-3': [
-    'Bowser combines enormous strength with the ability to breathe fire.',
-    'Goombas, Bullet Bills and Shy Guys all appear among Bowser’s followers.',
+    'Size is not Bowser’s only weapon: he combines huge strength with fire breath.',
+    'Bowser’s followers are not all Koopas. Goombas, Bullet Bills and Shy Guys also serve in his forces.',
   ],
   'mario-explorer-7': [
-    'Garlic is one of Wario’s favourite things, alongside making money.',
-    'Wario and Mario have known each other since they were babies.',
+    'Wario loves garlic as well as money—not the usual wish list for a hero rescuing a kingdom.',
+    'Wario and Mario’s rivalry goes back a long way: they have known each other since they were babies.',
   ],
   'mario-explorer-9': [
-    'Toad has red spots, but other Toads come in different colours.',
-    'Toad helps protect the kingdom even when it puts him in danger.',
+    'Red spots identify Toad, but other Toads wear different colours. A crowd of Toads is not a crowd of identical copies.',
+    'Toad is willing to face danger for Peach and the kingdom; helping is not always a safe sideline.',
   ],
 };
 

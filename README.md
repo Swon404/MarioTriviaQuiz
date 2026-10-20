@@ -24,13 +24,22 @@ Development:
 
 ```sh
 npm install --legacy-peer-deps
+npx playwright install chromium webkit
 npm run dev
 npm run test:all
 ```
 
+The full gate runs the complete Chromium suite plus 37 WebKit phone checks for
+all seven mode layouts, repeat turns/settings, countdowns, recovery, simple points,
+Championship totals and same-board replays. Run the phone project alone with
+`npx playwright test --project=webkit-phone`. WebKit uses the iPhone 13 device
+profile; this is browser emulation, not physical iPhone/Safari certification.
+Screenshots from shared tests are stored in per-test, per-project directories.
+On resource-constrained machines, set `PLAYWRIGHT_WORKERS=1` before the full gate.
+
 The app currently uses a local browser profile name and the `mariotrivia_` storage prefix. No login, account service or AI API is needed to play. Existing ElementalQuiz saved data is not read or changed.
 
-The fork lives in a public GitHub repository. GitHub Actions runs the question audit, browser tests and production build on pushes and pull requests; a passing `main` build deploys the playable site to [GitHub Pages](https://swon404.github.io/MarioTriviaQuiz/). The public name and branding are still under review. See [the implementation checklist](docs/mario-quiz-plan.md) for the remaining modes, Mario Kart catalogue and release work.
+The fork lives in a public GitHub repository. GitHub Actions runs the question audit, browser tests and production build on pushes and pull requests; a passing `main` build deploys the playable site to [GitHub Pages](https://swon404.github.io/MarioTriviaQuiz/). The public name and branding are still under review. See [the main experience plan](docs/family-experience-plan-2026-10-18.md) for remaining work, content priorities and acceptance checks. Earlier plans are historical records.
 
 Nintendo owns the Mario names, characters and games referenced in the questions. This fan project is not affiliated with or endorsed by Nintendo.
 The background in `public/platform-landscape.png` is original AI-generated platform-game scenery. Current matching art is downloaded from the individually credited Super Mario Wiki file pages, including Nintendo artwork and game screenshots. Legacy SVGs remain for old replays. Source attribution is not rights clearance for distribution.

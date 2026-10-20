@@ -1,4 +1,5 @@
 /* Phone-first playing surfaces. Keep the artwork around, not behind, reading text. */
+.mario-app :is(button, input, select, textarea) { font-family: inherit; }
 body:has(.mario-app .replay-stage[open]) { overflow: hidden; }
 .mario-app .replay-stage { overscroll-behavior: contain; }
 .mario-app .replay-stage { position: fixed; top: 8px; bottom: auto; left: 0; right: 0; box-sizing: border-box; max-width: calc(100vw - 16px); max-height: calc(100dvh - 16px); margin: 0 auto; padding: 0; border: 0; border-radius: 16px; background: #493248; color: var(--text-primary); overflow: auto; }

@@ -59,9 +59,9 @@ test('phone championship shows game and total scores through rewind, handovers a
   await expect(page.locator('.result-scoring-help')).toContainText('No streak multipliers or bonuses');
   expect(points).toEqual([3, 3]);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-  await page.screenshot({ path: 'test-results/phone-game-result-scores.png', fullPage: true });
+  await page.screenshot({ path: test.info().outputPath('phone-game-result-scores.png'), fullPage: true });
   await page.getByRole('button', { name: 'Next: Track Finder' }).click();
   await check([0, 0], points);
   await check([0, 0], points);
-  await page.screenshot({ path: 'test-results/phone-championship-scores.png', fullPage: true });
+  await page.screenshot({ path: test.info().outputPath('phone-championship-scores.png'), fullPage: true });
 });
