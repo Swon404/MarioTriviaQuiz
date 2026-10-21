@@ -2,7 +2,7 @@ import { BOOSTER_COURSES, type CourseAppearance } from './courses.ts';
 import { TRACK_CHALLENGES, trackLabel, type TrackChallenge } from './trackChallenges.ts';
 import { createQuiz, shuffled, type Difficulty, type Topic, type TriviaQuestion } from './questions.ts';
 import { CLUE_SUBJECTS, clueSimilarity } from './clues.ts';
-import { CATEGORY_ITEMS, CATEGORY_LABELS, CATEGORY_CHALLENGES, categoryContext, fitsCategory, type CategoryItem, type FinderCategory } from './categoryCatalog.ts';
+import { CATEGORY_ITEMS, CATEGORY_LABELS, CATEGORY_CHALLENGES, categoryContext, categoryDistractorRank, fitsCategory, type CategoryItem, type FinderCategory } from './categoryCatalog.ts';
 import { ICON_PAIRS, type IconKind, type IconPair } from './pairCatalog.ts';
 import type { OrderOptions } from './gameOrder.ts';
 import { MATCH_CLUES, knowledgeLevel } from './matchClues.ts';
@@ -57,7 +57,7 @@ export const MARIO_TIMELINE: readonly TimelineGame[] = [
   { id: 'wonder', title: 'Super Mario Bros. Wonder', year: 2023, system: 'Nintendo Switch' },
 ];
 
-type RoundBase = { id: string; prompt: string; explanation: string; funFact: string; sourceUrl: string; review?: boolean; reviewCount?: number };
+type RoundBase = { id: string; prompt: string; explanation: string; funFact: string; funFactSourceUrl?: string; sourceUrl: string; review?: boolean; reviewCount?: number };
 export type QuizRound = RoundBase & { mode: 'quiz'; question: TriviaQuestion };
 export type OrderRound = RoundBase & { mode: 'game-order'; tiles: readonly TimelineGame[]; correctIds: readonly string[] };
 export type FinderRound = RoundBase & { mode: 'track-finder'; tiles: readonly CourseAppearance[]; correctIds: readonly string[]; challengeKind: TrackChallenge['kind']; width: number };
@@ -66,7 +66,7 @@ export type MatchRound = RoundBase & { mode: 'match-hunt'; pairs: readonly Match
 export type PairCard = { id: string; pairId: string; kind: 'icon' | 'word'; label: string; iconKind?: IconKind; iconAlt?: string };
 export type PairRound = RoundBase & { mode: 'pair-match'; variant: PairVariant; pairs: readonly IconPair[]; cards: readonly PairCard[]; completionId: string; targetPairId: string | null; unlockPairs: number; goal: number; timed: boolean };
 export type ClueRound = RoundBase & { mode: 'clue-duel'; clues: readonly string[]; choices: readonly { id: string; label: string }[]; answerId: string };
-export type CategoryRound = RoundBase & { mode: 'category-finder'; tiles: readonly CategoryItem[]; targetCategory: FinderCategory; width: number };
+export type CategoryRound = RoundBase & { mode: 'category-finder'; tiles: readonly CategoryItem[]; targetCategory: FinderCategory; width: number; answerRule?: 'single' };
 export type GameRound = QuizRound | OrderRound | FinderRound | MatchRound | PairRound | ClueRound | CategoryRound;
 
 export function availableModes(section: Section): GameMode[] {
@@ -109,6 +109,7 @@ function makePairRounds(section: Section, options: PairMatchOptions, random: () 
       prompt: options.variant === 'time-trial' ? `Find ${goal} icon-and-word pairs.` : target ? 'Hunt for the target pair.' : 'Find every icon-and-word pair.',
       explanation: `Spotlight: ${featured.name}. ${featured.question.explanation}`,
       funFact: featured.question.funFact,
+      funFactSourceUrl: featured.question.funFactSourceUrl,
       sourceUrl: featured.question.sourceUrl,
     };
     return base;
@@ -125,13 +126,16 @@ function makeCategoryRounds(difficulty: Difficulty, random: () => number, count 
       const pool = CATEGORY_ITEMS.filter(item => task!.pool === 'character' ? ['friend', 'baddie'].includes(item.category) : item.category === task!.pool);
       const correct = shuffled(pool.filter(item => fitsCategory(item, targetCategory)), random);
       const wrong = shuffled(pool.filter(item => !fitsCategory(item, targetCategory)), random);
+      if (difficulty === 'scientist') wrong.sort((a, b) => categoryDistractorRank(b, targetCategory) - categoryDistractorRank(a, targetCategory));
       // Plausible alternatives, not systems mixed with games. Keep nine readable tiles.
-      const matches = correct.slice(0, Math.max(9 - wrong.length, Math.min(difficulty === 'scientist' ? 3 : 2, correct.length)));
+      const matches = correct.slice(0, difficulty === 'scientist' ? 1 : Math.max(9 - wrong.length, Math.min(2, correct.length)));
+      if (matches.length === 0 || wrong.length < 9 - matches.length) throw new Error(`Not enough alternatives for ${category}`);
       const tiles = shuffled([...matches, ...wrong.slice(0, 9 - matches.length)], random);
       const id = `category-v2-${difficulty}-${category}`;
       return { id, mode: 'category-finder', review: recent.includes(id), width: 3, tiles, targetCategory,
+        ...(difficulty === 'scientist' ? { answerRule: 'single' as const } : {}),
         prompt: `Find one ${CATEGORY_LABELS[targetCategory]}.`,
-        explanation: `${matches.map(item => item.name).join(', ')} ${matches.length === 1 ? 'fits' : 'fit'}. ${task!.note}`,
+        explanation: `${matches.map(item => item.name).join(', ')} ${matches.length === 1 ? 'is the matching tile' : 'are the matching tiles'} for “${CATEGORY_LABELS[targetCategory]}”.`,
         funFact: task!.note, sourceUrl: task!.sourceUrl };
     });
   }
@@ -212,6 +216,7 @@ function makeMatchRounds(section: Section, difficulty: Difficulty, random: () =>
       targetId: target.id,
       explanation: target.question.explanation,
       funFact: target.question.funFact,
+      funFactSourceUrl: target.question.funFactSourceUrl,
       sourceUrl: target.question.sourceUrl,
     };
   });
@@ -300,7 +305,7 @@ export function createRounds(mode: GameMode, section: Section, difficulty: Diffi
   if (mode === 'quiz') {
     return createQuiz(section, difficulty, roundCount ?? 10, random, recent).map(question => ({
       id: question.id, mode: 'quiz' as const, question, prompt: question.prompt,
-      explanation: question.explanation, funFact: question.funFact, sourceUrl: question.sourceUrl,
+      explanation: question.explanation, funFact: question.funFact, funFactSourceUrl: question.funFactSourceUrl, sourceUrl: question.sourceUrl,
     }));
   }
   const count = roundCount ?? (difficulty === 'explorer' ? 3 : difficulty === 'scientist' ? 4 : 5);

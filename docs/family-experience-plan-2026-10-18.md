@@ -1,12 +1,65 @@
 # Mushroom Power Quiz — main experience plan
 
-Updated 20 October 2026. **This is the main plan and single active backlog.**
+Updated 21 October 2026. **This is the main plan and single active backlog.**
 
 It combines the 18 October whole-game audit with every outstanding workstream
 and acceptance check from the [previous roadmap](family-experience-roadmap-2026-10-11.md).
 That roadmap and earlier plans remain historical evidence, not competing task lists.
 Unchecked items below are not claimed complete merely because they have tests or
 appear in this document. Proposed rule changes still require a family decision.
+
+## Latest family feedback — quality review reopened, 21 October
+
+The family still finds Quiz Battle feedback bland and Pro Category Finder too
+easy. Earlier whole-bank rewriting is completed editorial work, **not accepted
+evidence that the content is interesting**. Keep the quality work open.
+
+- [x] Pro Category Finder: exactly one correct tile among nine; prefer close
+  alternatives within the same family (Wii versus Wii U/DS releases, familiar
+  earlier racers versus World newcomers). Rookie/Legend rules remain unchanged.
+- [x] Preserve question-history IDs and saved rounds. Separate new one-answer
+  Pro scores from previous rules; do not relabel or delete old scores.
+- [x] Remove repeated relationship notes from advanced Category Finder feedback.
+- [x] Replace seven Quiz Battle feedback entries with concrete gameplay tricks,
+  visual details and developer stories, checking their Nintendo sources. This
+  includes Double Cherry regrouping, character-specific switches, Kamek/Cow,
+  and Wonder's rejected live-action Mario idea. No new questions claimed.
+- [ ] Continue the substantive feedback review across the remaining quiz bank,
+  Clue Duel, Track Finder and Category Finder. Prefer one useful trick, surprising
+  detail or story beyond the answer; avoid repeating the explanation, generic
+  encouragement, or an unrelated fact attached merely to fill the space.
+- [ ] Replace dry original-release/cup-list facts where a source-supported,
+  relevant gameplay detail is available. Keep original-edition precision.
+- [ ] Have Dad and Blaize try the revised feedback and Pro boards. Check whether
+  Legend now feels easier than Pro before changing its rules; no family verdict yet.
+
+Verification details: [feedback review](feedback-review-2026-10-20.md).
+
+### Agreed content direction — tips, glitches, tricks and funny discoveries
+
+Dad's preference, confirmed 21 October: prioritise useful things to try and
+amusing discoveries, not dry release/cup lists. Keep explanations brief; the
+extra must add something beyond the answer. Mario Kart World comes first.
+
+- [x] Deliver a 17-entry sourced feedback batch: World practice/navigation tips,
+  funny food/UFO details, version-labelled historical glitches, Wonder and
+  Odyssey secrets, 3D World/Fury tricks and Wii's playable help demonstration.
+- [x] Keep answer sources and supplementary fact sources separate; show both
+  where needed in solo/two-player feedback and Learning Zone cards. Carry extra
+  sources into Clue Match Up and Match & Hunt spotlight feedback.
+- [x] Preserve existing question IDs, answer keys, levels, history and scoring.
+  Existing glitch questions remain Legend. Never present a patched glitch as
+  a currently working trick; every historical-glitch extra names its fix version.
+- [ ] Extend this approach beyond the 17-entry batch and previous seven revisions;
+  avoid duplicate tips about the same move. Independent Clue Duel/Track Finder
+  content still needs the deeper review above.
+- [ ] Family-vet these examples in real play before claiming editorial acceptance.
+- [x] Release verification: a fresh `npm run test:all` passed all 200 tests
+  (163 Chromium, 37 WebKit), content audit, TypeScript and production/PWA build
+  before the requested commit/push on 21 October.
+- [ ] Investigate the intermittent Windows WebKit setup-click timeout if it
+  recurs. The prior 199/200 run and three isolated passes remain recorded; the
+  clean full rerun does not establish a root-cause fix.
 
 ## Goal and boundaries
 

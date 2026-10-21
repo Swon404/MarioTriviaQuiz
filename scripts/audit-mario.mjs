@@ -144,12 +144,14 @@ assert.equal(new Set(finalReviewIds).size, 75, 'Review groups cannot hide duplic
 for (const id of finalReviewIds) {
   const question = QUESTIONS.find(question => question.id === id);
   assert.ok(question, `Reviewed record exists: ${id}`);
-  assert.equal(question.sourceReview.checkedOn, '2026-10-12');
+  assert.equal(question.sourceReview.checkedOn, id === 'fresh-21' ? '2026-10-21' : '2026-10-12');
 }
 assert.ok(QUESTIONS.every(question => question.sourceReview?.status === 'source-checked'));
 assert.ok(QUESTIONS.every(question => question.sourceReview.gameVersion && new URL(question.sourceUrl).protocol === 'https:'));
 const unreviewedAddition = { ...QUESTIONS[0], id: 'future-question', sourceReview: undefined };
 assert.equal(withCompletedOriginalReview(unreviewedAddition), unreviewedAddition, 'Future content must not inherit a blanket source review');
+const newlyReviewed = { ...QUESTIONS.find(question => question.id === 'fresh-21'), sourceReview: { checkedOn: '2026-10-21', status: 'source-checked', gameVersion: 'Mario Kart World — developer interview' } };
+assert.equal(withCompletedOriginalReview(newlyReviewed), newlyReviewed, 'An older blanket review must not overwrite a later individual review');
 for (const id of ['kart-explorer-1', 'kart-explorer-7', 'kart-explorer-9', 'expanded-12', 'expanded-17', 'fresh-21', 'fresh-23', 'fresh-24']) {
   assert.equal(QUESTIONS.find(question => question.id === id).knowledgeId, `${id}-v2`);
   assert.equal(canonicalKnowledge(id), id, 'Old exposure does not cover a replacement fact');

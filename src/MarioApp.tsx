@@ -925,6 +925,7 @@ export default function MarioApp() {
           <p className="mario-earned">+{versus.submission.points} points</p>
           {speechAvailable() && <button className="tts-btn tts-btn-small" title="Read explanation aloud" aria-label="Read explanation aloud" onClick={() => speakText(`${versusTurn.question.explanation} Fun fact: ${versusTurn.question.funFact}`)}>🔊</button>}
           <a href={versusTurn.question.sourceUrl} target="_blank" rel="noreferrer">Check the source ↗</a>
+          {versusTurn.question.funFactSourceUrl && versusTurn.question.funFactSourceUrl !== versusTurn.question.sourceUrl && <p><a href={versusTurn.question.funFactSourceUrl} target="_blank" rel="noreferrer">Tip / fun fact source ↗</a></p>}
           <LearningFeedback id={versusTurn.question.id} />
           <div className="feedback-actions"><button className="back-btn" onClick={() => setVersus(rewindVersusQuiz(versus))}>↶ Rewind</button><button className="start-btn" onClick={nextVersus}>{versus.index + 1 === versus.turns.length ? 'See result' : 'Next turn →'}</button></div>
         </div>}
@@ -1031,6 +1032,7 @@ export default function MarioApp() {
         {!(turnScores && round.mode === 'pair-match' && round.timed) && <p className="mario-earned">+{session.submission.points} points</p>}
         {speechAvailable() && <button className="tts-btn tts-btn-small" title="Read explanation aloud" aria-label="Read explanation aloud" onClick={() => speakText(`${round.explanation} Fun fact: ${round.funFact}`)}>🔊</button>}
         <a href={round.sourceUrl} target="_blank" rel="noreferrer">Check the source ↗</a>
+        {round.funFactSourceUrl && round.funFactSourceUrl !== round.sourceUrl && <p><a href={round.funFactSourceUrl} target="_blank" rel="noreferrer">Tip / fun fact source ↗</a></p>}
         <LearningFeedback id={round.id} />
         <div className="feedback-actions"><button className="back-btn" onClick={undo}>↶ Rewind</button><button className="start-btn" onClick={next}>{session.index + 1 === session.rounds.length ? 'See result' : turnScores ? 'Next turn →' : mode === 'pair-match' ? 'Next board →' : 'Next question →'}</button></div>
       </div>}

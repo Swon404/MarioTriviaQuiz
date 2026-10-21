@@ -6,6 +6,7 @@ import { FAMILY_QUESTIONS } from './familyQuestions.ts';
 import { canonicalKnowledge, normalizeKnowledge } from './knowledge.ts';
 import { withVariedFunFacts } from './funFacts.ts';
 import { withCompletedOriginalReview } from './originalReview.ts';
+import { withPlayfulFeedback } from './playfulFeedback.ts';
 
 export type Difficulty = 'explorer' | 'scientist' | 'professor';
 export type Topic = 'mario' | 'kart';
@@ -23,6 +24,7 @@ export type TriviaQuestion = {
   answer: string;
   explanation: string;
   funFact: string;
+  funFactSourceUrl?: string;
   sourceUrl: string;
   sourceReview?: { checkedOn: string; status: 'source-checked'; gameVersion: string };
 };
@@ -181,7 +183,7 @@ export const QUESTIONS: readonly TriviaQuestion[] = [
   ...GAMEPLAY_QUESTIONS,
   ...MARIO_SIDE_QUESTIONS,
   ...FAMILY_QUESTIONS,
-].map(question => withCompletedOriginalReview({ ...question, difficulty: LEVEL_REVIEW[question.id] ?? question.difficulty, knowledgeId: canonicalKnowledge(KNOWLEDGE_EQUIVALENTS[question.id] ?? question.knowledgeId) }));
+].map(question => withPlayfulFeedback(withCompletedOriginalReview({ ...question, difficulty: LEVEL_REVIEW[question.id] ?? question.difficulty, knowledgeId: canonicalKnowledge(KNOWLEDGE_EQUIVALENTS[question.id] ?? question.knowledgeId) })));
 
 export function shuffled<T>(values: readonly T[], random = Math.random): T[] {
   const result = [...values];

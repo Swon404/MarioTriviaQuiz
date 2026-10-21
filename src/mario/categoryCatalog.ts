@@ -146,5 +146,19 @@ export const CATEGORY_ITEMS: readonly CategoryItem[] = [
 
 export const categoryMemberships = (item: CategoryItem): readonly FinderCategory[] => item.memberships ?? [item.category];
 export const fitsCategory = (item: CategoryItem, category: string): boolean => categoryMemberships(item).some(value => value === category);
+// Prefer near misses before filling from the same broad family. Never put a
+// second valid answer on Pro's board, even if it appears in this editorial list.
+const CLOSE_ALTERNATIVES: Partial<Record<FinderCategory, readonly string[]>> = {
+  'classic-game': ['Super Mario Sunshine', 'New Super Mario Bros.', 'Super Mario Galaxy'],
+  'wii-game': ['Super Mario 3D World', 'New Super Mario Bros.', 'Super Mario 3D Land'],
+  'switch-game': ['Super Mario 3D World', 'Super Mario Galaxy', 'Super Mario Sunshine'],
+  'handheld-game': ['New Super Mario Bros. Wii', 'Super Mario 3D World', 'Super Mario World'],
+  'wonder-power': ['Fire Flower', 'Super Mushroom', 'Super Star'],
+  'world-newcomer': ['Koopa Troopa', 'Shy Guy', 'Dry Bones', 'Bowser Jr.', 'Boo'],
+  '3d-power': ['Super Leaf', 'Boomerang Flower', 'Mega Mushroom', 'Fire Flower'],
+  'wonder-player': ['Rosalina', 'Bowser Jr.', 'Koopa Troopa'],
+};
+export const categoryDistractorRank = (item: CategoryItem, category: FinderCategory): number =>
+  CLOSE_ALTERNATIVES[category]?.includes(item.name) ? 1 : 0;
 export const categoryContext = (category: FinderCategory): string => category.endsWith('-game')
   ? 'Use the original release on Nintendo’s US history timeline, not a later port or collection.' : '';

@@ -498,7 +498,7 @@ test('Category Finder Legend shows nine plausible choices with a valid target', 
   expect(overflow).toBe(false);
 });
 
-test('Category Finder accepts overlapping original-release groups', async ({ page }) => {
+test('Category Finder Pro keeps one answer while respecting overlapping original-release groups', async ({ page }) => {
   await page.goto('./');
   const target = 'category-v2-scientist-handheld-game';
   const seen = Object.keys(CATEGORY_LABELS).map(category => `category-v2-scientist-${category}`).filter(id => id !== target);
@@ -513,7 +513,7 @@ test('Category Finder accepts overlapping original-release groups', async ({ pag
   await expect(page.locator('.category-context')).toContainText('not a later port');
   const visible = await page.locator('.category-grid button span').allTextContents();
   const valid = CATEGORY_ITEMS.filter(item => fitsCategory(item, 'handheld-game') && visible.includes(item.name)).map(item => item.name);
-  expect(valid).toHaveLength(3);
+  expect(valid).toHaveLength(1);
   await page.locator('.category-grid button').filter({ hasText: new RegExp(`^${valid[0]}$`) }).click();
   await expect(page.getByText('Correct!', { exact: true })).toBeVisible();
   const correct = await page.locator('.category-grid button.right-answer span').allTextContents();

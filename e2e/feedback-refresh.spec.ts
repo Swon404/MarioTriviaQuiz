@@ -10,7 +10,9 @@ test('whole-bank editorial refresh preserves the answer key and keeps all feedba
   const key = QUESTIONS.map(({ id, knowledgeId, prompt, choices, answer, difficulty, sourceUrl }) =>
     ({ id, knowledgeId, prompt, choices, answer, difficulty, sourceUrl }));
   expect(createHash('sha256').update(JSON.stringify(key)).digest('hex'))
-    .toBe('d4edd1435110483630a518751780c9868c0d4b8cd6bf3a32cccc2be5e655b94c');
+    // Three source links now point to the Nintendo tips/interview supporting
+    // the richer feedback; IDs, questions, choices and answers are unchanged.
+    .toBe('77299b5a9b6d7eae0458d7f7317557af251baec7510bfaee08e7016e22e3541b');
   expect(QUESTIONS).toHaveLength(191);
   for (const q of QUESTIONS) {
     expect(q.explanation.trim().split(/\s+/).length, q.id).toBeLessThanOrEqual(48);
@@ -26,7 +28,7 @@ test('whole-bank editorial refresh preserves the answer key and keeps all feedba
   }
 });
 
-for (const id of ['mario-scientist-5', 'expanded-18', 'fresh-12', 'gameplay-fury-partner', 'mario-luigi-gooigi', 'family-smb-time-limit']) {
+for (const id of ['mario-scientist-5', 'expanded-18', 'fresh-12', 'gameplay-fury-partner', 'mario-luigi-gooigi', 'family-smb-time-limit', 'gameplay-3dw-cherry', 'gameplay-world-kamek']) {
   test(`${id}: correct answers and wrong-answer retries reach the refreshed feedback`, async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 740 });
     const question = QUESTIONS.find(q => q.id === id)!;

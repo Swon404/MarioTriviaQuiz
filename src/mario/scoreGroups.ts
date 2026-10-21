@@ -10,7 +10,8 @@ export function scoreConfiguration(rounds: readonly GameRound[], order: OrderOpt
       case 'game-order': return `${round.tiles.length} tiles · ${order.challenge}`;
       case 'pair-match': return `${round.variant} · ${round.pairs.length} pairs · goal ${round.goal} · ${round.timed ? 'timed' : 'relaxed'} · target ${round.targetPairId ?? 'none'} · unlock ${round.unlockPairs}`;
       case 'match-hunt': return `${round.pairs.length} pairs`;
-      case 'track-finder': case 'category-finder': return `${round.tiles.length} tiles`;
+      case 'category-finder': return `${round.tiles.length} tiles${round.answerRule === 'single' ? ' · one answer' : ''}`;
+      case 'track-finder': return `${round.tiles.length} tiles`;
       case 'clue-duel': return `${round.choices.length} choices`;
       default: return 'Questions';
     }

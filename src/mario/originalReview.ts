@@ -23,6 +23,7 @@ export const ORIGINAL_REVIEW_GROUPS = [
 const editions = new Map<string, string>(ORIGINAL_REVIEW_GROUPS.flatMap(([edition, ids]) => ids.map(id => [id, edition] as const)));
 
 export function withCompletedOriginalReview(question: TriviaQuestion): TriviaQuestion {
+  if (question.sourceReview?.status === 'source-checked' && question.sourceReview.checkedOn > '2026-10-12') return question;
   const gameVersion = editions.get(question.id);
   return gameVersion ? { ...question, sourceReview: { checkedOn: '2026-10-12', status: 'source-checked', gameVersion } } : question;
 }
