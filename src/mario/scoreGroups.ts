@@ -23,7 +23,8 @@ export function rankingPoints(result: FinishedScore): number {
   return result.format === 'two-player' ? Math.max(own, result.opponentPoints ?? ('opponentCorrect' in result ? result.opponentCorrect ?? 0 : 0)) : own;
 }
 export function scoreGroupKey(result: FinishedScore): string {
-  return JSON.stringify([result.scoringVersion, result.topic, result.difficulty, result.format ?? 'solo', result.scoreConfiguration,
+  const humanMatching = !('games' in result) && result.mode === 'pair-match' && result.format !== 'computer';
+  return JSON.stringify([result.scoringVersion, result.topic, humanMatching ? null : result.difficulty, result.format ?? 'solo', result.scoreConfiguration,
     'games' in result ? [result.size, result.games.map(game => [game.mode, game.variant, game.total]).sort()] : [result.mode ?? 'quiz', result.variant, result.total]]);
 }
 export function groupedScores<T extends FinishedScore>(records: readonly T[]): { key: string; records: T[] }[] {

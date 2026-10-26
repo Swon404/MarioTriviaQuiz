@@ -27,6 +27,13 @@ test('Player 2 can lead a championship table while Shroomer cannot raise a human
   expect(groupedScores([quiz, earlier])[0].records[0].id).toBe('earlier');
 });
 
+test('human matching scores combine old levels while Shroomer challenges stay separate', () => {
+  const matching: QuizResult = { ...quiz, mode: 'pair-match', variant: 'time-trial', scoreConfiguration: 'time-trial · 12 pairs · goal 3' };
+  expect(scoreGroupKey({ ...matching, difficulty: 'professor' })).toBe(scoreGroupKey(matching));
+  expect(scoreGroupKey({ ...matching, format: 'computer', difficulty: 'professor' })).not.toBe(scoreGroupKey({ ...matching, format: 'computer' }));
+  expect(scoreGroupKey({ ...matching, scoreConfiguration: 'time-trial · 20 pairs · goal 3' })).not.toBe(scoreGroupKey(matching));
+});
+
 test('phone score page shows comparable Top 5, separate unchanged history and both championship players', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 740 });
   await page.goto('./');

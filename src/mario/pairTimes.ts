@@ -15,7 +15,11 @@ export function pairConfiguration(round: PairRound, difficulty: Difficulty) {
     goal: round.goal, target: round.targetPairId, unlockPairs: round.unlockPairs };
 }
 export function pairTimeKey(item: ReturnType<typeof pairConfiguration>): string {
-  return JSON.stringify([item.ruleset, item.difficulty, item.variant, item.pairs, item.goal, item.target, item.unlockPairs]);
+  // Target identity changes between boards, but does not change the challenge.
+  // Keep target hunts separate from finding every pair, while allowing existing
+  // records for different characters/items to populate the same Top 5.
+  // The old level affected only Shroomer, never a human's cards or timer.
+  return JSON.stringify([item.ruleset, item.variant, item.pairs, item.goal, item.target !== null, item.unlockPairs]);
 }
 export function getPairTimes(raw?: string | null): PairTime[] {
   try {

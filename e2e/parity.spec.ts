@@ -31,16 +31,19 @@ async function solveOrder(page: Page, startTimer = true) {
 }
 
 test('Two-player Game Order gives comparable but different timed boards', async ({ page }) => {
+  await page.clock.install();
   await openGame(page, 'Game Order', true);
   await page.getByLabel('Player name', { exact: true }).fill('Ada');
   await page.getByLabel('Player 2 name').fill('Ben');
   await page.getByRole('button', { name: 'Start!', exact: true }).click();
   await page.getByRole('button', { name: 'Start Timer', exact: true }).click();
+  await page.clock.runFor(3000);
   await expect(page.locator('.order-tiles button, .pair-card').first()).toBeVisible();
   const first = await page.locator('.order-tiles button span').allTextContents();
   await solveOrder(page, false);
   await page.getByRole('button', { name: 'Next turn', exact: true }).click();
   await page.getByRole('button', { name: 'Start Timer', exact: true }).click();
+  await page.clock.runFor(3000);
   await expect(page.locator('.order-tiles button, .pair-card').first()).toBeVisible();
   const second = await page.locator('.order-tiles button span').allTextContents();
   expect(first.every(title => !second.includes(title))).toBe(true);

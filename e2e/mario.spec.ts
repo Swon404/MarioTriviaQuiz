@@ -219,6 +219,7 @@ test('Match & Hunt renders web console artwork on a revealed card', async ({ pag
 });
 
 test('Match & Hunt Time Trial uses three timed championship boards sized from Game Order', async ({ page }) => {
+  await page.clock.install();
   await page.goto('./');
   await page.getByRole('button', { name: 'Play Games' }).click();
   await page.getByRole('button', { name: 'Championship', exact: false }).click();
@@ -241,6 +242,7 @@ test('Match & Hunt Time Trial uses three timed championship boards sized from Ga
   for (let board = 0; board < 3; board += 1) {
     await expect(page.locator('.pair-card')).toHaveCount(0);
     await page.getByRole('button', { name: 'Start Timer' }).click();
+    await page.clock.runFor(3000);
     await expect(page.locator('.order-tiles button, .pair-card').first()).toBeVisible();
     await expect(page.locator('.pair-card')).toHaveCount(18);
     const ids = [...new Set(await page.locator('.pair-card').evaluateAll(cards => cards.map(card => card.getAttribute('data-pair-id'))))];
@@ -324,7 +326,7 @@ test('chosen timed Hunt keeps its target through three boards and rewind restart
       expect(records[0].target).toBe(targetId);
       expect(records[0].unlockPairs).toBe(1);
       expect(records[0].moves).toBe(2);
-      await expect(page.getByText('Time saved to the leaderboard!', { exact: true })).toBeVisible();
+      await expect(page.getByText(/Time saved — #\d in the Top 5!/)).toBeVisible();
     }
     await page.getByRole('button', { name: board === 2 ? 'See result' : 'Next board' }).click();
   }

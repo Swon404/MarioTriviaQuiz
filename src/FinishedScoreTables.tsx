@@ -5,7 +5,8 @@ const modes: Record<string, string> = { quiz: 'Quiz Battle', 'game-order': 'Game
 const formats = { solo: 'Solo', 'two-player': 'Two players', computer: 'Play Shroomer' };
 function description(result: FinishedScore): string {
   const game = 'games' in result ? `${result.size} · ${result.games.map(game => modes[game.mode]).join(' + ')}` : `${modes[result.mode ?? 'quiz']}${result.variant ? ` · ${result.variant === 'hunt' ? 'Hunt' : 'Time Trial'}` : ''} · ${result.total} rounds`;
-  return `${game} · ${levels[result.difficulty]} · ${formats[result.format ?? 'solo']} · ${result.topic === 'mixed' ? 'A bit of both' : result.topic === 'kart' ? 'Mario Kart' : 'Mario games'}`;
+  const level = !('games' in result) && result.mode === 'pair-match' ? result.format === 'computer' ? ` · Shroomer: ${levels[result.difficulty]}` : '' : ` · ${levels[result.difficulty]}`;
+  return `${game}${level} · ${formats[result.format ?? 'solo']} · ${result.topic === 'mixed' ? 'A bit of both' : result.topic === 'kart' ? 'Mario Kart' : 'Mario games'}`;
 }
 export default function FinishedScoreTables({ records }: { records: FinishedScore[] }) {
   const groups = groupedScores(records);

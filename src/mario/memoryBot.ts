@@ -2,9 +2,10 @@ import type { Difficulty } from './questions.ts';
 
 export type SeenCard = { position: number; pairId: string; kind: 'icon' | 'word' };
 export type CardMemory = readonly SeenCard[];
+export const MEMORY_CAPACITY: Record<Difficulty, number> = { explorer: 6, scientist: 12, professor: 40 };
 
 export function rememberCard(memory: CardMemory, card: SeenCard, difficulty: Difficulty): CardMemory {
-  const capacity = { explorer: 6, scientist: 12, professor: 40 }[difficulty];
+  const capacity = MEMORY_CAPACITY[difficulty];
   return [...memory.filter(item => item.position !== card.position), card].slice(-capacity);
 }
 

@@ -25,7 +25,7 @@ export default defineConfig({
       name: 'webkit-phone',
       // Reuse behavioural assertions, not weaker Safari-only copies. Physical
       // iPhone/Safari and Home Screen acceptance testing is still required.
-      testMatch: /(?:phone-flow|countdown|resume|shared-board-replay|simple-points|championship-header)\.spec\.ts$/,
+      testMatch: /(?:phone-flow|countdown|resume|shared-board-replay|simple-points|championship-header|timed-match-results|difficulty-controls)\.spec\.ts$/,
       use: { ...devices['iPhone 13'], browserName: 'webkit' },
     },
   ],

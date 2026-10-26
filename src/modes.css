@@ -30,6 +30,34 @@
 .mario-app .order-leaderboard li > strong { grid-column: 4; grid-row: 1; text-align: right; font-variant-numeric: tabular-nums; }
 .mario-app .order-leaderboard .board-replay { grid-column: 3; grid-row: 1; width: auto; }
 .mario-app .order-leaderboard .board-replay > button { min-height: 44px; padding: 6px 9px; margin: 0; font-size: .85rem; }
+.mario-app .order-leaderboard li small { display: block; font-size: .75rem; color: var(--text-secondary); }
+.mario-app .order-leaderboard li.current-time { background: #285749; border-radius: 8px; outline: 1px solid #79d69a; }
+.mario-app .quiz-explanation.feedback { display: block; }
+/* Clip horizontal overflow without creating a scroll container that traps sticky timers. */
+html:has(.mario-app), body:has(.mario-app) { overflow-x: clip; }
+.mario-app .pair-live-timer { position: sticky; top: 8px; z-index: 10; display: flex; align-items: center; justify-content: space-between; gap: 12px; width: min(100%, 680px); box-sizing: border-box; margin: 8px auto; padding: 8px 16px; background: #382538; border: 2px solid var(--gold); border-radius: 12px; box-shadow: 0 4px 12px #211d3266; }
+.pair-live-timer > span { font-weight: 700; overflow-wrap: anywhere; min-width: 0; }
+.pair-live-timer strong, .pair-result-times strong { display: block; color: var(--gold); font-size: clamp(2rem, 8vw, 3rem); line-height: 1.15; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.pair-live-timer small, .pair-result-times small { font-size: 1rem; margin-left: 4px; }
+.pair-round-result { padding: 12px; background: #382538; border: 2px solid var(--gold); border-radius: 12px; margin: 8px 0 16px; }
+.pair-result-times { display: flex; flex-wrap: wrap; gap: 12px; text-align: center; }
+.pair-result-times > div { flex: 1 1 120px; min-width: 0; overflow-wrap: anywhere; }
+.pair-result-times span { display: block; font-weight: 700; margin-bottom: 4px; }
+.pair-round-result .order-feedback { font-size: 1.05rem; }
+/* Leave room for the board without shrinking its cards or touch targets. */
+.mario-app .pair-game { gap: 6px; }
+.mario-app .pair-game .game-topbar { margin: 0; }
+.mario-app .pair-game .versus-now-playing { margin: 0; padding: 6px 8px; }
+.mario-app .pair-game .quiz-topline { margin: 0; font-size: .8rem; }
+.mario-app .pair-game .progress-track { height: 4px; }
+.mario-app .pair-game .game-question h1 { margin: 0; font-size: clamp(1.1rem, 3vw, 1.35rem); line-height: 1.2; }
+.mario-app .pair-board-status { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.mario-app .pair-board-status .match-progress { margin: 0; font-size: .9rem; }
+.mario-app .pair-board-status .match-restart { min-height: 44px; margin: 0; padding: 6px 10px; font-size: .85rem; }
+.mario-app .pair-game .pair-live-timer { margin: 0 auto; padding: 6px 12px; }
+.mario-app .pair-game .pair-live-timer strong { font-size: 2rem; }
+.mario-app .pair-game .pair-card-grid { margin-top: 2px; }
+.mario-app .setting-label { font-weight: 700; text-align: center; }
 .game-result-scores { width: 100%; border-collapse: collapse; }
 .game-result-scores caption { font-weight: 700; margin-bottom: 12px; }
 .game-result-scores th, .game-result-scores td { padding: 8px 4px; text-align: right; }
