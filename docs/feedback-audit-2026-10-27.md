@@ -40,6 +40,10 @@ Sources and assignments live beside the copy in `src/mario/discoveries.ts`, `clu
 
 ## Verification
 
+### Follow-up: item feedback
+
+The Feather feedback still repeated the Battle-mode restriction after the first pass. Replaced that explanation with the balloon-stealing use of the jump, and gave it a separate SNES-history extra linked to the original manual. Rechecked the other item questions and rewrote Mushroom, Blooper, Coin and Piranha Plant explanations to add tactics or mechanics beyond the question. Added extras about Blooper being eaten, the ten-coin speed cap and Renegade Roundup. Sources: Nintendo's item guide, Beginner Basics, battle guide and SNES manual, plus the version-specific Blooper article. Added a phone regression covering Feather's wrong answer, correct answer, speech, separate source and reload/resume in Chromium and WebKit. Inspected the rendered phone feedback. The follow-up passed `npm run test:all`: content audit, all 227 browser tests and the production/PWA build.
+
 Existing answer-key and clue/target hashes remain unchanged. Added checks cover discovery coverage, source preservation, short copy across all modes, both valid DS/SNES answers on phones, visible text versus spoken text, reload/resume, and the new Game Order completion fact. Chromium and iPhone WebKit share those checks. Headless WebKit uses an explicit speech-capture adapter because it has no installed speech engine; these assertions verify utterance content, not audio playback quality.
 
 Phone screenshots were inspected for the DS and SNES examples. Final `npm run test:all` passed: the content/rules audit checked 191 questions, 900 generated quizzes and 48 tracks; all 225 Chromium/WebKit browser tests passed; TypeScript and the production/PWA build succeeded. Learning Zone search assertions include the additional Cappy mention in the revised Odyssey explanation. `git diff --check` passed before commit.

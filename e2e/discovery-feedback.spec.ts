@@ -30,6 +30,43 @@ test('every reviewed extra has a source and survives round generation without re
   }
 });
 
+test('Feather feedback teaches the balloon steal and SNES history after a wrong answer, speech and resume', async ({ page }) => {
+  await captureSpeech(page);
+  await page.setViewportSize({ width: 390, height: 740 });
+  const question = QUESTIONS.find(q => q.id === 'expanded-38')!;
+  expect(question.answer).toBe('Feather');
+  expect(question.explanation).toContain('steal a balloon');
+  expect(question.explanation).not.toMatch(/Battle (?:mode|item)|Grand Prix|only available/i);
+  expect(question.funFact).toContain('original Super Mario Kart on SNES');
+  await page.goto('./');
+  await page.evaluate(history => localStorage.setItem('mariotrivia_question_history_v1', JSON.stringify({ blaize: history })),
+    QUESTIONS.filter(q => q.knowledgeId !== question.knowledgeId).map(q => q.knowledgeId));
+  await page.getByRole('button', { name: 'Play Games' }).click();
+  await page.getByRole('button', { name: 'Quiz Battle' }).click();
+  await page.locator('.setup-settings > summary').click();
+  await page.getByLabel('Player name', { exact: true }).fill('Blaize');
+  await page.getByRole('group', { name: 'Difficulty', exact: true }).getByRole('button', { name: /Legend/ }).click();
+  await page.getByRole('button', { name: 'Start!', exact: true }).click();
+  await expect(page.locator('.quiz-playing h1')).toHaveText(question.prompt);
+  await page.locator('.answer-grid').getByText('Super Horn', { exact: true }).click();
+  await expect(page.locator('.feedback h2')).toHaveText('Answer: Feather');
+  await expect(page.locator('.feedback')).toContainText(question.explanation);
+  await expect(page.locator('.feedback')).toContainText(question.funFact);
+  await expect(page.locator('.feedback').getByRole('link', { name: 'Tip / fun fact source ↗' })).toHaveAttribute('href', question.funFactSourceUrl!);
+  await page.getByRole('button', { name: 'Read explanation aloud' }).click();
+  await expect(page.locator('body')).toHaveAttribute('data-spoken', `${question.explanation} Fun fact: ${question.funFact}`);
+  await page.reload();
+  await page.getByRole('button', { name: /Resume/ }).click();
+  await expect(page.locator('.feedback')).toContainText(question.funFact);
+  await page.getByRole('button', { name: '↶ Rewind', exact: true }).click();
+  await page.locator('.answer-grid').getByText('Feather', { exact: true }).click();
+  await expect(page.locator('.feedback h2')).toHaveText('Correct!');
+  await expect(page.locator('.feedback')).toContainText(question.explanation);
+  await expect(page.locator('.feedback')).toContainText(question.funFact);
+  await page.locator('.feedback').scrollIntoViewIfNeeded();
+  await page.screenshot({ path: test.info().outputPath('feather-feedback-phone.png'), fullPage: true });
+});
+
 for (const system of ['DS', 'SNES']) {
   test(`${system} multi-answer phone feedback names both valid tracks and adds a separate discovery`, async ({ page }) => {
     await captureSpeech(page);
