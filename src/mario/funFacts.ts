@@ -1,31 +1,40 @@
-// Question-specific pools: alternatives must add to the explanation, not repeat
-// the answer. These character facts share the question's official source link.
+// Every alternative carries the source that supports that particular extra.
+import { CHARACTER_DISCOVERIES, DISCOVERY_SOURCES } from './discoveries.ts';
 export const FUN_FACT_REVIEW = {
-  checkedOn: '2026-10-06',
+  checkedOn: '2026-10-27',
   sourceUrl: 'https://www.nintendo.com/en-ca/explore/characters/mario/friends/',
 } as const;
 
-const luigiMoustache = 'Try telling the brothers apart without their hats: their moustaches have different shapes too.';
-const luigiGhosts = 'Luigi can be frightened of ghosts and still face danger. Being brave does not mean never feeling scared.';
+const luigiMoustache = 'In Luigi’s Mansion 3, Gooigi can squeeze through bars and cross spikes. Luigi has to find a different way around.';
+const luigiGhosts = 'Keep Gooigi away from water in Luigi’s Mansion 3: the squishy green helper dissolves. Even a puddle can spoil his shortcut.';
 export const QUESTION_FUN_FACTS: Readonly<Record<string, readonly string[]>> = {
   'mario-explorer-1': [luigiMoustache, luigiGhosts],
-  'mario-explorer-4': [luigiMoustache, luigiGhosts, 'Luigi is taller and known for higher jumps: the green outfit is not his only difference from Mario.'],
+  'mario-explorer-4': [luigiMoustache, luigiGhosts],
   'mario-explorer-2': [
-    'Peach enjoys cooking and baking—a quieter side to someone who also races and plays sports with Mario.',
-    'Peach’s goal is a kingdom where everyone lives happily together, not simply keeping a crown for herself.',
+    CHARACTER_DISCOVERIES['Princess Peach'].text,
+    'Some 3D World switches only work for a particular character. Bring Peach back to her switch to uncover its secret.',
   ],
   'mario-explorer-3': [
-    'Size is not Bowser’s only weapon: he combines huge strength with fire breath.',
-    'Bowser’s followers are not all Koopas. Goombas, Bullet Bills and Shy Guys also serve in his forces.',
+    CHARACTER_DISCOVERIES.Bowser.text,
+    'In Bowser’s Fury, lighthouses make useful lookout towers. Climb high and scan for secrets you cannot spot from the ground.',
   ],
   'mario-explorer-7': [
-    'Wario loves garlic as well as money—not the usual wish list for a hero rescuing a kingdom.',
-    'Wario and Mario’s rivalry goes back a long way: they have known each other since they were babies.',
+    'Wario loves garlic and making money. Treasure hunting with him might be profitable, but sharing a lift sounds risky.',
+    'Mario and Wario have known each other since they were babies. This rivalry has had years of practice.',
   ],
   'mario-explorer-9': [
-    'Red spots identify Toad, but other Toads wear different colours. A crowd of Toads is not a crowd of identical copies.',
-    'Toad is willing to face danger for Peach and the kingdom; helping is not always a safe sideline.',
+    CHARACTER_DISCOVERIES.Toad.text,
+    'In 3D World, Toad’s speed is only one option: Luigi jumps high and Peach floats. Change character when a course gives you trouble.',
   ],
+};
+
+export const QUESTION_FACT_SOURCES: Readonly<Record<string, string>> = {
+  'mario-explorer-1': CHARACTER_DISCOVERIES.Luigi.sourceUrl,
+  'mario-explorer-4': CHARACTER_DISCOVERIES.Luigi.sourceUrl,
+  'mario-explorer-2': DISCOVERY_SOURCES.cat,
+  'mario-explorer-3': DISCOVERY_SOURCES.cat,
+  'mario-explorer-7': FUN_FACT_REVIEW.sourceUrl,
+  'mario-explorer-9': DISCOVERY_SOURCES.cat,
 };
 
 export function withVariedFunFacts<T extends { id: string; funFact: string }>(
@@ -39,6 +48,6 @@ export function withVariedFunFacts<T extends { id: string; funFact: string }>(
     const candidates = fresh.length ? fresh : pool;
     const funFact = candidates[Math.floor(random() * candidates.length)];
     used.add(funFact);
-    return { ...question, funFact };
+    return { ...question, funFact, ...(QUESTION_FACT_SOURCES[question.id] ? { funFactSourceUrl: QUESTION_FACT_SOURCES[question.id] } : {}) };
   });
 }

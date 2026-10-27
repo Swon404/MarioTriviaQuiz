@@ -145,8 +145,8 @@ test('Explore opens searchable source-checked Learning Zone cards', async ({ pag
   await expect(page.locator('.learning-topic-card')).toHaveCount(1);
   await expect(page.locator('.learning-topic-card h3')).toHaveText('Ninja Hideaway');
   await page.getByLabel('Search learning cards').fill('Cappy');
-  await expect(page.locator('.learning-topic-card')).toHaveCount(3);
-  await expect(page.locator('.learning-topic-card h3')).toHaveText(['Cappy', 'Cheep Cheep', 'Throw Cappy at it']);
+  await expect(page.locator('.learning-topic-card')).toHaveCount(4);
+  await expect(page.locator('.learning-topic-card h3')).toHaveText(['Nintendo Switch', 'Cappy', 'Cheep Cheep', 'Throw Cappy at it']);
   await page.getByLabel('Learning topic').selectOption('kart');
   await expect(page.getByText('No matching cards yet.', { exact: false })).toBeVisible();
   await page.getByLabel('Search learning cards').fill('');

@@ -2,11 +2,12 @@ import { BOOSTER_COURSES, type CourseAppearance } from './courses.ts';
 import { TRACK_CHALLENGES, trackLabel, type TrackChallenge } from './trackChallenges.ts';
 import { createQuiz, shuffled, type Difficulty, type Topic, type TriviaQuestion } from './questions.ts';
 import { CLUE_SUBJECTS, clueSimilarity } from './clues.ts';
-import { CATEGORY_ITEMS, CATEGORY_LABELS, CATEGORY_CHALLENGES, categoryContext, categoryDistractorRank, fitsCategory, type CategoryItem, type FinderCategory } from './categoryCatalog.ts';
+import { CATEGORY_ITEMS, CATEGORY_LABELS, CATEGORY_CHALLENGES, CATEGORY_EXPLANATIONS, CATEGORY_DISCOVERIES, categoryDistractorRank, fitsCategory, type CategoryItem, type FinderCategory } from './categoryCatalog.ts';
 import { ICON_PAIRS, type IconKind, type IconPair } from './pairCatalog.ts';
 import type { OrderOptions } from './gameOrder.ts';
 import { MATCH_CLUES, knowledgeLevel } from './matchClues.ts';
 import { knowledgeRank } from './questionHistory.ts';
+import { GAME_DISCOVERIES } from './discoveries.ts';
 
 export type GameMode = 'quiz' | 'game-order' | 'track-finder' | 'match-hunt' | 'pair-match' | 'clue-duel' | 'category-finder';
 export type Section = Topic | 'mixed';
@@ -135,8 +136,8 @@ function makeCategoryRounds(difficulty: Difficulty, random: () => number, count 
       return { id, mode: 'category-finder', review: recent.includes(id), width: 3, tiles, targetCategory,
         ...(difficulty === 'scientist' ? { answerRule: 'single' as const } : {}),
         prompt: `Find one ${CATEGORY_LABELS[targetCategory]}.`,
-        explanation: `${matches.map(item => item.name).join(', ')} ${matches.length === 1 ? 'is the matching tile' : 'are the matching tiles'} for “${CATEGORY_LABELS[targetCategory]}”.`,
-        funFact: task!.note, sourceUrl: task!.sourceUrl };
+        explanation: CATEGORY_EXPLANATIONS[targetCategory],
+        funFact: CATEGORY_DISCOVERIES[targetCategory]!.text, funFactSourceUrl: CATEGORY_DISCOVERIES[targetCategory]!.sourceUrl, sourceUrl: task!.sourceUrl };
     });
   }
   const width = 3;
@@ -157,8 +158,8 @@ function makeCategoryRounds(difficulty: Difficulty, random: () => number, count 
       review: recent.includes(`category-${width}-${start}-${targetCategory}`),
       width, tiles, targetCategory,
       prompt: `Find one ${CATEGORY_LABELS[targetCategory]}.`,
-      explanation: `In this window, ${matches.map(tile => tile.name).join(' and ')} ${matches.length === 1 ? 'is' : 'are'} in that group. ${categoryContext(targetCategory)}`.trim(),
-      funFact: featured.detail, sourceUrl: featured.sourceUrl,
+      explanation: CATEGORY_EXPLANATIONS[targetCategory],
+      funFact: featured.detail, funFactSourceUrl: featured.detailSourceUrl, sourceUrl: featured.sourceUrl,
     });
     usedStarts.add(start);
     usedCategories.add(targetCategory);
@@ -183,7 +184,7 @@ function makeClueRounds(section: Section, difficulty: Difficulty, random: () => 
       review: recent.includes(`clue-${subject.id}`),
       prompt: subject.topic === 'mario' ? 'Which Mario character am I?' : 'Which Mario Kart track am I?',
       clues: subject.clues, choices, answerId: subject.id,
-      explanation: subject.explanation, funFact: subject.funFact, sourceUrl: subject.sourceUrl,
+      explanation: subject.explanation, funFact: subject.funFact, funFactSourceUrl: subject.funFactSourceUrl, sourceUrl: subject.sourceUrl,
     };
   });
 }
@@ -241,12 +242,14 @@ function makeOrderRound(difficulty: Difficulty, random: () => number, options?: 
 
 function orderRound(selected: readonly TimelineGame[], tiles: readonly TimelineGame[]): OrderRound {
   const correct = [...selected].sort((a, b) => a.year - b.year);
+  const discovery = GAME_DISCOVERIES[tiles[0].id];
   return {
     id: `order-${selected.map(game => game.id).sort().join('-')}`,
     mode: 'game-order', prompt: 'Put these Mario games in release order. Oldest first.',
     tiles, correctIds: correct.map(game => game.id),
     explanation: correct.map(game => `${game.title} (${game.year})`).join(' → '),
-    funFact: `This line-up stretches from ${correct[0].title} on ${correct[0].system} to ${correct[correct.length - 1].title} on ${correct[correct.length - 1].system}.`,
+    funFact: discovery.text,
+    funFactSourceUrl: discovery.sourceUrl,
     sourceUrl: HISTORY_SOURCE,
   };
 }
@@ -291,8 +294,8 @@ function makeFinderRounds(difficulty: Difficulty, random: () => number, count: n
       width: difficulty === 'explorer' ? 2 : 3, tiles,
       challengeKind: task.kind, correctIds: targets.map(course => course.id),
       prompt: task.prompt,
-      explanation: `${targets.map(course => course.title).join(' and ')} ${targets.length === 1 ? 'fits' : 'fit'} this clue. ${task.explanation}`,
-      funFact: task.funFact, sourceUrl: task.sourceUrl,
+      explanation: task.explanation,
+      funFact: task.funFact, funFactSourceUrl: task.funFactSourceUrl, sourceUrl: task.sourceUrl,
     };
   });
 }

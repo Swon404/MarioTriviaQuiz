@@ -1,3 +1,5 @@
+import { CHARACTER_DISCOVERIES, POWER_DISCOVERIES, GAME_DISCOVERIES, type Discovery } from './discoveries.ts';
+
 export type BaseCategory = 'friend' | 'baddie' | 'power-up' | 'game' | 'system';
 export type FinderCategory = BaseCategory | 'classic-game' | 'wii-game' | 'switch-game' | 'handheld-game'
   | 'wonder-power' | 'world-newcomer' | '3d-power' | 'wonder-player' | '3d-starter' | 'wonder-safe' | 'classic-handheld';
@@ -24,6 +26,7 @@ export type CategoryItem = {
   category: BaseCategory;
   memberships?: readonly FinderCategory[];
   detail: string;
+  detailSourceUrl?: string;
   sourceUrl: string;
 };
 
@@ -91,6 +94,57 @@ const groups: Record<BaseCategory, readonly Entry[]> = {
 };
 
 const order: readonly BaseCategory[] = ['friend', 'baddie', 'power-up', 'game', 'system'];
+const gameDiscoveryIds: Readonly<Record<string, string>> = {
+  'Super Mario Bros.': 'smb', 'Super Mario World': 'world', 'Super Mario 64': 'mario64',
+  'Super Mario Sunshine': 'sunshine', 'Super Mario Galaxy': 'galaxy', 'Super Mario 3D World': 'world3d',
+  'Super Mario Odyssey': 'odyssey', 'Super Mario Bros. Wonder': 'wonder', 'Super Mario Land': 'land',
+  'Super Mario Galaxy 2': 'galaxy2', 'New Super Mario Bros.': 'new-ds', 'Super Mario Maker 2': 'maker2',
+  'Super Mario Land 2: 6 Golden Coins': 'land2', 'Super Mario 3D Land': 'land3d', 'New Super Mario Bros. Wii': 'new-wii',
+  NES: 'smb', 'Game Boy': 'land', 'Super Nintendo': 'world', 'Nintendo 64': 'mario64',
+  GameCube: 'sunshine', Wii: 'galaxy', 'Nintendo 3DS': 'land3d', 'Nintendo Switch': 'odyssey',
+};
+const worldDesign = 'https://www.nintendo.com/en-ca/whatsnew/ask-the-developer-vol-18-mario-kart-world-part-3/';
+const cowDiscovery = { text: 'Cow became a racer after a designer drew her driving a truck. The team tried it, liked it, and gave the farm animal a career change.', sourceUrl: worldDesign };
+function itemDiscovery(name: string): Discovery {
+  if (name === 'Cow') return cowDiscovery;
+  if (name === 'Spike') return { text: 'Spike normally spits spiked balls at Mario. World promotes this roadside troublemaker to the driving seat.', sourceUrl: 'https://www.mariowiki.com/Spike' };
+  const discovery = CHARACTER_DISCOVERIES[name] ?? POWER_DISCOVERIES[name] ?? GAME_DISCOVERIES[gameDiscoveryIds[name]];
+  if (!discovery) throw new Error(`Missing Category Finder discovery: ${name}`);
+  return discovery;
+}
+
+export const CATEGORY_EXPLANATIONS: Record<FinderCategory, string> = {
+  friend: 'These characters help Mario and his friends on their adventures.',
+  baddie: 'These familiar troublemakers can stand between Mario and the goal.',
+  'power-up': 'A power-up changes what your character can do. Pick one up and try its special ability.',
+  game: 'These are games you can play, rather than characters or consoles.',
+  system: 'These are Nintendo consoles or handhelds—the machines that run the games.',
+  'classic-game': 'These adventures first launched before the year 2000.',
+  'wii-game': 'These games began on Wii. A later re-release does not change their first home.',
+  'switch-game': 'These adventures first launched on Nintendo Switch.',
+  'handheld-game': 'Their first homes were Game Boy, DS or 3DS: Mario adventures made for handheld play.',
+  'wonder-power': 'Elephant Fruit, Bubble Flower and Drill Mushroom made their debut in Wonder.',
+  'world-newcomer': 'World gave these characters their Mario Kart racing debut.',
+  '3d-power': 'The Super Bell gives climbing claws; the Double Cherry creates a copy of your character.',
+  'wonder-player': 'These characters are playable in the original Switch version of Wonder.',
+  '3d-starter': 'Mario, Luigi, Peach and Toad are ready from the start. Rosalina needs unlocking.',
+  'wonder-safe': 'Yoshi avoids enemy damage in Wonder. Pits can still end the run!',
+  'classic-handheld': 'These Game Boy adventures arrived before 2000.',
+};
+
+export const CATEGORY_DISCOVERIES: Partial<Record<FinderCategory, Discovery>> = {
+  'classic-game': GAME_DISCOVERIES.smb,
+  'wii-game': GAME_DISCOVERIES['new-wii'],
+  'switch-game': GAME_DISCOVERIES.odyssey,
+  'handheld-game': GAME_DISCOVERIES.land,
+  'wonder-power': POWER_DISCOVERIES['Elephant Fruit'],
+  'world-newcomer': cowDiscovery,
+  '3d-power': POWER_DISCOVERIES['Double Cherry'],
+  'wonder-player': { text: 'In Wonder co-op, another player can ride a Yoshi player. Your teammate can also be your transport.', sourceUrl: wonder },
+  '3d-starter': CHARACTER_DISCOVERIES.Toad,
+  'wonder-safe': { text: 'Yoshi cannot use Wonder’s usual power-up transformations. His flutter jump and tongue give him his own set of tricks instead.', sourceUrl: wonder },
+  'classic-handheld': GAME_DISCOVERIES.land2,
+};
 const entries = Array.from({ length: 8 }, (_, row) =>
   order.map((category, column) => {
     const [name, detail, sourceUrl] = groups[category][row];
@@ -140,7 +194,7 @@ export const CATEGORY_ITEMS: readonly CategoryItem[] = [
   ...(['Super Bell', 'Double Cherry', 'Mega Mushroom'] as const).map((name, index) => ({ id: `power-extra-${index}`, name, detail: ['The Super Bell gives you cat claws for climbing.', 'The Double Cherry makes another copy of your character.', 'The Mega Mushroom makes you enormous.'][index], category: 'power-up' as const, sourceUrl: world3d })),
   { id: 'friend-cow', name: 'Cow', detail: 'Cow joins the drivers in Mario Kart World.', category: 'friend' as const, sourceUrl: world },
   { id: 'baddie-spike', name: 'Spike', detail: 'Spike is another new racer in Mario Kart World.', category: 'baddie' as const, sourceUrl: world },
-].map((item, position) => ({ ...item, number: position + 1,
+].map((item, position) => ({ ...item, detail: itemDiscovery(item.name).text, detailSourceUrl: itemDiscovery(item.name).sourceUrl, number: position + 1,
   memberships: [item.category, ...Object.entries(contextual).filter(([, names]) => names!.includes(item.name)).map(([category]) => category as FinderCategory)],
 }));
 

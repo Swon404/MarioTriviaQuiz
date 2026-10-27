@@ -1,12 +1,12 @@
 import { expect, test } from '@playwright/test';
-import { QUESTION_FUN_FACTS, FUN_FACT_REVIEW, withVariedFunFacts } from '../src/mario/funFacts.ts';
+import { QUESTION_FUN_FACTS, QUESTION_FACT_SOURCES, withVariedFunFacts } from '../src/mario/funFacts.ts';
 import { QUESTIONS, createQuiz } from '../src/mario/questions.ts';
 
 test('reviewed fact pools belong to their questions and keep shared Luigi facts distinct', () => {
   for (const [id, facts] of Object.entries(QUESTION_FUN_FACTS)) {
     const question = QUESTIONS.find(item => item.id === id)!;
     expect(question).toBeDefined();
-    expect(question.sourceUrl).toBe(FUN_FACT_REVIEW.sourceUrl);
+    expect(question.funFactSourceUrl).toBe(QUESTION_FACT_SOURCES[id]);
     expect(facts.length).toBeGreaterThanOrEqual(2);
     expect(new Set(facts).size).toBe(facts.length);
     expect(facts).not.toContain(question.explanation);

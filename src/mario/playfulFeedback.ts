@@ -1,4 +1,5 @@
 import type { TriviaQuestion } from './questions.ts';
+import { QUESTION_DISCOVERIES } from './discoveries.ts';
 
 // A separately sourced extra must not replace the source for the quiz answer.
 // These are feedback improvements, not new questions or new history IDs.
@@ -50,6 +51,6 @@ export const PLAYFUL_FEEDBACK: Readonly<Record<string, Extra>> = {
 
 export const PLAYFUL_FEEDBACK_REVIEWED_ON = '2026-10-21';
 export function withPlayfulFeedback(question: TriviaQuestion): TriviaQuestion {
-  const extra = PLAYFUL_FEEDBACK[question.id];
+  const extra = PLAYFUL_FEEDBACK[question.id] ?? QUESTION_DISCOVERIES[question.id];
   return extra ? { ...question, funFact: extra.text, funFactSourceUrl: extra.sourceUrl } : question;
 }
