@@ -1,9 +1,15 @@
 import type { ChampionshipResult, QuizResult } from './storage.ts';
 import type { GameRound } from './rounds.ts';
 import type { OrderOptions } from './gameOrder.ts';
+import { usesKnowledgeLevel } from './difficultyDetails.ts';
 
 export const SCORE_VERSION = 'simple-points-v2';
 export type FinishedScore = QuizResult | ChampionshipResult;
+export function scoreUsesLevel(result: FinishedScore): boolean {
+  return result.format === 'computer' || ('games' in result
+    ? result.games.some(game => usesKnowledgeLevel(game.mode))
+    : usesKnowledgeLevel(result.mode ?? 'quiz'));
+}
 export function scoreConfiguration(rounds: readonly GameRound[], order: OrderOptions): string {
   return [...new Set(rounds.map(round => {
     switch (round.mode) {
@@ -23,8 +29,7 @@ export function rankingPoints(result: FinishedScore): number {
   return result.format === 'two-player' ? Math.max(own, result.opponentPoints ?? ('opponentCorrect' in result ? result.opponentCorrect ?? 0 : 0)) : own;
 }
 export function scoreGroupKey(result: FinishedScore): string {
-  const humanMatching = !('games' in result) && result.mode === 'pair-match' && result.format !== 'computer';
-  return JSON.stringify([result.scoringVersion, result.topic, humanMatching ? null : result.difficulty, result.format ?? 'solo', result.scoreConfiguration,
+  return JSON.stringify([result.scoringVersion, result.topic, scoreUsesLevel(result) ? result.difficulty : null, result.format ?? 'solo', result.scoreConfiguration,
     'games' in result ? [result.size, result.games.map(game => [game.mode, game.variant, game.total]).sort()] : [result.mode ?? 'quiz', result.variant, result.total]]);
 }
 export function groupedScores<T extends FinishedScore>(records: readonly T[]): { key: string; records: T[] }[] {

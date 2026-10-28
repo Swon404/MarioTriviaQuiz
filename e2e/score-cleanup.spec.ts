@@ -10,7 +10,7 @@ for (const kind of ['order', 'pairs'] as const) {
       const base = { id: 'best', player: 'Ada', difficulty: 'explorer', elapsedMs: 1000, completedAt: new Date().toISOString(), ...(kind === 'order' ? { challenge: 'easy', tiles: 3, attempts: 1, ruleset: 'order-v2' } : { variant: 'hunt', pairs: 12, goal: 12, target: null, unlockPairs: 0, moves: 1, ruleset: 'pairs-v1' }) };
       const other = { ...base, id: 'other', ...(kind === 'order' ? { tiles: 4 } : { target: 'mario' }) };
       const replay = { version: 1, kind: 'order', title: 'Keep me', frames: [{ atMs: 0, event: 'Start', tiles: [{ id: 'one', label: 'One', state: 'shown' }] }] };
-      localStorage.setItem(key, JSON.stringify([{ ...base, replay }, { ...base, id: 'slow', elapsedMs: 2000 }, other]));
+      localStorage.setItem(key, JSON.stringify([{ ...base, replay }, { ...base, id: 'slow', difficulty: 'professor', elapsedMs: 2000 }, other]));
       const lifetimeBefore = localStorage.getItem('mariotrivia_lifetime_v1');
       const cleaned = keepBestTimes(kind);
       const kept = JSON.parse(localStorage.getItem(key)!);

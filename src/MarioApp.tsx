@@ -30,10 +30,10 @@ import LearningCards, { LearningFeedback } from './LearningCards.tsx';
 import PairLeaderboards, { PairTimeList } from './PairLeaderboard.tsx';
 import OrderLeaderboards from './OrderLeaderboards.tsx';
 import FinishedScoreTables from './FinishedScoreTables.tsx';
-import { SCORE_VERSION, scoreConfiguration } from './mario/scoreGroups.ts';
+import { SCORE_VERSION, scoreConfiguration, scoreUsesLevel } from './mario/scoreGroups.ts';
 import type { ReplayFrame } from './mario/replay.ts';
 import { pairConfiguration, pairLeaderboard, savePairTime } from './mario/pairTimes.ts';
-import { difficultyDetails } from './mario/difficultyDetails.ts';
+import { difficultyDetails, usesKnowledgeLevel } from './mario/difficultyDetails.ts';
 
 type Screen = 'home' | 'hub' | 'setup' | 'championship-setup' | 'championship-handover' | 'game' | 'result' | 'championship-result' | 'versus-game' | 'versus-result' | 'scores' | 'tracks' | 'explore';
 type QuizFormat = 'solo' | 'two-player' | 'computer';
@@ -61,11 +61,6 @@ const DIFFICULTY_LABELS: Record<Difficulty, string> = {
   scientist: 'Pro',
   professor: 'Legend',
 };
-const DIFFICULTY_DESCRIPTIONS: Record<Difficulty, string> = {
-  explorer: 'Quiz: 4 attempts. Clue Match Up: 4 pairs. Clue Duel: 4 choices.',
-  scientist: 'Quiz: 2 attempts. Clue Match Up: 6 pairs. Clue Duel: 6 choices.',
-  professor: 'Quiz: 1 attempt. Clue Match Up: 8 pairs. Clue Duel: 8 choices.',
-};
 
 export default function MarioApp() {
   const [player, setPlayer] = useState(getPlayer);
@@ -78,8 +73,12 @@ export default function MarioApp() {
   const [difficulty, setDifficulty] = useSavedSetting<Difficulty>('difficulty', 'explorer', oneOf(DIFFICULTIES));
   const [timerEnabled, setTimerEnabled] = useSavedSetting('timer', false, isBoolean);
   const [orderChallenge, setOrderChallenge] = useSavedSetting<OrderChallenge>('order-challenge', 'easy', oneOf(['easy', 'medium', 'hard']));
-  const [orderCounts, setOrderCounts] = useSavedSetting<Record<Difficulty, number>>('order-tiles', { explorer: 4, scientist: 6, professor: 8 }, value => Boolean(value && typeof value === 'object' && DIFFICULTIES.every(level => orderTileOptions(level).includes((value as Record<Difficulty, number>)[level]))));
-  const orderOptions: OrderOptions = { challenge: orderChallenge, tiles: orderCounts[difficulty] };
+  const [legacyOrderCounts] = useSavedSetting<Record<Difficulty, number>>('order-tiles', { explorer: 4, scientist: 6, professor: 8 }, value => Boolean(value && typeof value === 'object' && DIFFICULTIES.every(level => orderTileOptions(level).includes((value as Record<Difficulty, number>)[level]))));
+  const [orderTiles, setOrderTiles] = useSavedSetting('order-tile-count', legacyOrderCounts[difficulty], oneOf([4, 6, 8]));
+  const [orderRounds, setOrderRounds] = useSavedSetting('order-round-count', DIFFICULTIES.indexOf(difficulty) + 3, oneOf([3, 4, 5]));
+  // Keep the checkpoint shape compatible with saved games from before levels were removed.
+  const orderCounts = useMemo(() => ({ explorer: orderTiles, scientist: orderTiles, professor: orderTiles }), [orderTiles]);
+  const orderOptions: OrderOptions = { challenge: orderChallenge, tiles: orderTiles };
   const [orderReset, setOrderReset] = useState(0);
   const [orderCheckpoint, setOrderCheckpoint] = useState<OrderCheckpoint | null>(null);
   const [runId, setRunId] = useState(() => crypto.randomUUID());
@@ -247,7 +246,7 @@ export default function MarioApp() {
     setSession(saved.session); setVersus(saved.versus); setVersusReady(saved.versusReady);
     setRunId(saved.runId); setTurnScores(saved.turnScores); setChampionship(saved.championship); setStandalone(saved.standalone);
     setLatestResult(saved.latestResult); setBotTimes(saved.botTimes);
-    setOrderChallenge(saved.orderChallenge); setOrderCounts(saved.orderCounts);
+    setOrderChallenge(saved.orderChallenge); setOrderTiles(saved.orderCounts[saved.difficulty]);
     setOrderCheckpoint(saved.orderCheckpoint);
     if (saved.orderCheckpoint?.practice) markOrderPractice(saved.orderCheckpoint.resultId);
     setPairVariant(saved.pairVariant); setPairCount(saved.pairCount); setTrialTarget(saved.trialTarget); setHuntTimed(saved.huntTimed);
@@ -349,7 +348,7 @@ export default function MarioApp() {
     const wanted = quizFormat === 'computer' ? MUSHBOT : draftOpponent.trim().slice(0, 24) || 'Player 2';
     const other = wanted.toLowerCase() === name.toLowerCase() ? `${wanted} 2` : wanted;
     const recent = recentKnowledge(quizFormat === 'two-player' ? [name, other] : [name]);
-    const onePlayer = createRounds(mode, section, difficulty, Math.random, pairOptions, undefined, orderOptions, recent);
+    const onePlayer = createRounds(mode, section, difficulty, Math.random, pairOptions, mode === 'game-order' ? orderRounds : undefined, orderOptions, recent);
     const rounds = quizFormat === 'solo' || (mode === 'pair-match' && pairVariant === 'hunt' && !huntTimed) ? onePlayer : createRounds(mode, section, difficulty, Math.random, pairOptions, onePlayer.length * 2, orderOptions, recent, true);
     const game = startSession(rounds, difficulty);
     setRunId(crypto.randomUUID());
@@ -775,10 +774,13 @@ export default function MarioApp() {
     }
   }, [round]);
 
-  const matchingSetup = screen === 'setup' && mode === 'pair-match';
-  const setupPlayers = (format: QuizFormat) => `${draftName || 'Player'}${format === 'solo' ? ' · Solo' : ` vs ${format === 'computer' ? MUSHBOT : draftOpponent || 'Player 2'}`}${matchingSetup && format !== 'computer' ? '' : ` · ${matchingSetup ? 'Shroomer: ' : ''}${DIFFICULTY_LABELS[difficulty]}`}`;
+  const setupHasKnowledge = screen === 'championship-setup' ? chosenChampionshipModes.some(usesKnowledgeLevel) : usesKnowledgeLevel(mode);
+  const setupPlayers = (format: QuizFormat) => `${draftName || 'Player'}${format === 'solo' ? ' · Solo' : ` vs ${format === 'computer' ? MUSHBOT : draftOpponent || 'Player 2'}`}${!setupHasKnowledge && format !== 'computer' ? '' : ` · ${setupHasKnowledge ? '' : 'Shroomer: '}${DIFFICULTY_LABELS[difficulty]}`}`;
+  const championshipLevelDetails = (level: Difficulty) => chosenChampionshipModes
+    .filter(item => usesKnowledgeLevel(item) || championshipFormat === 'computer')
+    .map(item => `${MODE_LABELS[item]}: ${difficultyDetails(item, level, orderTiles, true)}`).join(' ');
   const setupDetail = mode === 'game-order'
-    ? `${orderOptions.tiles} tiles · ${DIFFICULTIES.indexOf(difficulty) + 3} rounds · ${ORDER_RULES[orderChallenge].label} · timed`
+    ? `${orderOptions.tiles} tiles · ${orderRounds} rounds · ${ORDER_RULES[orderChallenge].label} · timed`
     : mode === 'pair-match'
       ? pairVariant === 'time-trial'
         ? `Time Trial · ${pairCount} pairs · find ${trialTarget === 'all' ? 'all' : trialTarget} · 3 rounds`
@@ -787,7 +789,8 @@ export default function MarioApp() {
 
   const renderOrderSettings = () => <section className="champ-options-group" aria-label="Game Order options">
     <h3>Game Order · race the clock</h3>
-    <div className="round-select" role="group" aria-label="Game Order tile count"><span>Tiles:</span>{orderTileOptions(difficulty).map(count => <button key={count} className={orderCounts[difficulty] === count ? 'round-btn selected' : 'round-btn'} aria-pressed={orderCounts[difficulty] === count} onClick={() => setOrderCounts(previous => ({ ...previous, [difficulty]: count }))}>{count}</button>)}</div>
+    <div className="round-select" role="group" aria-label="Game Order tile count"><span>Tiles:</span>{orderTileOptions(difficulty).map(count => <button key={count} className={orderTiles === count ? 'round-btn selected' : 'round-btn'} aria-pressed={orderTiles === count} onClick={() => setOrderTiles(count)}>{count}</button>)}</div>
+    {screen === 'setup' && <div className="round-select" role="group" aria-label="Game Order rounds"><span>Rounds each:</span>{[3, 4, 5].map(count => <button key={count} className={orderRounds === count ? 'round-btn selected' : 'round-btn'} aria-pressed={orderRounds === count} onClick={() => setOrderRounds(count)}>{count}</button>)}</div>}
     <div className="difficulty-select" role="group" aria-label="Game Order challenge">{(Object.keys(ORDER_RULES) as OrderChallenge[]).map(level => <button key={level} className={orderChallenge === level ? 'diff-btn selected' : 'diff-btn'} aria-pressed={orderChallenge === level} onClick={() => setOrderChallenge(level)}><strong>{ORDER_RULES[level].label}</strong><span>{ORDER_RULES[level].description}</span></button>)}</div>
     <p className="selected-setting-help">{ORDER_RULES[orderChallenge].description}</p>
   </section>;
@@ -865,7 +868,7 @@ export default function MarioApp() {
       <label className="field-label" htmlFor="championship-player-name">Player name</label>
       <input id="championship-player-name" className="player-name-input" maxLength={24} value={draftName} onChange={event => setDraftName(event.target.value)} placeholder="Player" />
       {championshipFormat === 'two-player' && <><label className="field-label" htmlFor="championship-opponent-name">Player 2 name</label><input id="championship-opponent-name" className="player-name-input" maxLength={24} value={draftOpponent} onChange={event => setDraftOpponent(event.target.value)} placeholder="Player 2" /></>}
-      <div className="difficulty-select" role="group" aria-label="Championship difficulty">{DIFFICULTIES.map(item => <button key={item} className={`diff-btn ${difficulty === item ? 'selected' : ''}`} aria-pressed={difficulty === item} onClick={() => setDifficulty(item)}><span className="diff-label">{DIFFICULTY_LABELS[item]}</span><span className="diff-desc">{DIFFICULTY_DESCRIPTIONS[item]}</span></button>)}</div>
+      {(setupHasKnowledge || championshipFormat === 'computer') && <div className="difficulty-select" role="group" aria-label={setupHasKnowledge ? 'Championship difficulty' : 'Shroomer level'}>{DIFFICULTIES.map(item => <button key={item} className={`diff-btn ${difficulty === item ? 'selected' : ''}`} aria-pressed={difficulty === item} onClick={() => setDifficulty(item)}><span className="diff-label">{DIFFICULTY_LABELS[item]}</span><span className="diff-desc">{championshipLevelDetails(item)}</span></button>)}</div>}
       <div className="round-select"><span>Length:</span>{CHAMPIONSHIP_SIZES.map(item => <button key={item} className={`round-btn ${championshipSize === item ? 'selected' : ''}`} aria-pressed={championshipSize === item} onClick={() => setChampionshipSize(item)}>{item[0].toUpperCase() + item.slice(1)}</button>)}</div>
       <div className="champ-game-picker"><label>Games (choose at least 2):</label><div className="champ-games-list">{availableModes(section).map(item => <button key={item} className={`champ-game-chip champ-game-toggle ${championshipModes.includes(item) ? 'selected' : ''}`} aria-pressed={championshipModes.includes(item)} onClick={() => toggleChampionshipMode(item)}>{championshipModes.includes(item) ? '✓ ' : ''}{MODE_ICONS[item]} {MODE_LABELS[item]} · {championshipRoundCount(item, championshipSize)} rounds</button>)}</div></div>
       {chosenChampionshipModes.includes('game-order') && renderOrderSettings()}
@@ -894,9 +897,9 @@ export default function MarioApp() {
       <fieldset><legend>Players</legend><div className="round-select">{(['solo', 'two-player', 'computer'] as QuizFormat[]).map(item => <button key={item} className={`round-btn ${quizFormat === item ? 'selected' : ''}`} aria-pressed={quizFormat === item} onClick={() => setQuizFormat(item)}>{item === 'solo' ? 'Solo' : item === 'two-player' ? 'Two Players' : 'Play Shroomer'}</button>)}</div></fieldset>
       {quizFormat === 'computer' && <div className="mushbot-intro"><img src={MUSHBOT_IMAGE} alt="Shroomer, a friendly red mushroom with white spots and a face" /><span>Meet Shroomer, your computer challenger.</span></div>}
       {quizFormat === 'two-player' && <><label className="field-label" htmlFor="opponent-name">Player 2 name</label><input id="opponent-name" className="player-name-input" maxLength={24} value={draftOpponent} onChange={event => setDraftOpponent(event.target.value)} placeholder="Player 2" /></>}
-      {(mode !== 'pair-match' || quizFormat === 'computer') && <>
-        {mode === 'pair-match' && <p className="setting-label">Shroomer’s memory</p>}
-        <div className="difficulty-select" role="group" aria-label={mode === 'pair-match' ? 'Shroomer memory' : 'Difficulty'}>{DIFFICULTIES.map(item => <button key={item} className={`diff-btn ${difficulty === item ? 'selected' : ''}`} onClick={() => setDifficulty(item)} aria-pressed={difficulty === item}><span className="diff-label">{DIFFICULTY_LABELS[item]}</span><span className="diff-desc">{difficultyDetails(mode, item, orderCounts[item])}</span></button>)}</div>
+      {(usesKnowledgeLevel(mode) || quizFormat === 'computer') && <>
+        {!usesKnowledgeLevel(mode) && <p className="setting-label">{mode === 'pair-match' ? 'Shroomer’s memory' : 'Shroomer’s pace'}</p>}
+        <div className="difficulty-select" role="group" aria-label={mode === 'pair-match' ? 'Shroomer memory' : mode === 'game-order' ? 'Shroomer pace' : 'Difficulty'}>{DIFFICULTIES.map(item => <button key={item} className={`diff-btn ${difficulty === item ? 'selected' : ''}`} onClick={() => setDifficulty(item)} aria-pressed={difficulty === item}><span className="diff-label">{DIFFICULTY_LABELS[item]}</span><span className="diff-desc">{difficultyDetails(mode, item, orderTiles)}</span></button>)}</div>
         <p className="selected-setting-help">{difficultyDetails(mode, difficulty, orderOptions.tiles)}</p>
       </>}
       {mode === 'game-order' && renderOrderSettings()}
@@ -954,7 +957,7 @@ export default function MarioApp() {
         : <span className="score-display">{activeName} · {round.mode === 'pair-match' ? `${foundPairs.length} pairs` : round.mode === 'match-hunt' ? `${matchedIds.length} pairs` : `${(turnScores ? turnScores.correct[activePlayer] : session.correct) + (session.submission?.correct ? 1 : 0)} correct`} · {gamePointsNow} points</span>}</div>
       {renderTotals(true)}
       {turnScores && !championship && <div className="versus-now-playing" role="status">{activeName}'s turn · {player}: {displayedGamePoints[0]} points · {opponentName}: {displayedGamePoints[1]} points</div>}
-      <div className="quiz-topline"><span>{MODE_ICONS[mode]} {MODE_LABELS[mode]}{round.mode === 'pair-match' ? ` · ${round.variant === 'hunt' ? 'Hunt' : 'Time Trial'}` : ` · ${DIFFICULTY_LABELS[difficulty]}`}</span><span>{turnScores && !sharedHunt ? 'Round' : mode === 'pair-match' ? 'Board' : 'Question'} {turnScores && !sharedHunt ? Math.floor(session.index / 2) + 1 : session.index + 1} of {turnScores && !sharedHunt ? session.rounds.length / 2 : session.rounds.length}{turnScores && !sharedHunt ? ' each' : ''}</span>{timed && mode !== 'game-order' && mode !== 'pair-match' && <span aria-label="Elapsed time">{(elapsedMs / 1000).toFixed(1)}s</span>}</div>
+      <div className="quiz-topline"><span>{MODE_ICONS[mode]} {MODE_LABELS[mode]}{round.mode === 'pair-match' ? ` · ${round.variant === 'hunt' ? 'Hunt' : 'Time Trial'}` : round.mode === 'game-order' ? ` · ${ORDER_RULES[orderChallenge].label} · ${round.tiles.length} tiles` : ` · ${DIFFICULTY_LABELS[difficulty]}`}</span><span>{turnScores && !sharedHunt ? 'Round' : mode === 'pair-match' ? 'Board' : 'Question'} {turnScores && !sharedHunt ? Math.floor(session.index / 2) + 1 : session.index + 1} of {turnScores && !sharedHunt ? session.rounds.length / 2 : session.rounds.length}{turnScores && !sharedHunt ? ' each' : ''}</span>{timed && mode !== 'game-order' && mode !== 'pair-match' && <span aria-label="Elapsed time">{(elapsedMs / 1000).toFixed(1)}s</span>}</div>
       <div className="progress-track"><div style={{ width: `${(session.index / session.rounds.length) * 100}%` }} /></div>
       <div className="game-question"><h1>{round.prompt}</h1>
       {speechAvailable() && <button className="tts-btn tts-btn-small" title="Read question aloud" aria-label="Read question aloud" onClick={() => speakText(round.mode === 'quiz' ? `${round.prompt} ${round.question.choices.join('. ')}` : round.mode === 'clue-duel' ? `${round.prompt} ${round.clues.slice(0, clueIndex + 1).join('. ')} Choices: ${round.choices.map(choice => choice.label).join('. ')}` : round.prompt)}>🔊</button>}
@@ -1064,7 +1067,7 @@ export default function MarioApp() {
             : latestResult.mode === 'match-hunt' || latestResult.mode === 'pair-match' ? '1 point per matched pair. The Hunt target is worth 1 too. Keep earned pairs if a Clue Match Up board ends early.' : '1 point per correct answer.'} No streak multipliers or bonuses, at any level.</p>
           <p>This game shows points earned here. Championship adds your completed games, including this one.</p>
         </details>
-        <p>{latestResult.mode === 'pair-match' ? 'Match & Hunt' : DIFFICULTY_LABELS[latestResult.difficulty]}{timed ? ` · ${(latestResult.elapsedMs / 1000).toFixed(1)}s` : ''}</p>
+        <p>{latestResult.mode === 'pair-match' ? 'Match & Hunt' : latestResult.mode === 'game-order' ? `Game Order · ${ORDER_RULES[orderChallenge].label} · ${orderTiles} tiles` : DIFFICULTY_LABELS[latestResult.difficulty]}{timed ? ` · ${(latestResult.elapsedMs / 1000).toFixed(1)}s` : ''}</p>
       </div>
       {championship ? <button className="start-btn" onClick={continueChampionship}>{championship.index + 1 === championship.modes.length ? 'See championship result' : 'Next: ' + MODE_LABELS[championship.modes[championship.index + 1]]}</button> : <button className="start-btn" onClick={start}>Play again</button>}
       <button className="back-btn" onClick={leaveGame}>← Back to games</button>
@@ -1074,7 +1077,7 @@ export default function MarioApp() {
     {screen === 'championship-result' && finishedChampionship && <section className="quiz-result result-panel">
       <p className="eyebrow">CHAMPIONSHIP COMPLETE</p><h1>🏆 {finishedChampionship.opponent ? finishedChampionship.points === finishedChampionship.opponentPoints ? "It's a draw!" : `${finishedChampionship.points > (finishedChampionship.opponentPoints ?? 0) ? finishedChampionship.player : finishedChampionship.opponent} wins!` : `Nice work, ${finishedChampionship.player}!`}</h1>
       {finishedChampionship.format === 'computer' && <img className="mushbot-result" src={MUSHBOT_IMAGE} alt="Shroomer" />}
-      <div className="result-card"><div className="result-stats"><div className="result-stat"><span className="stat-value">{finishedChampionship.points}</span><span className="stat-label">{finishedChampionship.player} · total points</span></div><div className="result-stat"><span className="stat-value">{finishedChampionship.opponent ? finishedChampionship.opponentPoints : finishedChampionship.games.length}</span><span className="stat-label">{finishedChampionship.opponent ? `${finishedChampionship.opponent} · total points` : 'Games'}</span></div></div><p>{finishedChampionship.size} · {LABELS[finishedChampionship.topic]} · {DIFFICULTY_LABELS[finishedChampionship.difficulty]}</p></div>
+      <div className="result-card"><div className="result-stats"><div className="result-stat"><span className="stat-value">{finishedChampionship.points}</span><span className="stat-label">{finishedChampionship.player} · total points</span></div><div className="result-stat"><span className="stat-value">{finishedChampionship.opponent ? finishedChampionship.opponentPoints : finishedChampionship.games.length}</span><span className="stat-label">{finishedChampionship.opponent ? `${finishedChampionship.opponent} · total points` : 'Games'}</span></div></div><p>{finishedChampionship.size} · {LABELS[finishedChampionship.topic]}{scoreUsesLevel(finishedChampionship) ? ` · ${finishedChampionship.games.some(game => usesKnowledgeLevel(game.mode)) ? '' : 'Shroomer: '}${DIFFICULTY_LABELS[finishedChampionship.difficulty]}` : ''}</p></div>
       <div className="champ-running-total"><h3>Game breakdown</h3>{finishedChampionship.games.map((game, index) => <div className="champ-total-row" key={game.mode}><span>{MODE_ICONS[game.mode]} {modeLabel(game.mode)}{game.variant ? ` · ${game.variant === 'hunt' ? 'Hunt' : 'Time Trial'}` : ''}</span><strong>{finishedChampionship.player}: {game.points ?? game.correct} points{finishedChampionship.opponent ? ` · ${finishedChampionship.opponent}: ${finishedChampionship.opponentGames?.[index]?.points ?? 0} points` : ''}</strong></div>)}</div>
       <button className="start-btn" onClick={() => setScreen('championship-setup')}>Play again</button><button className="back-btn" onClick={() => setScreen('hub')}>← Back to games</button><button className="high-scores-link" onClick={() => setScreen('scores')}>🏆 High Scores</button>
     </section>}

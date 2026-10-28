@@ -1,11 +1,13 @@
-import { groupedScores, rankingPoints, type FinishedScore } from './mario/scoreGroups.ts';
+import { groupedScores, rankingPoints, scoreUsesLevel, type FinishedScore } from './mario/scoreGroups.ts';
+import { usesKnowledgeLevel } from './mario/difficultyDetails.ts';
 
 const levels = { explorer: 'Rookie', scientist: 'Pro', professor: 'Legend' };
 const modes: Record<string, string> = { quiz: 'Quiz Battle', 'game-order': 'Game Order', 'pair-match': 'Match & Hunt', 'match-hunt': 'Clue Match Up', 'clue-duel': 'Clue Duel', 'track-finder': 'Track Finder', 'category-finder': 'Category Finder' };
 const formats = { solo: 'Solo', 'two-player': 'Two players', computer: 'Play Shroomer' };
 function description(result: FinishedScore): string {
   const game = 'games' in result ? `${result.size} · ${result.games.map(game => modes[game.mode]).join(' + ')}` : `${modes[result.mode ?? 'quiz']}${result.variant ? ` · ${result.variant === 'hunt' ? 'Hunt' : 'Time Trial'}` : ''} · ${result.total} rounds`;
-  const level = !('games' in result) && result.mode === 'pair-match' ? result.format === 'computer' ? ` · Shroomer: ${levels[result.difficulty]}` : '' : ` · ${levels[result.difficulty]}`;
+  const knowledge = 'games' in result ? result.games.some(game => usesKnowledgeLevel(game.mode)) : usesKnowledgeLevel(result.mode ?? 'quiz');
+  const level = scoreUsesLevel(result) ? ` · ${knowledge ? '' : 'Shroomer: '}${levels[result.difficulty]}` : '';
   return `${game}${level} · ${formats[result.format ?? 'solo']} · ${result.topic === 'mixed' ? 'A bit of both' : result.topic === 'kart' ? 'Mario Kart' : 'Mario games'}`;
 }
 export default function FinishedScoreTables({ records }: { records: FinishedScore[] }) {

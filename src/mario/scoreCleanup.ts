@@ -1,4 +1,4 @@
-import { getOrderTimes, type OrderTime } from './gameOrder.ts';
+import { getOrderTimes, orderTimeKey, type OrderTime } from './gameOrder.ts';
 import { getPairTimes, pairTimeKey, type PairTime } from './pairTimes.ts';
 
 export type TimedGame = 'order' | 'pairs';
@@ -11,7 +11,7 @@ function read(kind: TimedGame, raw: string | null): Record[] {
   return records;
 }
 const groupKey = (record: Record) => 'variant' in record ? pairTimeKey(record)
-  : JSON.stringify([record.ruleset ?? 'legacy', record.difficulty, record.challenge, record.tiles]);
+  : orderTimeKey(record);
 const attempts = (record: Record) => 'moves' in record ? record.moves : record.attempts;
 
 export function hasCleanupBackup(kind: TimedGame): boolean {

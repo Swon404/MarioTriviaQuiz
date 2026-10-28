@@ -31,6 +31,10 @@ export function saveOrderTime(value: OrderTime): boolean {
     return true;
   } catch { return false; }
 }
-export function orderLeaderboard(difficulty: Difficulty, options: OrderOptions): OrderTime[] {
-  return getOrderTimes().filter(item => item.ruleset === ORDER_RULESET && item.difficulty === difficulty && item.challenge === options.challenge && item.tiles === options.tiles).sort((a, b) => a.elapsedMs - b.elapsedMs || a.attempts - b.attempts).slice(0, 5);
+export function orderTimeKey(item: OrderTime): string {
+  // Current boards use the same title pool at every old level. Legacy boards did not.
+  return JSON.stringify([item.ruleset ?? 'legacy', item.ruleset === ORDER_RULESET ? null : item.difficulty, item.challenge, item.tiles]);
+}
+export function orderLeaderboard(_difficulty: Difficulty, options: OrderOptions): OrderTime[] {
+  return getOrderTimes().filter(item => item.ruleset === ORDER_RULESET && item.challenge === options.challenge && item.tiles === options.tiles).sort((a, b) => a.elapsedMs - b.elapsedMs || a.attempts - b.attempts).slice(0, 5);
 }

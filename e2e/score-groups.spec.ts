@@ -34,6 +34,17 @@ test('human matching scores combine old levels while Shroomer challenges stay se
   expect(scoreGroupKey({ ...matching, scoreConfiguration: 'time-trial · 20 pairs · goal 3' })).not.toBe(scoreGroupKey(matching));
 });
 
+test('human Game Order and board-only championships combine levels but retain actual rules', () => {
+  const order: QuizResult = { ...quiz, mode: 'game-order', scoreConfiguration: '6 tiles · medium' };
+  expect(scoreGroupKey({ ...order, difficulty: 'professor' })).toBe(scoreGroupKey(order));
+  expect(scoreGroupKey({ ...order, total: 4 })).not.toBe(scoreGroupKey(order));
+  expect(scoreGroupKey({ ...order, scoreConfiguration: '6 tiles · hard' })).not.toBe(scoreGroupKey(order));
+  expect(scoreGroupKey({ ...order, format: 'computer', difficulty: 'professor' })).not.toBe(scoreGroupKey({ ...order, format: 'computer' }));
+  const boards: ChampionshipResult = { ...championship, games: [{ mode: 'game-order', total: 3, correct: 3, points: 3 }, { mode: 'pair-match', total: 3, correct: 3, points: 3 }] };
+  expect(scoreGroupKey({ ...boards, difficulty: 'professor' })).toBe(scoreGroupKey(boards));
+  expect(scoreGroupKey({ ...boards, format: 'computer', difficulty: 'professor' })).not.toBe(scoreGroupKey({ ...boards, format: 'computer' }));
+});
+
 test('phone score page shows comparable Top 5, separate unchanged history and both championship players', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 740 });
   await page.goto('./');
