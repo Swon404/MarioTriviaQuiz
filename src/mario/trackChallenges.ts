@@ -1,8 +1,11 @@
 import { BOOSTER_COURSES, BOOSTER_SOURCE } from './courses.ts';
 import { TRACK_DISCOVERIES } from './discoveries.ts';
+import { WORLD_COURSES } from './worldTracks.ts';
+
+export const FINDER_COURSES = [...BOOSTER_COURSES, ...WORLD_COURSES];
 
 export type TrackChallenge = {
-  id: string; kind: 'cup' | 'system' | 'feature'; prompt: string;
+  id: string; kind: 'cup' | 'system' | 'feature'; prompt: string; game?: 'Mario Kart World';
   correctIds: readonly string[]; explanation: string; funFact: string; funFactSourceUrl?: string; sourceUrl: string;
 };
 const wave3 = 'https://www.nintendo.com/us/whatsnew/mario-kart-8-deluxe-booster-course-pass-wave-3-brings-merry-mountain-mayhem-with-eight-additional-courses-on-dec-7/';
@@ -15,6 +18,9 @@ const features = [
 ] as const;
 
 export const TRACK_CHALLENGES: readonly TrackChallenge[] = [
+  ...WORLD_COURSES.map(course => ({ id: course.id, kind: 'feature' as const, game: course.game,
+    prompt: `Mario Kart World: ${course.feature}`, correctIds: [course.id], explanation: course.explanation,
+    funFact: course.funFact, funFactSourceUrl: course.sourceUrl, sourceUrl: course.sourceUrl })),
   ...[...new Set(BOOSTER_COURSES.map(course => course.cup))].map(cup => {
     const courses = BOOSTER_COURSES.filter(course => course.cup === cup);
     return { id: `cup-${cup}`, kind: 'cup' as const, prompt: `Find one track from the ${cup}.`, correctIds: courses.map(course => course.id),

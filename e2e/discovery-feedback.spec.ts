@@ -2,14 +2,14 @@ import { expect, test } from '@playwright/test';
 import { QUESTIONS } from '../src/mario/questions.ts';
 import { GAME_DISCOVERIES, QUESTION_DISCOVERIES, TRACK_DISCOVERIES } from '../src/mario/discoveries.ts';
 import { TRACK_CHALLENGES, trackLabel } from '../src/mario/trackChallenges.ts';
-import { BOOSTER_COURSES } from '../src/mario/courses.ts';
+import { FINDER_COURSES as BOOSTER_COURSES } from '../src/mario/trackChallenges.ts';
 import { createRounds, MARIO_TIMELINE } from '../src/mario/rounds.ts';
 import { seededBotRandom } from '../src/mario/memoryBot.ts';
 import { captureSpeech } from './speech-capture.ts';
 
 test('every reviewed extra has a source and survives round generation without restoring bland templates', () => {
   expect(Object.keys(GAME_DISCOVERIES).sort()).toEqual(MARIO_TIMELINE.map(game => game.id).sort());
-  expect(Object.keys(TRACK_DISCOVERIES).sort()).toEqual(TRACK_CHALLENGES.map(task => task.id).sort());
+  expect(Object.keys(TRACK_DISCOVERIES).sort()).toEqual(TRACK_CHALLENGES.filter(task => !task.id.startsWith('world-')).map(task => task.id).sort());
   for (const [id, extra] of Object.entries(QUESTION_DISCOVERIES)) {
     const question = QUESTIONS.find(q => q.id === id)!;
     expect(question, id).toBeDefined();

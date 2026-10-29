@@ -23,6 +23,14 @@ export const DISCOVERY_SOURCES = {
 const S = DISCOVERY_SOURCES;
 
 export const GAME_DISCOVERIES: Readonly<Record<string, Discovery>> = {
+  'all-stars': fact('All-Stars adds save files to these older adventures. In its version of Mario 2, saving also removes the original limit of two continues.', wiki('Super_Mario_All-Stars')),
+  party: fact('The first Mario Party has a solo Mini-Game Island. Finish its challenges and Toad challenges you to a final Slot Car Derby race.', wiki('Mario_Party')),
+  mansion: fact('In the original Luigi’s Mansion, inspect hidden pieces of cheese. Some release a speedy gold mouse carrying treasure—have the vacuum ready!', wiki('Luigi%27s_Mansion')),
+  'double-dash': fact('Double Dash puts two racers in one kart. One drives while the other handles items, so a friend can become your teammate instead of your rival.', wiki('Mario_Kart:_Double_Dash!!')),
+  'kart-ds': fact('Mario Kart DS has boss battles! Its Missions mode turns kart skills into challenges against enemies such as Big Bully.', wiki('Mario_Kart_DS')),
+  'kart-wii': fact('In Mario Kart Wii, bikes get blue drift sparks but cannot charge the orange sparks that karts can. Your vehicle changes your cornering strategy.', wiki('Mario_Kart_Wii')),
+  kart8: fact('In Mario Kart 8’s anti-gravity sections, bumping another racer gives both of you a Spin Boost. A collision can actually help!', wiki('Mario_Kart_8')),
+  'kart-world': fact('World’s Grand Prix races connect their courses with driveable routes. The journey to the next starting line is part of the race.', 'https://www.nintendo.com/us/gaming-systems/switch-2/featured-games/mario-kart-world/'),
   smb: fact('Super Mario Bros. stages were planned on graph paper. Before those jumps were pixels, they were pencil marks!', S.history),
   smb2: fact('In Super Mario Bros. 2, vegetables are weapons. Pull one from the ground and throw it at trouble.', wiki('Super_Mario_Bros._2')),
   land: fact('Super Mario Land puts Mario in a submarine and an aeroplane. Some stages swap platform-jumping for shooting!', wiki('Super_Mario_Land')),

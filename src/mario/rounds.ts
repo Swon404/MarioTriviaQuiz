@@ -1,13 +1,15 @@
 import { BOOSTER_COURSES, type CourseAppearance } from './courses.ts';
+import { WORLD_COURSES, type WorldCourse } from './worldTracks.ts';
 import { TRACK_CHALLENGES, trackLabel, type TrackChallenge } from './trackChallenges.ts';
 import { createQuiz, shuffled, type Difficulty, type Topic, type TriviaQuestion } from './questions.ts';
 import { CLUE_SUBJECTS, clueSimilarity } from './clues.ts';
 import { CATEGORY_ITEMS, CATEGORY_LABELS, CATEGORY_CHALLENGES, CATEGORY_EXPLANATIONS, CATEGORY_DISCOVERIES, categoryDistractorRank, fitsCategory, type CategoryItem, type FinderCategory } from './categoryCatalog.ts';
 import { ICON_PAIRS, type IconKind, type IconPair } from './pairCatalog.ts';
-import type { OrderOptions } from './gameOrder.ts';
-import { MATCH_CLUES, knowledgeLevel } from './matchClues.ts';
-import { knowledgeRank } from './questionHistory.ts';
+import { ORDER_RULESET, type OrderOptions } from './gameOrder.ts';
+import { MATCH_CLUES, knowledgeLevel, matchNameKey } from './matchClues.ts';
+import { knowledgeRank, hasSeenKnowledge } from './questionHistory.ts';
 import { GAME_DISCOVERIES } from './discoveries.ts';
+import { withVariedFunFacts } from './funFacts.ts';
 
 export type GameMode = 'quiz' | 'game-order' | 'track-finder' | 'match-hunt' | 'pair-match' | 'clue-duel' | 'category-finder';
 export type Section = Topic | 'mixed';
@@ -31,7 +33,7 @@ export const DEFAULT_PAIR_OPTIONS: PairMatchOptions = {
 
 const HISTORY_SOURCE = 'https://www.nintendo.com/us/explore/characters/mario/history/';
 
-export type TimelineGame = { id: string; title: string; year: number; system: string };
+export type TimelineGame = { id: string; title: string; year: number; system: string; sourceUrl?: string };
 
 export const MARIO_TIMELINE: readonly TimelineGame[] = [
   { id: 'smb', title: 'Super Mario Bros.', year: 1985, system: 'NES' },
@@ -40,15 +42,22 @@ export const MARIO_TIMELINE: readonly TimelineGame[] = [
   { id: 'smb3', title: 'Super Mario Bros. 3', year: 1990, system: 'NES' },
   { id: 'world', title: 'Super Mario World', year: 1991, system: 'Super Nintendo' },
   { id: 'land2', title: 'Super Mario Land 2: 6 Golden Coins', year: 1992, system: 'Game Boy' },
+  { id: 'all-stars', title: 'Super Mario All-Stars', year: 1993, system: 'Super Nintendo', sourceUrl: 'https://www.mariowiki.com/Super_Mario_All-Stars' },
   { id: 'mario64', title: 'Super Mario 64', year: 1996, system: 'Nintendo 64' },
+  { id: 'party', title: 'Mario Party', year: 1999, system: 'Nintendo 64', sourceUrl: 'https://www.mariowiki.com/Mario_Party' },
+  { id: 'mansion', title: "Luigi's Mansion", year: 2001, system: 'GameCube', sourceUrl: 'https://www.mariowiki.com/Luigi%27s_Mansion' },
   { id: 'sunshine', title: 'Super Mario Sunshine', year: 2002, system: 'GameCube' },
+  { id: 'double-dash', title: 'Mario Kart: Double Dash!!', year: 2003, system: 'GameCube', sourceUrl: 'https://www.mariowiki.com/Mario_Kart:_Double_Dash!!' },
+  { id: 'kart-ds', title: 'Mario Kart DS', year: 2005, system: 'Nintendo DS', sourceUrl: 'https://www.mariowiki.com/Mario_Kart_DS' },
   { id: 'new-ds', title: 'New Super Mario Bros.', year: 2006, system: 'Nintendo DS' },
   { id: 'galaxy', title: 'Super Mario Galaxy', year: 2007, system: 'Wii' },
+  { id: 'kart-wii', title: 'Mario Kart Wii', year: 2008, system: 'Wii', sourceUrl: 'https://www.mariowiki.com/Mario_Kart_Wii' },
   { id: 'new-wii', title: 'New Super Mario Bros. Wii', year: 2009, system: 'Wii' },
   { id: 'galaxy2', title: 'Super Mario Galaxy 2', year: 2010, system: 'Wii' },
   { id: 'land3d', title: 'Super Mario 3D Land', year: 2011, system: 'Nintendo 3DS' },
   { id: 'new2', title: 'New Super Mario Bros. 2', year: 2012, system: 'Nintendo 3DS' },
   { id: 'world3d', title: 'Super Mario 3D World', year: 2013, system: 'Wii U' },
+  { id: 'kart8', title: 'Mario Kart 8', year: 2014, system: 'Wii U', sourceUrl: 'https://www.mariowiki.com/Mario_Kart_8' },
   { id: 'maker', title: 'Super Mario Maker', year: 2015, system: 'Wii U' },
   { id: 'run', title: 'Super Mario Run', year: 2016, system: 'Mobile' },
   { id: 'odyssey', title: 'Super Mario Odyssey', year: 2017, system: 'Nintendo Switch' },
@@ -56,12 +65,13 @@ export const MARIO_TIMELINE: readonly TimelineGame[] = [
   { id: 'all-stars-3d', title: 'Super Mario 3D All-Stars', year: 2020, system: 'Nintendo Switch' },
   { id: 'fury', title: 'Super Mario 3D World + Bowser’s Fury', year: 2021, system: 'Nintendo Switch' },
   { id: 'wonder', title: 'Super Mario Bros. Wonder', year: 2023, system: 'Nintendo Switch' },
+  { id: 'kart-world', title: 'Mario Kart World', year: 2025, system: 'Nintendo Switch 2', sourceUrl: 'https://www.mariowiki.com/Mario_Kart_World' },
 ];
 
-type RoundBase = { id: string; prompt: string; explanation: string; funFact: string; funFactSourceUrl?: string; sourceUrl: string; review?: boolean; reviewCount?: number };
+type RoundBase = { id: string; prompt: string; explanation: string; funFact: string; factPoolId?: string; funFactSourceUrl?: string; sourceUrl: string; review?: boolean; reviewCount?: number };
 export type QuizRound = RoundBase & { mode: 'quiz'; question: TriviaQuestion };
-export type OrderRound = RoundBase & { mode: 'game-order'; tiles: readonly TimelineGame[]; correctIds: readonly string[] };
-export type FinderRound = RoundBase & { mode: 'track-finder'; tiles: readonly CourseAppearance[]; correctIds: readonly string[]; challengeKind: TrackChallenge['kind']; width: number };
+export type OrderRound = RoundBase & { mode: 'game-order'; tiles: readonly TimelineGame[]; correctIds: readonly string[]; orderRuleset?: string };
+export type FinderRound = RoundBase & { mode: 'track-finder'; tiles: readonly (CourseAppearance | WorldCourse)[]; correctIds: readonly string[]; challengeKind: TrackChallenge['kind']; width: number };
 export type MatchPair = { id: string; name: string; clue: string };
 export type MatchRound = RoundBase & { mode: 'match-hunt'; pairs: readonly MatchPair[]; nameIds: readonly string[]; clueIds: readonly string[]; targetId: string };
 export type PairCard = { id: string; pairId: string; kind: 'icon' | 'word'; label: string; iconKind?: IconKind; iconAlt?: string };
@@ -110,6 +120,7 @@ function makePairRounds(section: Section, options: PairMatchOptions, random: () 
       prompt: options.variant === 'time-trial' ? `Find ${goal} icon-and-word pairs.` : target ? 'Hunt for the target pair.' : 'Find every icon-and-word pair.',
       explanation: `Spotlight: ${featured.name}. ${featured.question.explanation}`,
       funFact: featured.question.funFact,
+      factPoolId: featured.question.id,
       funFactSourceUrl: featured.question.funFactSourceUrl,
       sourceUrl: featured.question.sourceUrl,
     };
@@ -176,13 +187,13 @@ function makeClueRounds(section: Section, difficulty: Difficulty, random: () => 
   if (chosen.length !== count) throw new Error('Not enough distinct Clue Duel subjects.');
   const maxChoices = difficulty === 'explorer' ? 4 : difficulty === 'scientist' ? 6 : 8;
   return chosen.map(subject => {
-    const distractors = shuffled(CLUE_SUBJECTS.filter(other => other.topic === subject.topic && other.id !== subject.id), random)
+    const distractors = shuffled(CLUE_SUBJECTS.filter(other => other.topic === subject.topic && other.kind === subject.kind && other.id !== subject.id), random)
       .sort((a, b) => clueSimilarity(subject.id, b.id) - clueSimilarity(subject.id, a.id));
     const choices = shuffled([subject, ...distractors.slice(0, maxChoices - 1)], random).map(item => ({ id: item.id, label: item.answer }));
     return {
       id: `clue-${subject.id}`, mode: 'clue-duel' as const,
-      review: recent.includes(`clue-${subject.id}`),
-      prompt: subject.topic === 'mario' ? 'Which Mario character am I?' : 'Which Mario Kart track am I?',
+      review: hasSeenKnowledge(`clue-${subject.id}`, recent),
+      prompt: subject.kind === 'item' ? `Which ${subject.game ?? 'Mario'} item am I?` : subject.kind === 'place' ? `Which ${subject.game ?? 'Mario'} place am I?` : subject.game ? `Which ${subject.game} track am I?` : subject.topic === 'mario' ? 'Which Mario character am I?' : 'Which Mario Kart track am I?',
       clues: subject.clues, choices, answerId: subject.id,
       explanation: subject.explanation, funFact: subject.funFact, funFactSourceUrl: subject.funFactSourceUrl, sourceUrl: subject.sourceUrl,
     };
@@ -198,8 +209,9 @@ function makeMatchRounds(section: Section, difficulty: Difficulty, random: () =>
   // fresh candidates. Never borrow harder material just to fill a board.
   const candidates = shuffled(MATCH_CLUES.filter(item => knowledgeLevel(item.difficulty) <= knowledgeLevel(difficulty) && (section === 'mixed' || item.question.topic === section)), random)
     .sort((a, b) => knowledgeRank(a.question.knowledgeId, recent) - knowledgeRank(b.question.knowledgeId, recent) || knowledgeLevel(b.difficulty) - knowledgeLevel(a.difficulty)).filter(item => {
-    if (seenNames.has(item.name)) return false;
-    seenNames.add(item.name);
+    const name = matchNameKey(item.name);
+    if (seenNames.has(name)) return false;
+    seenNames.add(name);
     return true;
   });
   if (candidates.length < required) throw new Error(`Only ${candidates.length} unique matches are available for ${section}.`);
@@ -217,6 +229,7 @@ function makeMatchRounds(section: Section, difficulty: Difficulty, random: () =>
       targetId: target.id,
       explanation: target.question.explanation,
       funFact: target.question.funFact,
+      factPoolId: target.question.id,
       funFactSourceUrl: target.question.funFactSourceUrl,
       sourceUrl: target.question.sourceUrl,
     };
@@ -246,7 +259,7 @@ function orderRound(selected: readonly TimelineGame[], tiles: readonly TimelineG
   return {
     id: `order-${selected.map(game => game.id).sort().join('-')}`,
     mode: 'game-order', prompt: 'Put these Mario games in release order. Oldest first.',
-    tiles, correctIds: correct.map(game => game.id),
+    tiles, correctIds: correct.map(game => game.id), orderRuleset: ORDER_RULESET,
     explanation: correct.map(game => `${game.title} (${game.year})`).join(' → '),
     funFact: discovery.text,
     funFactSourceUrl: discovery.sourceUrl,
@@ -272,7 +285,8 @@ export function makeComparableOrderPair(difficulty: Difficulty, random = Math.ra
 
 function makeFinderRounds(difficulty: Difficulty, random: () => number, count: number, recent: readonly string[] = []): FinderRound[] {
   const size = difficulty === 'explorer' ? 4 : difficulty === 'scientist' ? 6 : 9;
-  const groups = shuffled(['cup', 'system', 'feature'] as const, random).map(kind => shuffled(TRACK_CHALLENGES.filter(task => task.kind === kind), random)
+  const kinds: TrackChallenge['kind'][] = difficulty === 'explorer' ? ['feature'] : ['cup', 'system', 'feature'];
+  const groups = shuffled(kinds, random).map(kind => shuffled(TRACK_CHALLENGES.filter(task => task.kind === kind), random)
     .sort((a, b) => knowledgeRank(`finder-${a.id}`, recent) - knowledgeRank(`finder-${b.id}`, recent)));
   const tasks: TrackChallenge[] = [];
   while (tasks.length < count && groups.some(group => group.length)) {
@@ -283,14 +297,14 @@ function makeFinderRounds(difficulty: Difficulty, random: () => number, count: n
   if (tasks.length !== count) throw new Error('Not enough distinct Track Finder tasks.');
   return tasks.map(task => {
     // Both Rainbow Road variants lose their distinguishing prefix in system questions.
-    const pool = BOOSTER_COURSES.filter(course => task.kind !== 'system' || trackLabel(course.title) !== 'Rainbow Road');
+    const pool = (task.game === 'Mario Kart World' ? WORLD_COURSES : BOOSTER_COURSES).filter(course => task.kind !== 'system' || trackLabel(course.title) !== 'Rainbow Road');
     const valid = shuffled(pool.filter(course => task.correctIds.includes(course.id)), random);
     const wrong = shuffled(pool.filter(course => !task.correctIds.includes(course.id)), random);
     const targets = valid.slice(0, Math.min(valid.length, difficulty === 'explorer' ? 1 : 2));
     const tiles = shuffled([...targets, ...wrong.slice(0, size - targets.length)], random);
     return {
       id: `finder-${task.id}`, mode: 'track-finder' as const,
-      review: recent.includes(`finder-${task.id}`),
+      review: hasSeenKnowledge(`finder-${task.id}`, recent),
       width: difficulty === 'explorer' ? 2 : 3, tiles,
       challengeKind: task.kind, correctIds: targets.map(course => course.id),
       prompt: task.prompt,
@@ -300,6 +314,11 @@ function makeFinderRounds(difficulty: Difficulty, random: () => number, count: n
   });
 }
 export function createRounds(mode: GameMode, section: Section, difficulty: Difficulty, random = Math.random, pairOptions: PairMatchOptions = DEFAULT_PAIR_OPTIONS, roundCount?: number, orderOptions?: OrderOptions, recent: readonly string[] = [], pairedOrder = false): GameRound[] {
+  const rounds = makeRounds(mode, section, difficulty, random, pairOptions, roundCount, orderOptions, recent, pairedOrder);
+  return mode === 'quiz' ? rounds : withVariedFunFacts(rounds, random, recent);
+}
+
+function makeRounds(mode: GameMode, section: Section, difficulty: Difficulty, random = Math.random, pairOptions: PairMatchOptions = DEFAULT_PAIR_OPTIONS, roundCount?: number, orderOptions?: OrderOptions, recent: readonly string[] = [], pairedOrder = false): GameRound[] {
   if (!availableModes(section).includes(mode)) throw new Error(`${mode} is not available in ${section}.`);
   if (mode === 'match-hunt') return makeMatchRounds(section, difficulty, random, roundCount, recent);
   if (mode === 'pair-match') return makePairRounds(section, { ...pairOptions, roundCount: roundCount ?? pairOptions.roundCount }, random, recent);

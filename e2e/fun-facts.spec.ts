@@ -21,7 +21,7 @@ test('reviewed fact pools belong to their questions and keep shared Luigi facts 
   expect(withVariedFunFacts([{ id: 'unreviewed', funFact: 'Keep this fact.' }])[0].funFact).toBe('Keep this fact.');
   const exhausted = withVariedFunFacts(Array(4).fill(originals[0]), () => 0);
   expect(new Set(exhausted.slice(0, 2).map(q => q.funFact)).size).toBe(2);
-  expect(exhausted.every(q => QUESTION_FUN_FACTS[originals[0].id].includes(q.funFact))).toBe(true);
+  expect(exhausted.slice(2).every(q => q.funFact === '')).toBe(true);
   expect(withVariedFunFacts([{ id: '__proto__', funFact: 'Safe fallback.' }])[0].funFact).toBe('Safe fallback.');
   const pool = QUESTIONS.filter(q => q.topic === 'mario' && q.difficulty === 'explorer');
   const quiz = createQuiz('mario', 'explorer', new Set(pool.map(q => q.knowledgeId)).size, () => 0.5);

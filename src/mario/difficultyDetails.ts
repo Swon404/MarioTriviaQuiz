@@ -6,8 +6,9 @@ import { MEMORY_CAPACITY } from './memoryBot.ts';
 export const usesKnowledgeLevel = (mode: GameMode): boolean => mode !== 'pair-match' && mode !== 'game-order';
 
 /** Describe the controls used by each game, rather than promising generic difficulty. */
-export function difficultyDetails(mode: GameMode, level: Difficulty, _orderTiles = 4, championship = false): string {
+export function difficultyDetails(mode: GameMode, level: Difficulty, _orderTiles = 4, championship = false, competitive = false): string {
   const index = ['explorer', 'scientist', 'professor'].indexOf(level);
+  if (mode === 'quiz' && competitive) return `${['Familiar', 'Trickier', 'Expert'][index]} questions · one attempt each. Answers lock when revealed.`;
   if (championship) {
     switch (mode) {
       case 'quiz': return `${['Familiar', 'Trickier', 'Expert'][index]} questions, ${QUIZ_RETRIES[level] + 1} ${level === 'professor' ? 'attempt' : 'attempts'}.`;

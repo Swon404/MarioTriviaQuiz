@@ -4,9 +4,11 @@ import { useState } from 'react';
 
 function CardImage({ path, name }: { path: string; name: string }) {
   const [failed, setFailed] = useState(false);
+  const [loaded, setLoaded] = useState(false);
   const src = /^(https?:\/\/|\/|data:)/.test(path) ? path : `${import.meta.env.BASE_URL}${path}`;
-  return failed ? <span className="pair-card-word">{name}</span>
-    : <img className="pair-card-svg" src={src} alt="" aria-hidden="true" onError={() => setFailed(true)} />;
+  return <>{(!loaded || failed) && <span className="pair-card-word">{name}</span>}
+    {!failed && <img className="pair-card-svg" src={src} alt="" aria-hidden="true" style={!loaded ? { display: 'none' } : undefined}
+      onLoad={() => setLoaded(true)} onError={() => setFailed(true)} />}</>;
 }
 
 // Both live play and saved playback use these snapshots and these exact tiles.

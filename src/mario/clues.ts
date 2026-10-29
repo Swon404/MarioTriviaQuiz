@@ -1,4 +1,7 @@
 import type { Topic } from './questions.ts';
+import { WORLD_COURSES } from './worldTracks.ts';
+import { ITEM_CLUES } from './itemClues.ts';
+import { ADVENTURE_CLUES, ODYSSEY_PLACES } from './adventureClues.ts';
 
 export type ClueSubject = {
   id: string;
@@ -9,6 +12,8 @@ export type ClueSubject = {
   funFact: string;
   funFactSourceUrl?: string;
   sourceUrl: string;
+  kind?: 'item' | 'place';
+  game?: string;
 };
 
 const characters = 'https://www.nintendo.com/en-ca/explore/characters/mario/friends/';
@@ -24,6 +29,15 @@ const explorationTour = 'https://www.nintendo.com/us/whatsnew/mobilenews-discove
 // Editorial similarity groups, not extra facts shown to players. Prefer related
 // alternatives so a broad opening clue does not leave one obvious candidate.
 export const CLUE_CHOICE_GROUPS: readonly (readonly string[])[] = [
+  ADVENTURE_CLUES.filter(subject => subject.kind === 'item').map(subject => subject.id),
+  [...ADVENTURE_CLUES.filter(subject => !subject.kind).map(subject => subject.id), 'char-goomba', 'char-boo', 'char-bowser'],
+  ODYSSEY_PLACES.map(subject => subject.id),
+  ITEM_CLUES.map(item => item.id),
+  WORLD_COURSES.map(course => course.id),
+  ['world-boo', 'world-spaceport', 'world-crown', 'track-coconut', 'track-waluigi'],
+  ['world-acorn', 'world-dandelion', 'world-jungle', 'track-maple', 'track-gardens'],
+  ['world-salty', 'world-falls', 'track-piranha', 'track-daisy', 'track-boo-lake'],
+  ['world-starview', 'world-ruins', 'world-spaceport', 'track-rock', 'track-merry'],
   ['char-toad', 'char-cappy', 'char-mario', 'char-luigi', 'char-yoshi'],
   ['char-diddy', 'char-dk', 'char-mario', 'char-yoshi'],
   ['char-goomba', 'char-boo', 'char-bowser', 'char-junior'],
@@ -47,6 +61,10 @@ export function clueSimilarity(subjectId: string, candidateId: string): number {
 // Clues move from shared traits to distinctive details. The first two must not
 // contain words from the answer, so a multiple-choice label cannot give them away.
 export const CLUE_SUBJECTS: readonly ClueSubject[] = [
+  ...ADVENTURE_CLUES, ...ODYSSEY_PLACES,
+  ...ITEM_CLUES,
+  ...WORLD_COURSES.map(course => ({ id: course.id, topic: 'kart' as const, answer: course.title,
+    game: course.game, clues: course.clues, explanation: course.explanation, funFact: course.funFact, sourceUrl: course.sourceUrl })),
   {
     id: 'char-toad', topic: 'mario', answer: 'Toad',
     clues: ['Helping others can put me in danger.', 'I stand by friends when trouble arrives.', 'I serve a princess.', 'Others of my kind come in several colours.', 'The red spots on my head are a familiar sight beside Peach.'],

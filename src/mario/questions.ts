@@ -3,8 +3,11 @@ import { FRESH_QUESTIONS } from './freshQuestions.ts';
 import { GAMEPLAY_QUESTIONS } from './gameplayQuestions.ts';
 import { MARIO_SIDE_QUESTIONS } from './marioSideQuestions.ts';
 import { FAMILY_QUESTIONS } from './familyQuestions.ts';
+import { WORLD_QUESTIONS } from './worldQuestions.ts';
 import { canonicalKnowledge, normalizeKnowledge } from './knowledge.ts';
 import { withVariedFunFacts } from './funFacts.ts';
+import { ADVENTURE_QUESTIONS } from './adventureQuestions.ts';
+import { PLATFORM_QUESTIONS } from './platformQuestions.ts';
 import { withCompletedOriginalReview } from './originalReview.ts';
 import { withPlayfulFeedback } from './playfulFeedback.ts';
 
@@ -183,6 +186,9 @@ export const QUESTIONS: readonly TriviaQuestion[] = [
   ...GAMEPLAY_QUESTIONS,
   ...MARIO_SIDE_QUESTIONS,
   ...FAMILY_QUESTIONS,
+  ...WORLD_QUESTIONS,
+  ...ADVENTURE_QUESTIONS,
+  ...PLATFORM_QUESTIONS,
 ].map(question => withVariedFunFacts([withPlayfulFeedback(withCompletedOriginalReview({ ...question, difficulty: LEVEL_REVIEW[question.id] ?? question.difficulty, knowledgeId: canonicalKnowledge(KNOWLEDGE_EQUIVALENTS[question.id] ?? question.knowledgeId) }))], () => 0)[0]);
 
 export function shuffled<T>(values: readonly T[], random = Math.random): T[] {
@@ -228,5 +234,5 @@ export function createQuiz(topic: Topic | 'mixed', difficulty: Difficulty, count
     usedAnswers.add(question.answer);
     used.set(category, (used.get(category) ?? 0) + 1);
   }
-  return withVariedFunFacts(selected.map(question => ({ ...question, review: recent.includes(question.knowledgeId), choices: shuffled(question.choices, random) })), random);
+  return withVariedFunFacts(selected.map(question => ({ ...question, review: recent.includes(question.knowledgeId), choices: shuffled(question.choices, random) })), random, recent);
 }

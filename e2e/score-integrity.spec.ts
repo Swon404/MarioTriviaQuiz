@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { TRACK_CHALLENGES, trackLabel } from '../src/mario/trackChallenges.ts';
-import { BOOSTER_COURSES } from '../src/mario/courses.ts';
+import { FINDER_COURSES as BOOSTER_COURSES } from '../src/mario/trackChallenges.ts';
 
 for (const kind of ['order', 'pairs']) {
   test(`${kind}: more than 1000 times retain old bests and replays; failed writes preserve scores`, async ({ page }) => {
@@ -58,13 +58,13 @@ test('both live score displays agree immediately after either player answers and
     const course = BOOSTER_COURSES.find(item => task.correctIds.includes(item.id) && visible.includes(task.kind === 'system' ? trackLabel(item.title) : item.title))!;
     const answer = page.locator('.finder-grid button').filter({ hasText: task.kind === 'system' ? trackLabel(course.title) : course.title });
     await answer.click();
-    await expect(page.locator('.score-display')).toContainText(`${name} · 1 correct · 1 points`);
-    await expect(page.locator('.versus-now-playing')).toContainText(`Dad: 1 points · Blaize: ${index} points`);
+    await expect(page.locator('.score-display')).toContainText(`${name} · 1 correct · 1 point`);
+    await expect(page.locator('.versus-now-playing')).toContainText(`Dad: 1 point · Blaize: ${index} ${index === 1 ? 'point' : 'points'}`);
     await page.getByRole('button', { name: '↶ Rewind', exact: true }).click();
     await expect(page.locator('.score-display')).toContainText(`${name} · 0 correct · 0 points`);
-    await expect(page.locator('.versus-now-playing')).toContainText(`Dad: ${index} points · Blaize: 0 points`);
+    await expect(page.locator('.versus-now-playing')).toContainText(`Dad: ${index} ${index === 1 ? 'point' : 'points'} · Blaize: 0 points`);
     await answer.click();
     await page.getByRole('button', { name: 'Next turn', exact: false }).click();
-    await expect(page.locator('.versus-now-playing')).toContainText(`Dad: 1 points · Blaize: ${index} points`);
+    await expect(page.locator('.versus-now-playing')).toContainText(`Dad: 1 point · Blaize: ${index} ${index === 1 ? 'point' : 'points'}`);
   }
 });

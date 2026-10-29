@@ -22,6 +22,7 @@ export const MILESTONES = [
 ] as const;
 
 export function getRank(ep: number) { return [...RANKS].reverse().find(rank => ep >= rank.minEP) ?? RANKS[0]; }
+export const pointText = (count = 0) => `${count} ${count === 1 ? 'point' : 'points'}`;
 export function getNextRank(ep: number) { return RANKS.find(rank => ep < rank.minEP) ?? null; }
 
 export function calculatePoints(_difficulty: Difficulty, correct: boolean, _streakBeforeAnswer: number): number {

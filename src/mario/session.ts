@@ -8,6 +8,8 @@ export type Submission = { answer: Answer; correct: boolean; correctLabel: strin
 export type GameSession = {
   rounds: readonly GameRound[];
   difficulty: Difficulty;
+  /** Absent on solo play and checkpoints made under the earlier retry rules. */
+  quizAttempts?: 1;
   index: number;
   correct: number;
   points: number;
@@ -18,9 +20,9 @@ export type GameSession = {
   complete: boolean;
 };
 
-export function startSession(rounds: readonly GameRound[], difficulty: Difficulty = 'explorer'): GameSession {
+export function startSession(rounds: readonly GameRound[], difficulty: Difficulty = 'explorer', quizAttempts?: 1): GameSession {
   if (rounds.length === 0) throw new Error('A game needs at least one round.');
-  return { rounds, difficulty, index: 0, correct: 0, points: 0, streak: 0, bestStreak: 0, submission: null, wrongAnswers: [], complete: false };
+  return { rounds, difficulty, quizAttempts, index: 0, correct: 0, points: 0, streak: 0, bestStreak: 0, submission: null, wrongAnswers: [], complete: false };
 }
 
 export function attemptQuiz(session: GameSession, answer: string): GameSession {
@@ -29,7 +31,7 @@ export function attemptQuiz(session: GameSession, answer: string): GameSession {
   if (answer === round.question.answer) return submit(session, answer);
   const wrongAnswers = [...session.wrongAnswers, answer];
   const next = { ...session, wrongAnswers };
-  return wrongAnswers.length <= QUIZ_RETRIES[session.difficulty] ? next : submit(next, answer);
+  return wrongAnswers.length < (session.quizAttempts ?? 1 + QUIZ_RETRIES[session.difficulty]) ? next : submit(next, answer);
 }
 
 export function submit(session: GameSession, answer: Answer, pointsOverride?: number): GameSession {
@@ -43,6 +45,7 @@ export function submit(session: GameSession, answer: Answer, pointsOverride?: nu
 }
 
 export function rewind(session: GameSession): GameSession {
+  if (session.quizAttempts === 1 && session.rounds[session.index]?.mode === 'quiz') return session;
   if (session.complete || (!session.submission && session.wrongAnswers.length === 0)) return session;
   return { ...session, submission: null, wrongAnswers: [] };
 }

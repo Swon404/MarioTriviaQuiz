@@ -69,8 +69,16 @@ for (const [id, format] of [['fresh-22', 'solo'], ['expanded-41', 'solo'], ['fre
     await expect(page.locator('.learning-topic-card').getByRole('link', { name: 'Tip / fun fact source ↗' })).toHaveAttribute('href', question.funFactSourceUrl!);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     await page.screenshot({ path: test.info().outputPath('playful-feedback-phone.png'), fullPage: true });
-    await page.getByRole('button', { name: '↶ Rewind', exact: true }).click();
-    await page.locator('.answer-grid').getByText(question.answer, { exact: true }).click();
+    if (format === 'solo') {
+      await page.getByRole('button', { name: '↶ Rewind', exact: true }).click();
+      await page.locator('.answer-grid').getByText(question.answer, { exact: true }).click();
+    } else {
+      await expect(page.getByRole('button', { name: '↶ Rewind', exact: true })).toHaveCount(0);
+      await page.reload();
+      await page.getByRole('button', { name: 'Resume game', exact: true }).click();
+      await expect(page.locator('.answer-grid button')).toHaveCount(4);
+      await expect(page.locator('.answer-grid button:not([disabled])')).toHaveCount(0);
+    }
     await expect(page.locator('.feedback')).toContainText(question.funFact);
   });
 }

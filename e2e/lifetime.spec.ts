@@ -21,8 +21,8 @@ test('Lifetime migrates old results and preserves points, streak and milestones 
     saveResult({ ...sample, id: 'new', points: 99999 });
     return { recent: JSON.parse(localStorage.getItem(RESULTS)!), lifetime: JSON.parse(localStorage.getItem(LIFETIME)!) };
   }, { sample, RESULTS, LIFETIME });
-  expect(state.recent).toHaveLength(200);
-  expect(state.recent.some((result: { id: string }) => result.id === 'original')).toBe(false);
+  expect(state.recent).toHaveLength(201);
+  expect(state.recent.some((result: { id: string }) => result.id === 'original')).toBe(true);
   expect(state.lifetime).toHaveLength(201);
   expect(state.lifetime[0]).not.toHaveProperty('elapsedMs');
   await page.reload();
@@ -46,7 +46,7 @@ test('Shared results preserve both players awards and Player 2 perfect-game mile
   }, { sample, PROFILE });
   await page.reload();
   await expect(page.getByText('20 points', { exact: true })).toBeVisible();
-  await expect(page.getByText('🏆 1 games', { exact: true })).toBeVisible();
+  await expect(page.getByText('🏆 1 game', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: /milestones/ }).click();
   await expect(page.locator('.milestone-done').filter({ hasText: 'Perfect Game' })).toHaveCount(1);
   await page.evaluate(key => localStorage.setItem(key, 'Ada'), PROFILE);
@@ -101,6 +101,6 @@ test('Full storage retains awards in the tab and retries persistence when storag
   });
   await page.reload();
   await expect(page.getByText('100 points', { exact: true })).toBeVisible();
-  await expect(page.getByText('🏆 1 games', { exact: true })).toBeVisible();
+  await expect(page.getByText('🏆 1 game', { exact: true })).toBeVisible();
   await expect(page.getByRole('alert')).toHaveCount(0);
 });

@@ -14,6 +14,8 @@ export type VersusSubmission = { answer: string; correct: boolean; points: numbe
 export type VersusQuiz = {
   turns: readonly VersusTurn[];
   difficulty: Difficulty;
+  /** Missing on saved matches that used the earlier retry rules. */
+  quizAttempts?: 1;
   index: number;
   scores: readonly [number, number];
   points: readonly [number, number];
@@ -41,7 +43,7 @@ export function startVersusQuiz(section: Section, difficulty: Difficulty, oppone
     }
     return { id: `${question.id}-player-${playerIndex}`, playerIndex, question, computerAnswer };
   });
-  return { turns, difficulty, index: 0, scores: [0, 0], points: [0, 0], streaks: [0, 0], bestStreaks: [0, 0], submission: null, wrongAnswers: [], complete: false };
+  return { turns, difficulty, quizAttempts: 1, index: 0, scores: [0, 0], points: [0, 0], streaks: [0, 0], bestStreaks: [0, 0], submission: null, wrongAnswers: [], complete: false };
 }
 
 export function attemptVersusQuiz(game: VersusQuiz, answer: string): VersusQuiz {
@@ -50,7 +52,7 @@ export function attemptVersusQuiz(game: VersusQuiz, answer: string): VersusQuiz 
   if (turn.computerAnswer !== undefined || answer === turn.question.answer) return answerVersusQuiz(game, answer);
   const wrongAnswers = [...game.wrongAnswers, answer];
   const next = { ...game, wrongAnswers };
-  return wrongAnswers.length <= QUIZ_RETRIES[game.difficulty] ? next : answerVersusQuiz(next, answer);
+  return wrongAnswers.length < (game.quizAttempts ?? 1 + QUIZ_RETRIES[game.difficulty]) ? next : answerVersusQuiz(next, answer);
 }
 
 export function answerVersusQuiz(game: VersusQuiz, answer: string): VersusQuiz {
@@ -63,6 +65,7 @@ export function answerVersusQuiz(game: VersusQuiz, answer: string): VersusQuiz {
 }
 
 export function rewindVersusQuiz(game: VersusQuiz): VersusQuiz {
+  if (game.quizAttempts === 1) return game;
   if (game.complete || (!game.submission && game.wrongAnswers.length === 0)) return game;
   return { ...game, submission: null, wrongAnswers: [] };
 }

@@ -14,7 +14,11 @@ body:has(.mario-app .replay-stage[open]) { overflow: hidden; }
 .mario-app .versus-now-playing { padding: 10px; border: 2px solid var(--gold); border-radius: 12px; background: #493248; }
 .mario-app .choice-btn.correct, .mario-app .matched-tile { animation: answer-arrives .25s ease-out; }
 @keyframes answer-arrives { from { transform: scale(.97); } to { transform: scale(1); } }
-@media (prefers-reduced-motion: reduce) { .mario-app .choice-btn.correct, .mario-app .matched-tile { animation: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .mario-app *, .mario-app *::before, .mario-app *::after {
+    animation: none !important; transition: none !important; scroll-behavior: auto !important;
+  }
+}
 .mario-app .game-help { font-size: 1rem; line-height: 1.4; }
 .mario-app .game-help p { margin: 0; }
 .mario-app .game-help summary { cursor: pointer; min-height: 44px; display: flex; align-items: center; justify-content: center; }
@@ -49,7 +53,8 @@ body:has(.mario-app .replay-stage[open]) { overflow: hidden; }
   .mario-app .clue-count, .mario-app .match-progress, .mario-app .match-retries, .mario-app .quiz-retries, .mario-app .hunt-target-banner { margin: 2px 0; }
   .mario-app .game-help { font-size: .95rem; }
   .mario-app .game-help > .help-copy { display: none; }
-  .mario-app .pair-card { height: 80px; min-height: 80px; }
+  .mario-app .pair-card-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 5rem), 1fr)); }
+  .mario-app .pair-card { height: max(80px, 5rem); min-height: max(80px, 5rem); }
   .mario-app .pair-card-svg { height: 54px; }
   .mario-app .pair-card-word { font-size: .875rem; }
   .mario-app .game-help summary { font-size: .85rem; }
@@ -80,3 +85,11 @@ body:has(.mario-app .replay-stage[open]) { overflow: hidden; }
   .mario-app .play-format-description { display: none; }
   .mario-app .order-big-timer { font-size: 2.5rem; margin: 4px; }
 }
+/* Update controls stay in the optional footer, outside active play. */
+.app-maintenance { margin-top: 10px; }
+.app-maintenance button { margin: 6px; min-height: 44px; }
+.progress-backup { margin: 18px 0; padding: 12px; border: 1px solid var(--border); border-radius: 12px; }
+.progress-backup summary { cursor: pointer; min-height: 44px; font-weight: 700; }
+.progress-backup label { display: block; margin: 14px 0; }
+.progress-backup input { max-width: 100%; }
+.progress-backup button { min-height: 44px; margin: 6px 0; }

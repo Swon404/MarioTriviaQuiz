@@ -1,12 +1,100 @@
 # Mushroom Power Quiz — main experience plan
 
-Updated 21 October 2026. **This is the main plan and single active backlog.**
+Updated 29 October 2026. **This is the main plan and single active backlog.**
 
 It combines the 18 October whole-game audit with every outstanding workstream
 and acceptance check from the [previous roadmap](family-experience-roadmap-2026-10-11.md).
 That roadmap and earlier plans remain historical evidence, not competing task lists.
 Unchecked items below are not claimed complete merely because they have tests or
 appear in this document. Proposed rule changes still require a family decision.
+
+## 29 October — implementation checkpoint, not family acceptance
+
+- User approved **one competitive attempt**. Implemented for new two-player,
+  Shroomer and competitive Championship Quiz. Solo retries and old checkpoints
+  retain their prior rules; score configurations distinguish the new competition.
+- User requested **balanced scoring for review**. The concrete
+  [Championship proposal](championship-balance-proposal-2026-10-28.md) is prepared;
+  activation is awaiting a reply. Current scoring remains earned action points.
+  Optional setup help now explains available points, timed ties and the total.
+- [x] Expand to **252 Quiz/Learning records / 240 distinct facts / 125 matching
+  clues**, with the complete [coverage register](content-coverage-2026-10-29.md).
+- [x] Expand and audit the other catalogues: 30 Order titles, 66 Clue Duel subjects,
+  58 Finder courses/33 tasks, 60 Category tiles. The 41 Hunt pictures remain.
+  See the [mode audit](mode-audit-2026-10-29.md) for exact scope and sources.
+- [x] Add ten extra-fact pools, revealed-feedback exposure and semantic links;
+  suppress exhausted extras. Correct ambiguous matching clues and equivalent
+  answer labels. Preserve old IDs and unrelated facts about the same character.
+- [x] Add comparable timed personal-best improvements, preserve old Order rules
+  on resume, show check penalties by the timer, and fix singular point labels.
+- [x] Remove silent 200-result/100-Championship caps. Preserve existing records
+  on failed writes. **The reported restart score loss remains unresolved.**
+- [x] Implement [manual backup/merge and failure recovery](progress-backup-2026-10-29.md).
+  Existing IDs win; no cloud account or automatic transmission.
+- [x] Implement safe PWA updates, visible build, Home Screen icons, zoom,
+  complete reduced-motion styling and readable slow/error artwork fallbacks.
+  Production-worker update/offline checks are now part of `test:all`.
+- [x] Refresh browser compatibility data. No target-browser changes reported.
+- [x] Focused checks: Quick/Standard/Epic each complete all seven games, reload
+  each leg and verify carried totals. Phone stress checks pass in Chromium and
+  WebKit. Competitive attempts, backup failure/recovery and history checks pass.
+- Verification history: the first 289-test run passed 284; five stale assertions
+  expected plural "1 points", the old Cappy search count or competitive Rewind.
+  Updated assertions retain score/recovery checks. Screenshot review then exposed
+  enlarged-text word splitting; fixed the grid and checked all 41 labels. All 26
+  affected layout/replay/difficulty checks passed before the final full rerun.
+- [x] Stage-one final gate passed: 289 browser tests (213 Chromium, 76 WebKit),
+  content audit, TypeScript/production build and real production-worker update/offline
+  checks. Whitespace check passed. This verifies the expansion/reliability stage.
+- [ ] [Rank/milestone pacing proposal](progression-pacing-proposal-2026-10-29.md)
+  awaits agreement; thresholds and earned progress have not changed.
+- [ ] Physical Safari/Home Screen, Files backup, family challenge/interest and
+  Shroomer calibration remain. Use the [three-session checklist](phone-acceptance-2026-10-29.md).
+  These are acceptance work, not unfinished implementation to hide with test counts.
+- User requested stage-by-stage commits. The next stage changes Championship
+  Clue Match Up to one board per player; standalone play keeps its two boards.
+  No push or deployment of this local batch is claimed.
+
+## 28 October — earlier checkpoint and World content batch
+
+- Released through `1ef4bf5`: clearer timed Hunt results/leaderboards, compact
+  boards, the whole-bank feedback refresh and item follow-up, and removal of
+  irrelevant human difficulty controls. See the
+  [feedback audit](feedback-audit-2026-10-27.md) and
+  [difficulty audit](difficulty-audit-2026-10-28.md).
+  That release passed 234 browser checks (179 Chromium + 55 WebKit), content
+  audit and production/PWA build; GitHub test and deployment both succeeded.
+- Earlier dated local verification/release statements below describe those
+  batches at the time. They do not override this checkpoint.
+- [x] Implement the first World-first expansion: 20 new distinct quiz facts,
+  seven Rookie, seven Pro and six Legend; eight matching clues share their
+  history IDs. Learning Zone includes all 20. See the
+  [coverage/source register](world-content-batch-2026-10-28.md).
+  Current totals: **211 quiz records / 200 distinct facts / 116 matching clues**.
+- [x] Final `npm run test:all` passed for this local batch: 211-question content
+  audit / 900 generated quizzes, all 240 browser checks (185 Chromium + 55
+  WebKit), TypeScript and production/PWA build. Inspected the new Learning Zone
+  card at 390px; whitespace check passed. Not committed, pushed or deployed.
+- [ ] Family acceptance of the revised writing and new facts remains open.
+  More content and passing tests do not establish that Blaize wants another go.
+- Next content work: World Track Finder/Clue Duel expansion, followed by the
+  next reviewed batch towards 240 distinct facts. This batch adds Quiz, Learning
+  Zone and Clue Match Up content; it does not expand the other mode catalogues.
+- The score-loss report, Championship weighting/retry decisions, real-iPhone
+  acceptance and later backup/progression work remain open below.
+
+## 22 October — score-loss report and Championship audit
+
+- [ ] Unresolved: Dad reports scores disappeared after a restart. The exact score
+  type, browser/installation context and cause are unknown; no recovery or fix
+  claimed. Dad will watch for recurrence and asked to continue the plan. If it
+  recurs, capture player name, URL, Safari/Home Screen context, score type and
+  any storage warning before clearing data. Do not assume user error or deletion.
+- [x] Inspect Championship scoring opportunities across all seven modes and all
+  sizes: [source-backed comparison](championship-scoring-audit-2026-10-22.md).
+  One-point arithmetic is preserved; matching and untimed Hunt have greater
+  influence than some other games. Family rule decisions and runtime acceptance
+  remain open. This documentation-only audit does not claim new test coverage.
 
 ## Latest family feedback — quality review reopened, 21 October
 
@@ -24,11 +112,11 @@ evidence that the content is interesting**. Keep the quality work open.
   visual details and developer stories, checking their Nintendo sources. This
   includes Double Cherry regrouping, character-specific switches, Kamek/Cow,
   and Wonder's rejected live-action Mario idea. No new questions claimed.
-- [ ] Continue the substantive feedback review across the remaining quiz bank,
+- [x] Complete the substantive editorial feedback review across the remaining quiz bank,
   Clue Duel, Track Finder and Category Finder. Prefer one useful trick, surprising
   detail or story beyond the answer; avoid repeating the explanation, generic
   encouragement, or an unrelated fact attached merely to fill the space.
-- [ ] Replace dry original-release/cup-list facts where a source-supported,
+- [x] Replace dry original-release/cup-list facts where a source-supported,
   relevant gameplay detail is available. Keep original-edition precision.
 - [ ] Have Dad and Blaize try the revised feedback and Pro boards. Check whether
   Legend now feels easier than Pro before changing its rules; no family verdict yet.
@@ -50,9 +138,9 @@ extra must add something beyond the answer. Mario Kart World comes first.
 - [x] Preserve existing question IDs, answer keys, levels, history and scoring.
   Existing glitch questions remain Legend. Never present a patched glitch as
   a currently working trick; every historical-glitch extra names its fix version.
-- [ ] Extend this approach beyond the 17-entry batch and previous seven revisions;
-  avoid duplicate tips about the same move. Independent Clue Duel/Track Finder
-  content still needs the deeper review above.
+- [x] Extend this approach beyond the 17-entry batch and previous seven revisions;
+  the whole-bank review and 29 October expansion cover independent Clue Duel and
+  Track Finder content too. Semantic extra-history links avoid repeating the same tip.
 - [ ] Family-vet these examples in real play before claiming editorial acceptance.
 - [x] Release verification: a fresh `npm run test:all` passed all 200 tests
   (163 Chromium, 37 WebKit), content audit, TypeScript and production/PWA build
@@ -90,15 +178,15 @@ build passed. [GitHub tests and deployment passed](https://github.com/Swon404/Ma
 The audit inspected source and phone-sized screenshots, **not a physical iPhone
 or family playtest**. Documentation updates do not constitute a new app release.
 
-| Area | Current coverage |
+| Area | Current local coverage (29 October) |
 | --- | --- |
-| Quiz Battle / Learning Zone | 191 reviewed questions/cards, 180 distinct facts; 69 Rookie / 65 Pro / 57 Legend records |
-| Clue Match Up | 108 dedicated clues derived from quiz knowledge; two boards per player |
-| Clue Duel | 28 subjects: 16 characters and 12 tracks |
-| Track Finder | 48 MK8 Deluxe DLC courses; 23 cup/origin/feature tasks |
-| Game Order | 22 titles; documented US release chronology |
+| Quiz Battle / Learning Zone | 252 reviewed questions/cards, 240 distinct facts; 90 Rookie / 87 Pro / 75 Legend records |
+| Clue Match Up | 125 dedicated clues derived from quiz knowledge; two boards per player |
+| Clue Duel | 66 subjects: 20 characters/enemies, 22 tracks, 16 items, eight places |
+| Track Finder | 48 MK8 Deluxe DLC and ten World courses; 33 cup/origin/feature tasks |
+| Game Order | 30 titles; documented original US release chronology |
 | Match & Hunt | 41 picture/name pairs, including Goomba; track-scenery pairs excluded |
-| Category Finder | 52 tiles; five basic groups and eleven advanced relationships |
+| Category Finder | 60 tiles; five basic groups and eleven advanced relationships |
 
 - [x] All seven modes support solo, two players and Shroomer; Championship comes first.
 - [x] Remembered settings, collapsed setup, editable names, Quick/Standard/Epic formats.
@@ -161,7 +249,7 @@ or family playtest**. Documentation updates do not constitute a new app release.
   passed: **192/192** tests (155 Chromium, 37 WebKit), content/rules audit and
   production/PWA build. Whitespace checks passed. Changes remain local; no commit
   or push requested. Prior WebKit flakiness did not recur but is not claimed fixed.
-- [ ] Review Category Finder's independent relationship notes and matching-specific
+- [x] Review Category Finder's independent relationship notes and matching-specific
   feedback presentation for repeated text; both already inherit refreshed shared
   quiz copy where used. Do not count this editorial work as content expansion.
 - [ ] Ask Dad and Blaize which facts actually taught them something or made them
@@ -178,7 +266,7 @@ or family playtest**. Documentation updates do not constitute a new app release.
   Keep the WebKit click-instability investigation open; do not claim release-green.
   Separate production build passed, including TypeScript and PWA generation;
   whitespace checks passed. No commit, push or GitHub deployment this batch.
-- [ ] Fix singular point labels spotted in the phone screenshot ("1 points",
+- [x] Fix singular point labels spotted in the phone screenshot ("1 points",
   "+1 points") without changing scoring.
 - Whole-bank follow-through: content audit and 11 focused feedback/fact-pool checks
   passed. The final `npm run test:all` passed: **188/188** browser checks
@@ -191,47 +279,49 @@ or family playtest**. Documentation updates do not constitute a new app release.
 
 ## 1. Make Championship fair and understandable
 
-- [ ] Compare scoring opportunities across every selected game and Championship size.
+- [x] Compare implemented scoring opportunities across every game and Championship size
+  in the [22 October audit](championship-scoring-audit-2026-10-22.md).
   Concrete concern: Quick Rookie Quiz offers 3 answer points, while two Clue Match
   boards offer 8 pair points. Simple arithmetic does not ensure equal game influence.
 - [ ] Observe actual game contributions in family play; report evidence before changing rules.
 - [ ] **Decision required:** agree whether to equalise opportunities through board/round
   sizes or accept different game weights. Preserve one-point scoring unless explicitly changed.
   Two Clue Match rounds remain the approved rule; do not silently alter them for balance.
-- [ ] Make available points and the winner/draw explanation clear with minimal text.
-- [ ] Audit comparable Order work, Hunt goals/unlocks, distinct questions where intended,
+- [x] Make available points and the winner/draw explanation clear with minimal text.
+- [x] Audit comparable Order work, Hunt goals/unlocks, distinct questions where intended,
   three-round timed turns, carried totals and documented draws/tiebreakers.
-- [ ] Test every mode entering/leaving Championship, Quick/Standard/Epic sequences,
-  reloads and interruptions during Shroomer's turn.
+- [x] Test every mode entering/leaving Championship in Quick/Standard/Epic solo
+  sequences with reloads in each leg. Retain competitive carry/tie, visible Shroomer
+  and pending-bot cancellation checks. Physical interruption acceptance remains below.
 - [ ] Playtest difficulty with both humans; calibrate Shroomer accuracy, memory and pace
   from observed runs, with no hidden-information advantage in memory games.
-- [ ] **Decision required:** competitive retries. Rookie Quiz currently offers four attempts
-  for four choices. Consider a smaller allowance for competition without removing relaxed
-  learning play. Handicaps, per-player competitive levels and score weighting also need approval.
+- [x] **Decision received:** one competitive attempt, implemented for new competition.
+  Solo learning retries and old checkpoints remain intact. Handicaps, per-player
+  competitive levels and score weighting have not been approved or changed.
 
 Acceptance: both players can explain who won and why; totals match earned actions;
 both find a satisfying challenge and enjoy close games. No silent rebalancing.
 
 ## 2. Expand the knowledge the family actually enjoys
 
-- [ ] Add reviewed batches of approximately 20 distinct facts, across levels and subjects.
-  Reach about 240 distinct reviewed facts (currently 180), then assess variety before
+- [x] Add reviewed batches of approximately 20 distinct facts, across levels and subjects.
+  Reach about 240 distinct reviewed facts (now 240), then assess variety before
   setting another count target. Rewordings and matching versions are not new facts.
-- [ ] Prioritise World courses, landmarks, racers, items and gameplay; then the other
+- [x] Prioritise World courses, landmarks, racers, items and gameplay; then the other
   confirmed favourites. Expand Party/sports/RPG/Luigi's Mansion after those favourites.
-- [ ] Cover decisions, powers, enemies, bosses, worlds, secrets, collectibles and development
+- [x] Cover decisions, powers, enemies, bosses, worlds, secrets, collectibles and development
   details—not mainly release dates, consoles or cups. Keep patch trivia on Legend.
-- [ ] Use believable comparable distractors, no joke answers or name giveaways, and
+- [x] Use believable comparable distractors, no joke answers or name giveaways, and
   explicit game/edition context wherever rules differ.
-- [ ] Preserve useful explanations: usually two short how/why sentences and one relevant
+- [x] Preserve useful explanations: usually two short how/why sentences and one relevant
   fun fact. Check every question, choice, answer, explanation, fact and source together.
-- [ ] Expand subject-specific fun-fact pools beyond the six-question pilot; remember exposure
+- [x] Expand subject-specific fun-fact pools beyond the six-question pilot; remember exposure
   across games and omit an exhausted extra fact rather than immediately repeating it.
-- [ ] Finish semantic history links across Quiz, matching, Clue Duel and Finder tasks.
+- [x] Finish reviewed semantic history links across Quiz, matching, Clue Duel and Finder tasks.
   Revealed feedback counts as exposure; unrelated facts about one character are not duplicates.
-- [ ] Maintain a game/subject/difficulty/source/knowledge-ID coverage register and test pool
+- [x] Maintain a game/subject/difficulty/source/knowledge-ID coverage register and test pool
   capacity for the longest supported sessions. Keep exact edition and review dates.
-- [ ] Grow Learning Zone with reviewed content; check search, sources, readable context
+- [x] Grow Learning Zone with reviewed content; check search, sources, readable context
   and the separate track guide as the catalogue expands.
 
 Acceptance: every enabled record is reviewed; unseen eligible knowledge takes priority;
@@ -241,38 +331,47 @@ review labels are honest; recent sessions feel varied to both players, not just 
 
 | Mode | Remaining work and acceptance |
 | --- | --- |
-| Quiz Battle | Broader gameplay knowledge, believable distractors and family-calibrated levels. Wrong answers teach something; retain automatic visible Shroomer turns. Retry change is a decision in section 1, not authorised implementation. |
-| Game Order | Expand the 22-title catalogue after review; preserve explicit release region and unambiguous ties. Test long names, 8 tiles, comparable opponent boards and per-level feedback. No early year leaks; show any time penalty clearly by the clock. |
-| Track Finder | World first, using recognisable landmarks, hazards and routes. Retain MK8 Deluxe base-course expansion in the later backlog, then other titles with explicit supported coverage. Keep obscure cup/origin questions off beginner-heavy play; accept every valid visible answer. Explain misses with a memorable course detail and keep the guide useful. |
-| Clue Match Up | Review all 108 clues for ambiguity and plausible same-kind alternatives. Shorten where useful, reduce space above the board, preserve readable text, stable feedback and two rounds. Each clue has one intended match on its board; matched/remaining tiles are obvious. |
-| Match & Hunt | Family-check all 41 pairs, replacing only unrecognisable images. Verify target presence/unlocks, first-flip image readiness, rapid flips, and 16/20-pair readability. Keep Shroomer's moves visible without long dead time; no track-scenery pictures. |
-| Clue Duel | Audit all 28 five-clue sequences and offered choices, then expand World content and Mario items/enemies/places with compatible prompts. Early clues fit several options, middle clues reward knowledge and final clues decide fairly. Keep guesses, bonus turns and the large Next Clue button clear. |
-| Category Finder | Validate the completed Pro/Legend relationship changes with the family. Broaden useful memberships in the existing layout; every valid answer accepted and explained, every board solvable. Difficulty must not come from tiny text or obscure labels. |
+| Quiz Battle | Expanded to 240 distinct facts with reviewed distractors and extras. One competitive attempt is approved and implemented; solo retries stay. Family-calibrate levels and judge whether wrong answers teach something interesting. |
+| Game Order | Expanded to 30 sourced US releases. Eight tiles, long names, equal swap work, hidden years, check penalties and old-rule recovery checked. Family-check readability and challenge. |
+| Track Finder | Ten World courses added through landmarks, hazards and routes; all 48 Booster courses retained. Rookie avoids cup/origin trivia. Valid visible answers and feedback audited. Family recognition remains; MK8 Deluxe base courses stay in the later backlog. |
+| Clue Match Up | All 125 clues reviewed; ambiguous descriptions and equivalent answer labels corrected. Two boards, compact layout and stable feedback retained. Family-check clarity and challenge. |
+| Match & Hunt | Automated target/unlock, rapid-flip, image fallback and 16/20-pair checks pass. Enlarged text gets wider tiles; normal text keeps four columns at 390px. Family-check recognition of all 41 pairs and Shroomer's pace. No track-scenery pictures. |
+| Clue Duel | Expanded to 66 five-clue subjects, including World tracks/items and Mario enemies, powers and places. Compatible choices, progressive clues, bonus turns and feedback audited. Family-check early-clue fairness and difficulty. |
+| Category Finder | Expanded to 60 tiles within the existing layout; original-release memberships and near misses checked. Pro retains exactly one correct choice. Family judgement of Pro/Legend difficulty remains. |
 
 ## 4. Prove the phone experience and reliability
 
 - [ ] Complete real iPhone testing in Safari and Home Screen mode: first/repeat load,
   portrait/rotation, browser bars/safe areas, larger text, voice/silent play, lock,
   app switching, reload and offline revisit. Check all modes and subsequent goes.
-- [ ] Add automated Safari/WebKit coverage alongside Chromium; it supplements rather
-  than replaces physical-device testing.
+- [x] Add automated Safari/WebKit coverage alongside Chromium: the latest release
+  includes 55 WebKit checks. This supplements rather than replaces physical-device
+  testing; the intermittent setup-click investigation remains open above.
 - [ ] Test accidental/rapid taps on answers, Check, Next, restart, exit, replay and settings.
   Add guards where needed: no duplicate points, skipped rounds or stale bot callbacks.
-- [ ] Finish long-name/long-clue, 8-tile Order, 16/20-pair Hunt and Legend board layout checks.
-  Prefer purposeful scrolling to tiny text; no exit/score/voice overlap or shifting buttons.
+  Automated evidence covers duplicate answer/advance, rapid matching, stale saved
+  completions, exit cancellation, restarted bot callbacks and replay Start/Stop.
+  Complete the physical touch sweep across all listed controls during acceptance.
+- [x] Complete automated long-name/clue, 8-tile Order, 16/20-pair Hunt and Legend
+  layout checks. Inspect phone screenshots; enlarged matching text uses wider tiles
+  and all 41 labels fit. Physical browser-bar/rotation acceptance remains open.
 - [ ] Measure cold-load image behaviour on the phone before further resizing artwork.
   All revealed cards need ready, recognisable artwork or a readable privacy-safe fallback.
 - [ ] Check touch-target spacing, keyboard focus, screen-reader labels, ticks/text as well
   as colour, reduced motion and voice cancellation. No hidden-answer speech or sound-only turns.
-- [ ] Verify interruption timing: running timers include time away, completed times freeze,
+  Automated evidence covers control sizes, keyboard reveal, focus reset, hidden-card
+  accessible names, revealed-only speech and reduced motion. Source review confirms
+  speech cancellation on screen/round changes and exit; physical VoiceOver/audio remain.
+- [x] Verify interruption timing in automated recovery/countdown checks: running timers include time away, completed times freeze,
   preparation resumes safely and restarted/practice attempts cannot replace ranked records.
 - [ ] Physically check both replay types: board proportions, target, selections, continuous
   clock, frozen Stop/final time, simple controls and unchanged live scores. Do not rebuild them.
-- [ ] Validate PWA update behaviour during active sessions; offer safe updates between games,
-  a visible app version and appropriate Home Screen icons. Check offline recovery and storage failures.
-- [ ] Keep help optional and concise for newcomers, reachable without adding repeated panels.
-- [ ] Maintain CI dependencies/runners and release checks; address deprecation warnings without
-  confusing successful deployment with untested device behaviour.
+- [x] Validate production-worker updates during active sessions, including another tab
+  activating an update. Safe-screen prompts, visible build and Home Screen icons added;
+  automated offline recovery and storage failures checked. Physical Home Screen remains open.
+- [x] Keep help optional and concise for newcomers, reachable without adding repeated panels.
+- [x] Maintain CI release checks and browser compatibility data; production-worker checks
+  now run in the full gate. Actual GitHub deployment and device acceptance remain separate.
 
 Acceptance: start, play three consecutive rounds, rewind where allowed, view replay
 and exit without assistance; no obscured controls or mistaken turn. Record device,
@@ -283,14 +382,16 @@ iOS/browser and settings so each failure can become a regression test.
 - [ ] Recalibrate rank/milestone pacing after the simple-points change; review 500/2,000-point
   milestones against real session earnings. Preserve historical progress and achievements;
   obtain agreement on new thresholds, with no unapproved bonus currency or multipliers.
-- [ ] Show useful personal-best improvements only against the same rules/configuration;
+- [x] Show useful personal-best improvements only against the same rules/configuration;
   keep bot and practice records separate.
-- [ ] Ensure fresh sessions feel fresh while retaining preferred settings; no extra reward popups.
-- [ ] **New proposal:** manual progress export/import, not accounts or cloud sync. Define
+- [x] Prefer unseen eligible material while retaining preferred settings; no extra reward popups.
+  Family judgement of variety remains open.
+- [x] Manual progress export/import, not accounts or cloud sync. Define
   scope and safe merge/restore behaviour first; validate malformed files, preserve current
   progress on failure and explain that existing recovery is only on this device.
-- [ ] Keep full-storage warnings and cleanup/Undo useful; never discard older bests or replays
-  silently. Check Learning Zone remains pleasant to browse as its reviewed content grows.
+- [x] Keep full-storage warnings and cleanup/Undo; remove silent ordinary-result and
+  Championship caps, preserve older timed bests/replays, and check Learning Zone search.
+  Family browsing acceptance and the reported restart score loss remain unresolved.
 
 ## 6. Family acceptance — the actual 10/10 decision
 

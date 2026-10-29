@@ -1,6 +1,6 @@
 import type { Difficulty, Topic } from './questions.ts';
 import type { GameMode, PairVariant } from './rounds.ts';
-import { syncLifetime, progressStorageProblem, reportProgressStorageProblem } from './lifetimeProgress.ts';
+import { syncLifetime, reportProgressStorageProblem } from './lifetimeProgress.ts';
 
 const PROFILE_KEY = 'mariotrivia_profile_v1';
 const RESULTS_KEY = 'mariotrivia_results_v1';
@@ -51,7 +51,8 @@ export function getPlayer(): string {
 }
 
 export function savePlayer(name: string): void {
-  localStorage.setItem(PROFILE_KEY, name.trim().slice(0, 24));
+  try { localStorage.setItem(PROFILE_KEY, name.trim().slice(0, 24)); }
+  catch { reportProgressStorageProblem(); }
 }
 
 export function getResults(): QuizResult[] {
@@ -68,8 +69,9 @@ export function saveResult(result: QuizResult): void {
   syncLifetime([...existing, result]);
   try {
     const updated = [result, ...existing];
-    // If lifetime persistence failed, do not discard older recoverable results.
-    localStorage.setItem(RESULTS_KEY, JSON.stringify(progressStorageProblem() ? updated : updated.slice(0, 200)));
+    // Older records may still be someone's best in a comparable score group.
+    // Only the explicit cleanup flow may remove them.
+    localStorage.setItem(RESULTS_KEY, JSON.stringify(updated));
     reportProgressStorageProblem(false);
   } catch { reportProgressStorageProblem(); }
 }
@@ -84,5 +86,6 @@ export function getChampionshipResults(): ChampionshipResult[] {
 export function saveChampionshipResult(result: ChampionshipResult): void {
   const existing = getChampionshipResults();
   if (existing.some(item => item.id === result.id)) return;
-  localStorage.setItem(CHAMPIONSHIPS_KEY, JSON.stringify([result, ...existing].slice(0, 100)));
+  try { localStorage.setItem(CHAMPIONSHIPS_KEY, JSON.stringify([result, ...existing])); }
+  catch { reportProgressStorageProblem(); }
 }

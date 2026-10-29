@@ -9,7 +9,8 @@ export const ORDER_RULES = {
   hard: { label: 'Hard', description: 'Only the number of correct positions. Years revealed when solved. +1 second per wrong check.', hints: false, penalty: 1000 },
 } as const;
 export const orderTileOptions = (_difficulty: Difficulty) => [4, 6, 8];
-export const ORDER_RULESET = 'order-v2';
+export const ORDER_RULESET = 'order-v3';
+export const orderUsesSharedPool = (ruleset?: string) => ruleset === 'order-v2' || ruleset === ORDER_RULESET;
 const practised = new Set<string>();
 export const markOrderPractice = (id: string) => { practised.add(id); };
 export const isOrderPractice = (id: string) => practised.has(id);
@@ -27,14 +28,14 @@ export function saveOrderTime(value: OrderTime): boolean {
     const existing = getOrderTimes();
     // Keep older best times and their replays. If storage is full, the failed
     // atomic write leaves existing records intact and the caller shows a warning.
-    if (!existing.some(item => item.id === value.id)) localStorage.setItem(KEY, JSON.stringify([{ ...value, ruleset: ORDER_RULESET }, ...existing]));
+    if (!existing.some(item => item.id === value.id)) localStorage.setItem(KEY, JSON.stringify([{ ...value, ruleset: value.ruleset ?? ORDER_RULESET }, ...existing]));
     return true;
   } catch { return false; }
 }
 export function orderTimeKey(item: OrderTime): string {
   // Current boards use the same title pool at every old level. Legacy boards did not.
-  return JSON.stringify([item.ruleset ?? 'legacy', item.ruleset === ORDER_RULESET ? null : item.difficulty, item.challenge, item.tiles]);
+  return JSON.stringify([item.ruleset ?? 'legacy', orderUsesSharedPool(item.ruleset) ? null : item.difficulty, item.challenge, item.tiles]);
 }
-export function orderLeaderboard(_difficulty: Difficulty, options: OrderOptions): OrderTime[] {
-  return getOrderTimes().filter(item => item.ruleset === ORDER_RULESET && item.challenge === options.challenge && item.tiles === options.tiles).sort((a, b) => a.elapsedMs - b.elapsedMs || a.attempts - b.attempts).slice(0, 5);
+export function orderLeaderboard(_difficulty: Difficulty, options: OrderOptions, ruleset = ORDER_RULESET): OrderTime[] {
+  return getOrderTimes().filter(item => item.ruleset === ruleset && item.challenge === options.challenge && item.tiles === options.tiles).sort((a, b) => a.elapsedMs - b.elapsedMs || a.attempts - b.attempts).slice(0, 5);
 }

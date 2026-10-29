@@ -95,6 +95,9 @@ const groups: Record<BaseCategory, readonly Entry[]> = {
 
 const order: readonly BaseCategory[] = ['friend', 'baddie', 'power-up', 'game', 'system'];
 const gameDiscoveryIds: Readonly<Record<string, string>> = {
+  'Super Mario All-Stars': 'all-stars', 'Mario Party': 'party', "Luigi's Mansion": 'mansion',
+  'Mario Kart: Double Dash!!': 'double-dash', 'Mario Kart DS': 'kart-ds', 'Mario Kart Wii': 'kart-wii',
+  'Mario Kart 8': 'kart8', 'Mario Kart World': 'kart-world',
   'Super Mario Bros.': 'smb', 'Super Mario World': 'world', 'Super Mario 64': 'mario64',
   'Super Mario Sunshine': 'sunshine', 'Super Mario Galaxy': 'galaxy', 'Super Mario 3D World': 'world3d',
   'Super Mario Odyssey': 'odyssey', 'Super Mario Bros. Wonder': 'wonder', 'Super Mario Land': 'land',
@@ -165,10 +168,10 @@ const extraGames = [
   ['new-wii', 'New Super Mario Bros. Wii', 'Wii, 2009.'],
 ] as const;
 const contextual: Partial<Record<FinderCategory, readonly string[]>> = {
-  'classic-game': ['Super Mario Bros.', 'Super Mario World', 'Super Mario 64', 'Super Mario Land', 'Super Mario Land 2: 6 Golden Coins'],
-  'wii-game': ['Super Mario Galaxy', 'Super Mario Galaxy 2', 'New Super Mario Bros. Wii'],
+  'classic-game': ['Super Mario Bros.', 'Super Mario World', 'Super Mario 64', 'Super Mario Land', 'Super Mario Land 2: 6 Golden Coins', 'Super Mario All-Stars', 'Mario Party'],
+  'wii-game': ['Super Mario Galaxy', 'Super Mario Galaxy 2', 'New Super Mario Bros. Wii', 'Mario Kart Wii'],
   'switch-game': ['Super Mario Odyssey', 'Super Mario Bros. Wonder', 'Super Mario Maker 2'],
-  'handheld-game': ['Super Mario Land', 'Super Mario Land 2: 6 Golden Coins', 'New Super Mario Bros.', 'Super Mario 3D Land'],
+  'handheld-game': ['Super Mario Land', 'Super Mario Land 2: 6 Golden Coins', 'New Super Mario Bros.', 'Super Mario 3D Land', 'Mario Kart DS'],
   'wonder-power': ['Elephant Fruit', 'Bubble Flower', 'Drill Mushroom'],
   'world-newcomer': ['Goomba', 'Cow', 'Spike'],
   '3d-power': ['Super Bell', 'Double Cherry'],
@@ -194,6 +197,16 @@ export const CATEGORY_ITEMS: readonly CategoryItem[] = [
   ...(['Super Bell', 'Double Cherry', 'Mega Mushroom'] as const).map((name, index) => ({ id: `power-extra-${index}`, name, detail: ['The Super Bell gives you cat claws for climbing.', 'The Double Cherry makes another copy of your character.', 'The Mega Mushroom makes you enormous.'][index], category: 'power-up' as const, sourceUrl: world3d })),
   { id: 'friend-cow', name: 'Cow', detail: 'Cow joins the drivers in Mario Kart World.', category: 'friend' as const, sourceUrl: world },
   { id: 'baddie-spike', name: 'Spike', detail: 'Spike is another new racer in Mario Kart World.', category: 'baddie' as const, sourceUrl: world },
+  ...([
+    ['all-stars', 'Super Mario All-Stars', 'Super_Mario_All-Stars'],
+    ['party', 'Mario Party', 'Mario_Party'],
+    ['mansion', "Luigi's Mansion", 'Luigi%27s_Mansion'],
+    ['double-dash', 'Mario Kart: Double Dash!!', 'Mario_Kart:_Double_Dash!!'],
+    ['kart-ds', 'Mario Kart DS', 'Mario_Kart_DS'],
+    ['kart-wii', 'Mario Kart Wii', 'Mario_Kart_Wii'],
+    ['kart8', 'Mario Kart 8', 'Mario_Kart_8'],
+    ['kart-world', 'Mario Kart World', 'Mario_Kart_World'],
+  ] as const).map(([id, name, page]) => ({ id: `game-${id}`, name, detail: '', category: 'game' as const, sourceUrl: `https://www.mariowiki.com/${page}` })),
 ].map((item, position) => ({ ...item, detail: itemDiscovery(item.name).text, detailSourceUrl: itemDiscovery(item.name).sourceUrl, number: position + 1,
   memberships: [item.category, ...Object.entries(contextual).filter(([, names]) => names!.includes(item.name)).map(([category]) => category as FinderCategory)],
 }));

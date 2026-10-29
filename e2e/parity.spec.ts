@@ -3,7 +3,7 @@ import { QUESTIONS } from '../src/mario/questions.ts';
 import { MATCH_CLUES } from '../src/mario/matchClues.ts';
 import { MARIO_TIMELINE } from '../src/mario/rounds.ts';
 import { TRACK_CHALLENGES, trackLabel } from '../src/mario/trackChallenges.ts';
-import { BOOSTER_COURSES } from '../src/mario/courses.ts';
+import { FINDER_COURSES as BOOSTER_COURSES } from '../src/mario/trackChallenges.ts';
 import { CLUE_SUBJECTS } from '../src/mario/clues.ts';
 import { CATEGORY_ITEMS, CATEGORY_LABELS, fitsCategory } from '../src/mario/categoryCatalog.ts';
 
@@ -294,6 +294,7 @@ test('Clue Duel passes clues and gives one bonus guess before alternating the ne
 test('Track Finder mixes all three clue types on a phone without origin giveaways', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await openGame(page, 'Track Finder');
+  await page.getByRole('button', { name: 'Pro', exact: false }).click();
   await page.getByRole('button', { name: 'Start!', exact: true }).click();
   const kinds = new Set<string>();
   for (let index = 0; index < 3; index++) {
@@ -438,7 +439,7 @@ test('relaxed Hunt shares a board, passes on a miss, keeps a match and rewinds b
   await page.locator(`.pair-card[data-pair-id="${ids[0]}"][data-kind="icon"]`).click();
   await page.locator(`.pair-card[data-pair-id="${ids[0]}"][data-kind="word"]`).click();
   await expect(page.locator('.versus-now-playing')).toContainText("Ben's turn");
-  await expect(page.locator('.versus-now-playing')).toContainText('Ben: 1 points');
+  await expect(page.locator('.versus-now-playing')).toContainText('Ben: 1 point');
   await page.getByRole('button', { name: 'Restart go' }).click();
   await expect(page.locator('.versus-now-playing')).toContainText('Ben: 0 points');
   await expect(page.locator('.pair-card-found')).toHaveCount(0);

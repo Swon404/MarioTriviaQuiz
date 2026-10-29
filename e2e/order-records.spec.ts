@@ -14,11 +14,11 @@ test('Game Order legacy and current rules are separate and duplicate saves canno
   });
   expect(result.all).toHaveLength(3);
   expect(result.ranked).toHaveLength(2);
-  expect(result.ranked[0]).toMatchObject({ id: 'current', elapsedMs: 2000, ruleset: 'order-v2' });
+  expect(result.ranked[0]).toMatchObject({ id: 'current', elapsedMs: 2000, ruleset: 'order-v3' });
   await page.getByRole('button', { name: 'High Scores' }).click();
   await expect(page.locator('.order-leaderboard').filter({ hasText: 'Legacy' })).toHaveCount(1);
-  await expect(page.locator('.order-leaderboard').filter({ hasText: 'order-v2' })).toHaveCount(1);
-  await expect(page.locator('.order-leaderboard').filter({ hasText: 'order-v2' }).locator('li')).toHaveCount(2);
-  await expect(page.locator('.order-leaderboard').filter({ hasText: 'order-v2' }).locator('h4')).not.toContainText('Rookie');
+  await expect(page.locator('.order-leaderboard').filter({ hasText: 'order-v3' })).toHaveCount(1);
+  await expect(page.locator('.order-leaderboard').filter({ hasText: 'order-v3' }).locator('li')).toHaveCount(2);
+  await expect(page.locator('.order-leaderboard').filter({ hasText: 'order-v3' }).locator('h4')).not.toContainText('Rookie');
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem('mariotrivia_order_times_v1')!))).toEqual(result.all);
 });

@@ -1,4 +1,5 @@
 import { canonicalKnowledge, normalizeKnowledge } from './knowledge.ts';
+import { selectionKnowledge } from './feedbackKnowledge.ts';
 
 const KEY = 'mariotrivia_question_history_v1';
 type History = Record<string, string[]>;
@@ -6,9 +7,16 @@ const playerKey = (name: string) => name.trim().toLowerCase();
 
 // Lower ranks come first: unseen material, then the oldest seen material.
 export function knowledgeRank(id: string, recent: readonly string[]): number {
-  const index = recent.findIndex(seen => canonicalKnowledge(seen) === canonicalKnowledge(id));
+  let index = recent.findIndex(seen => canonicalKnowledge(seen) === canonicalKnowledge(id));
+  if (index < 0) {
+    const linked = selectionKnowledge(id);
+    const indexes = linked.map(key => recent.findIndex(seen => canonicalKnowledge(seen) === canonicalKnowledge(key)));
+    if (indexes.length && indexes.every(value => value >= 0)) index = Math.min(...indexes);
+  }
   return index < 0 ? -recent.length - 1 : -index;
 }
+
+export const hasSeenKnowledge = (id: string, recent: readonly string[]): boolean => knowledgeRank(id, recent) >= -recent.length;
 
 function readHistory(): History {
   try {

@@ -10,16 +10,16 @@ export function scoreUsesLevel(result: FinishedScore): boolean {
     ? result.games.some(game => usesKnowledgeLevel(game.mode))
     : usesKnowledgeLevel(result.mode ?? 'quiz'));
 }
-export function scoreConfiguration(rounds: readonly GameRound[], order: OrderOptions): string {
+export function scoreConfiguration(rounds: readonly GameRound[], order: OrderOptions, quizAttempts?: 1): string {
   return [...new Set(rounds.map(round => {
     switch (round.mode) {
-      case 'game-order': return `${round.tiles.length} tiles · ${order.challenge}`;
+      case 'game-order': return `${round.tiles.length} tiles · ${order.challenge}${round.orderRuleset ? ` · ${round.orderRuleset}` : ''}`;
       case 'pair-match': return `${round.variant} · ${round.pairs.length} pairs · goal ${round.goal} · ${round.timed ? 'timed' : 'relaxed'} · target ${round.targetPairId ?? 'none'} · unlock ${round.unlockPairs}`;
       case 'match-hunt': return `${round.pairs.length} pairs`;
       case 'category-finder': return `${round.tiles.length} tiles${round.answerRule === 'single' ? ' · one answer' : ''}`;
       case 'track-finder': return `${round.tiles.length} tiles`;
       case 'clue-duel': return `${round.choices.length} choices`;
-      default: return 'Questions';
+      default: return quizAttempts === 1 ? 'Questions · one competitive attempt' : 'Questions';
     }
   }))].sort().join(' / ');
 }

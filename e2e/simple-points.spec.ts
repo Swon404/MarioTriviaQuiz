@@ -47,11 +47,11 @@ test('Clue Match Up live points survive a failed board and rewind clears them', 
     await page.locator('.match-column').last().getByRole('button', { name: clue, exact: true }).click();
   };
   await choose(names[0], clues[0]);
-  await expect(page.locator('.score-display')).toContainText('1 points');
+  await expect(page.locator('.score-display')).toContainText('1 point');
   for (let i = 0; i < 4; i++) await choose(names[1], clues[2]);
   await expect(page.locator('.feedback')).toContainText('Round over');
-  await expect(page.locator('.mario-earned')).toHaveText('+1 points');
-  await expect(page.locator('.score-display')).toContainText('1 points');
+  await expect(page.locator('.mario-earned')).toHaveText('+1 point');
+  await expect(page.locator('.score-display')).toContainText('1 point');
   await page.getByRole('button', { name: 'Rewind', exact: false }).click();
   await expect(page.locator('.score-display')).toContainText('0 points');
 });
@@ -79,10 +79,10 @@ test('Championship timed award is visible immediately and Next commits it only o
     await page.reload();
     await page.getByRole('button', { name: 'Resume game', exact: true }).click();
     const table = page.getByRole('table', { name: 'Championship scores' });
-    await expect(table.locator('tbody td')).toHaveText(index === 0 ? ['0 points', '0 points', '0 points', '0 points'] : ['0 points', '0 points', '1 points', '1 points']);
+    await expect(table.locator('tbody td')).toHaveText(index === 0 ? ['0 points', '0 points', '0 points', '0 points'] : ['0 points', '0 points', '1 point', '1 point']);
     if (index === 0) await expect(page.locator('.order-result')).toContainText('Waiting for the other player');
     else await expect(page.locator('.order-result')).toContainText('+1 point');
     await page.getByRole('button', { name: 'Next turn', exact: false }).click();
-    await expect(table.locator('tbody td')).toHaveText(index === 0 ? ['0 points', '0 points', '0 points', '0 points'] : ['0 points', '0 points', '1 points', '1 points']);
+    await expect(table.locator('tbody td')).toHaveText(index === 0 ? ['0 points', '0 points', '0 points', '0 points'] : ['0 points', '0 points', '1 point', '1 point']);
   }
 });

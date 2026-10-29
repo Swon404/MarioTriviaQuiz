@@ -21,6 +21,16 @@ export function championshipRoundCount(mode: GameMode, size: ChampionshipSize): 
   return ROUND_COUNTS[mode][size];
 }
 
+export function championshipScoring(mode: GameMode, size: ChampionshipSize, difficulty: Difficulty, pairs: PairMatchOptions, competitive: boolean): string {
+  const rounds = championshipRoundCount(mode, size);
+  if (mode === 'match-hunt') return `1 per matched pair; up to ${rounds * ({ explorer: 4, scientist: 6, professor: 8 })[difficulty]} each.`;
+  if (mode === 'pair-match' && pairs.variant === 'hunt' && !pairs.huntTimed) return `1 per pair found${competitive ? ', shared between players' : ''}. ${pairs.targetMode === 'none' ? 'Find every pair.' : 'Finding the unlocked target ends the board.'}`;
+  if (mode === 'game-order' || mode === 'pair-match') return competitive
+    ? `1 per timed round won; up to ${rounds} each. Exact ties give both 1.` : `1 per completed board; up to ${rounds}.`;
+  if (mode === 'clue-duel') return competitive ? `${rounds * 2} subjects shared. 1 per solve; a bonus guess can win the point.` : `1 per solved subject; up to ${rounds}.`;
+  return `1 per correct answer; up to ${rounds}${competitive ? ' each' : ''}.`;
+}
+
 export function createChampionshipRounds(mode: GameMode, section: Section, difficulty: Difficulty, size: ChampionshipSize, random = Math.random, pairOptions: PairMatchOptions = DEFAULT_PAIR_OPTIONS, players = 1, orderOptions?: OrderOptions, recent: readonly string[] = []): GameRound[] {
   if (!availableModes(section).includes(mode)) throw new Error(`${mode} is not available in ${section}.`);
   const atomicCount = ROUND_COUNTS['game-order'][size];

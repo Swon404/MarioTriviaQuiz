@@ -1,5 +1,6 @@
 import { groupedScores, rankingPoints, scoreUsesLevel, type FinishedScore } from './mario/scoreGroups.ts';
 import { usesKnowledgeLevel } from './mario/difficultyDetails.ts';
+import { pointText } from './mario/scoring.ts';
 
 const levels = { explorer: 'Rookie', scientist: 'Pro', professor: 'Legend' };
 const modes: Record<string, string> = { quiz: 'Quiz Battle', 'game-order': 'Game Order', 'pair-match': 'Match & Hunt', 'match-hunt': 'Clue Match Up', 'clue-duel': 'Clue Duel', 'track-finder': 'Track Finder', 'category-finder': 'Category Finder' };
@@ -16,9 +17,9 @@ export default function FinishedScoreTables({ records }: { records: FinishedScor
   const row = (result: FinishedScore, ranked: boolean) => <li key={result.id}>
     <span><strong>{result.opponent ? `${result.player} vs ${result.opponent}` : result.player}</strong>
       <small>{description(result)}</small>
-      {ranked && result.format === 'two-player' && <small>Best score: {(result.points ?? 0) === result.opponentPoints ? 'Draw' : (result.opponentPoints ?? 0) > (result.points ?? 0) ? result.opponent : result.player} · {rankingPoints(result)} points</small>}
+      {ranked && result.format === 'two-player' && <small>Best score: {(result.points ?? 0) === result.opponentPoints ? 'Draw' : (result.opponentPoints ?? 0) > (result.points ?? 0) ? result.opponent : result.player} · {pointText(rankingPoints(result))}</small>}
     </span>
-    <strong>{result.points ?? ('correct' in result ? result.correct : 0)}{result.opponent ? `–${result.opponentPoints ?? ('opponentCorrect' in result ? result.opponentCorrect ?? 0 : 0)}` : ''} points</strong>
+    <strong>{result.opponent ? `${result.points ?? ('correct' in result ? result.correct : 0)}–${result.opponentPoints ?? ('opponentCorrect' in result ? result.opponentCorrect ?? 0 : 0)} points` : pointText(result.points ?? ('correct' in result ? result.correct : 0))}</strong>
   </li>;
   return <>
     {groups.map(group => <section className="finished-score-group" key={group.key}>

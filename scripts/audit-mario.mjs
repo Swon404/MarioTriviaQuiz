@@ -6,7 +6,7 @@ import { MARIO_SIDE_QUESTIONS, MARIO_SIDE_MATCH_CLUES } from '../src/mario/mario
 import { canonicalKnowledge } from '../src/mario/knowledge.ts';
 import { GAMEPLAY_QUESTIONS, GAMEPLAY_REVIEW } from '../src/mario/gameplayQuestions.ts';
 import { BOOSTER_COURSES } from '../src/mario/courses.ts';
-import { TRACK_CHALLENGES, trackLabel } from '../src/mario/trackChallenges.ts';
+import { TRACK_CHALLENGES, FINDER_COURSES, trackLabel } from '../src/mario/trackChallenges.ts';
 import { availableModes, createRounds, DEFAULT_PAIR_OPTIONS, isCorrect, MARIO_TIMELINE } from '../src/mario/rounds.ts';
 import { CLUE_SUBJECTS, CLUE_CHOICE_GROUPS, clueSimilarity } from '../src/mario/clues.ts';
 import { CATEGORY_ITEMS, fitsCategory } from '../src/mario/categoryCatalog.ts';
@@ -99,7 +99,8 @@ for (const level of ['explorer', 'scientist', 'professor']) {
 }
 for (const [difficulty, retries] of [['explorer', 3], ['scientist', 1], ['professor', 0]]) {
   let solo = startSession(createRounds('quiz', 'mixed', difficulty), difficulty);
-  let duel = startVersusQuiz('mixed', difficulty, 'human');
+  // A pre-change checkpoint retains its original learning retries.
+  let duel = { ...startVersusQuiz('mixed', difficulty, 'human'), quizAttempts: undefined };
   const soloQuestion = solo.rounds[0].question;
   const duelQuestion = duel.turns[0].question;
   for (let index = 0; index < Math.min(retries + 1, 3); index += 1) {
@@ -137,7 +138,8 @@ const computerRounds = createRounds('quiz', 'mario', 'explorer').slice(0, 3);
 assert.deepEqual(computerChampionshipAnswers(computerRounds, 'explorer', () => 0), computerRounds.map(round => round.question.answer));
 assert.ok(computerChampionshipAnswers(computerRounds, 'explorer', () => 0.99).every((answer, index) => answer !== computerRounds[index].question.answer));
 
-assert.equal(QUESTIONS.length, 191, '171 existing questions plus 20 family-favourite gameplay facts');
+assert.equal(QUESTIONS.length, 252, '191 existing questions plus 61 reviewed additions');
+assert.equal(new Set(QUESTIONS.map(question => question.knowledgeId)).size, 240, 'One older bubble-spin duplicate is now shared knowledge');
 const finalReviewIds = ORIGINAL_REVIEW_GROUPS.flatMap(([, ids]) => ids);
 assert.equal(finalReviewIds.length, 75);
 assert.equal(new Set(finalReviewIds).size, 75, 'Review groups cannot hide duplicate records');
@@ -241,10 +243,8 @@ for (const mode of ['clue-duel', 'track-finder']) {
   const exhausted = createRounds(mode, 'mixed', 'explorer', Math.random, DEFAULT_PAIR_OPTIONS, undefined, undefined, all);
   assert.ok(exhausted.every(round => round.review), `${mode}: exhaustion remains playable and labelled`);
   if (mode === 'track-finder') {
-    for (const round of exhausted) {
-      const oldest = TRACK_CHALLENGES.filter(task => task.kind === round.challengeKind).at(-1);
-      assert.equal(round.id, `finder-${oldest.id}`, 'Review the oldest task in each required kind');
-    }
+    const oldest = TRACK_CHALLENGES.filter(task => task.kind === 'feature').slice(-exhausted.length).reverse();
+    assert.deepEqual(exhausted.map(round => round.id), oldest.map(task => `finder-${task.id}`), 'Rookie reviews oldest eligible features first');
   }
   const championship = createChampionshipRounds(mode, 'mixed', 'explorer', 'quick', Math.random, DEFAULT_PAIR_OPTIONS, 2, undefined, all);
   assert.ok(championship.every(round => round.review), 'Championship carries history through generation');
@@ -330,7 +330,7 @@ for (const cup of new Set(BOOSTER_COURSES.map(course => course.cup))) {
   assert.deepEqual(courses.map(course => course.position), [1, 2, 3, 4]);
 }
 assert.equal(new Set(MARIO_TIMELINE.map(game => game.year)).size, MARIO_TIMELINE.length);
-assert.equal(MARIO_TIMELINE.length, 22, 'Expanded source-checked Game Order pool');
+assert.equal(MARIO_TIMELINE.length, 30, 'Expanded source-checked Game Order pool');
 assert.equal(new Set(MARIO_TIMELINE.map(game => game.id)).size, MARIO_TIMELINE.length);
 assert.equal(ICON_PAIRS.length, 41);
 assert.equal(new Set(ICON_PAIRS.map(pair => pair.id)).size, ICON_PAIRS.length);
@@ -407,13 +407,14 @@ for (const [size, goal] of [['quick', 3], ['standard', 4], ['epic', 5]]) {
 }
 for (const task of TRACK_CHALLENGES) {
   assert.ok(task.correctIds.length > 0);
-  assert.ok(task.correctIds.every(id => BOOSTER_COURSES.some(course => course.id === id)));
+  assert.ok(task.correctIds.every(id => FINDER_COURSES.some(course => course.id === id)));
   assert.ok(task.sourceUrl.startsWith('https://'));
 }
 for (const difficulty of ['explorer', 'scientist', 'professor']) {
   for (let run = 0; run < 100; run++) {
     const rounds = createRounds('track-finder', 'mixed', difficulty);
-    assert.equal(new Set(rounds.map(round => round.challengeKind)).size, 3, 'Each Finder session mixes cup, system and feature knowledge');
+    assert.equal(new Set(rounds.map(round => round.challengeKind)).size, difficulty === 'explorer' ? 1 : 3, 'Rookie uses landmarks; advanced Finder mixes cup, system and feature knowledge');
+    if (difficulty === 'explorer') assert.ok(rounds.every(round => round.challengeKind === 'feature'));
     for (const round of rounds) {
       const task = TRACK_CHALLENGES.find(task => task.prompt === round.prompt);
       assert.deepEqual(round.tiles.filter(tile => task.correctIds.includes(tile.id)).map(tile => tile.id).sort(), [...round.correctIds].sort(), 'Accept every valid tile, not only the featured answer');
@@ -473,7 +474,7 @@ for (const section of ['mario', 'kart', 'mixed']) {
     }
   }
 }
-assert.equal(CATEGORY_ITEMS.length, 52);
+assert.equal(CATEGORY_ITEMS.length, 60);
 assert.deepEqual(CATEGORY_ITEMS.map(item => item.number), Array.from({ length: CATEGORY_ITEMS.length }, (_, index) => index + 1));
 assert.equal(new Set(CATEGORY_ITEMS.map(item => item.name)).size, CATEGORY_ITEMS.length);
 const land = CATEGORY_ITEMS.find(item => item.name === 'Super Mario Land');
@@ -527,8 +528,7 @@ let versus = startVersusQuiz('mario', 'explorer', 'computer', () => 0);
 assert.equal(advanceVersusQuiz(versus), versus, 'Versus Next is locked before an answer');
 versus = answerVersusQuiz(versus, versus.turns[0].question.answer);
 assert.deepEqual(versus.scores, [0, 0], 'Points are added only on Next');
-versus = rewindVersusQuiz(versus);
-assert.equal(versus.submission, null);
+assert.equal(rewindVersusQuiz(versus), versus, 'Competitive answers cannot be changed after reveal');
 versus = answerVersusQuiz(versus, versus.turns[0].question.answer);
 versus = advanceVersusQuiz(versus);
 assert.deepEqual(versus.scores, [1, 0]);
@@ -542,7 +542,7 @@ versus = answerVersusQuiz(versus, plannedComputerAnswer);
 versus = advanceVersusQuiz(versus);
 assert.deepEqual(versus.scores, [1, 1]);
 assert.deepEqual(versus.points, [1, 1]);
-assert.equal(CLUE_SUBJECTS.length, 28);
+assert.equal(CLUE_SUBJECTS.length, 66);
 for (const id of ['expanded-1', 'expanded-2', 'expanded-8', 'expanded-9']) {
   const question = QUESTIONS.find(question => question.id === id);
   assert.equal(question.sourceReview?.checkedOn, '2026-10-11');
@@ -557,7 +557,7 @@ for (const id of ['expanded-1', 'expanded-2', 'expanded-8', 'expanded-9']) {
 }
 assert.equal(new Set(CLUE_SUBJECTS.map(subject => subject.id)).size, CLUE_SUBJECTS.length);
 assert.equal(new Set(CLUE_SUBJECTS.map(subject => subject.answer)).size, CLUE_SUBJECTS.length);
-for (const topic of ['mario', 'kart']) assert.equal(CLUE_SUBJECTS.filter(subject => subject.topic === topic).length, topic === 'mario' ? 16 : 12);
+for (const topic of ['mario', 'kart']) assert.equal(CLUE_SUBJECTS.filter(subject => subject.topic === topic).length, topic === 'mario' ? 36 : 30);
 for (const id of ['expanded-22', 'expanded-23', 'expanded-26', 'expanded-27']) {
   const question = QUESTIONS.find(question => question.id === id);
   assert.equal(question.knowledgeId, canonicalKnowledge(`${id}-v2`), 'Rewritten facts must use the replacement knowledge, including genuine equivalents');

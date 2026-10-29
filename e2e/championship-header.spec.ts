@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { QUESTIONS } from '../src/mario/questions.ts';
 
-test('phone championship shows game and total scores through rewind, handovers and a new game', async ({ page }) => {
+test('phone championship shows game and total scores through locked quiz answers, handovers and a new game', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 740 });
   await page.goto('./');
   await page.getByRole('button', { name: 'Play Games' }).click();
@@ -23,8 +23,8 @@ test('phone championship shows game and total scores through rewind, handovers a
     await expect(table.getByRole('columnheader', { name: 'Championship', exact: true })).toBeVisible();
     for (const index of [0, 1]) {
       const cells = table.locator(`tbody tr[data-player-index="${index}"] td`);
-      await expect(cells.nth(0)).toHaveText(`${game[index]} points`);
-      await expect(cells.nth(1)).toHaveText(`${totals[index]} points`);
+      await expect(cells.nth(0)).toHaveText(`${game[index]} ${game[index] === 1 ? 'point' : 'points'}`);
+      await expect(cells.nth(1)).toHaveText(`${totals[index]} ${totals[index] === 1 ? 'point' : 'points'}`);
     }
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   };
@@ -37,9 +37,8 @@ test('phone championship shows game and total scores through rewind, handovers a
     const answer = QUESTIONS.find(question => question.prompt === prompt)!.answer;
     await page.locator('.answer-grid').getByText(answer, { exact: true }).click();
     if (turn === 0) {
-      await page.getByRole('button', { name: '↶ Rewind', exact: true }).click();
-      await check([0, 0]);
-      await page.locator('.answer-grid').getByText(answer, { exact: true }).click();
+      await expect(page.getByRole('button', { name: '↶ Rewind', exact: true })).toHaveCount(0);
+      await check([1, 0]);
     }
     points[turn % 2] += Number((await page.locator('.mario-earned').innerText()).match(/\d+/)![0]);
     await check(points);

@@ -1,5 +1,6 @@
 import { QUESTIONS, type Difficulty, type TriviaQuestion } from './questions.ts';
 import { MARIO_SIDE_MATCH_CLUES } from './marioSideQuestions.ts';
+import { WORLD_MATCH_CLUES } from './worldQuestions.ts';
 
 // Matching-specific wording of existing sourced knowledge, not new trivia facts.
 // Difficulty is inherited from the source record: larger boards never borrow
@@ -12,11 +13,11 @@ const CLUES: Readonly<Record<string, string>> = {
   'mario-explorer-6': 'Wears a face covering with a fearsome mouth drawn on it.',
   'mario-explorer-7': 'Mario’s rival in a yellow hat and purple overalls.',
   'mario-explorer-8': 'Wario’s partner and Luigi’s self-declared rival.',
-  'mario-explorer-9': 'A Mushroom Kingdom resident who helps Princess Peach.',
+  'mario-explorer-9': 'Peach’s red-spotted attendant, without an explorer’s headlamp.',
   'mario-explorer-10': 'Princess of Sarasaland.',
   'expanded-1': 'Wonder power-up that gives Mario a trunk.',
   'expanded-2': 'Wonder power-up that creates bubbles to jump on.',
-  'expanded-4': 'Mario enemy that carries a shell on its back.',
+  'expanded-4': 'Walking turtle whose green shell can be kicked after a stomp.',
   'expanded-5': 'A shy ghost that covers its eyes when spotted.',
   'expanded-6': 'The first Mario game built around creating your own levels.',
   'expanded-7': 'Mario’s friend who grabs enemies with a long tongue.',
@@ -25,7 +26,7 @@ const CLUES: Readonly<Record<string, string>> = {
   'fresh-4': 'Rabbit character who takes no enemy damage in Wonder, but still falls into pits.',
   'fresh-5': 'Power-up that gives Mario a cat form in Super Mario 3D World.',
   'fresh-6': 'Squared paper used to plan the first Super Mario Bros.',
-  'kart-explorer-1': 'Course that debuted in Mario Kart World, rather than returning from an older game.',
+  'kart-explorer-1': 'World’s haunted theatre course, where racers drive through a screen onto film strips.',
   'kart-explorer-2': 'Mario Kart World course described as having snowy trails.',
   'kart-explorer-3': 'Mario Kart World course with modern city streets.',
   'kart-explorer-4': 'World mode for exploring without entering a race.',
@@ -109,13 +110,29 @@ const CLUES: Readonly<Record<string, string>> = {
   'fresh-34': 'The second course of MK8 Deluxe’s Acorn Cup.',
   'fresh-35': 'Propeller Cup course between GBA Snow Land and Sky-High Sundae.',
   'fresh-36': 'The opening Mushroom Cup course in Mario Kart World.',
+  'adventure-odyssey-glydon': 'Odyssey capture that glides from high ledges.',
+  'adventure-odyssey-lava': 'Odyssey capture that swims through Luncheon Kingdom’s hot liquid.',
+  'adventure-odyssey-sherm': 'Odyssey tank capture with a cannon.',
+  'adventure-odyssey-toad': 'Headlamp-wearing explorer who shares treasure when found in Odyssey.',
+  'adventure-odyssey-jizo': 'Heavy Bowser’s Kingdom capture that safely crosses spike traps.',
+  'platform-fury-plessie': 'Bowser’s Fury companion who carries Mario across water and sandy beaches.',
+  'platform-fury-shines': 'Lake Lapcat collectibles that clear goop from Giga Bells.',
+  'platform-nes-buzzy': 'Dark-shelled NES enemy that ignores Mario’s fireballs.',
+  'platform-nes-lakitu': 'Spiked eggs dropped from Lakitu’s cloud in the original Super Mario Bros.',
 };
 
 export type MatchClue = { id: string; name: string; clue: string; difficulty: Difficulty; question: TriviaQuestion };
-export const MATCH_CLUES: readonly MatchClue[] = Object.entries({ ...CLUES, ...MARIO_SIDE_MATCH_CLUES }).map(([id, clue]) => {
+export const MATCH_CLUES: readonly MatchClue[] = Object.entries({ ...CLUES, ...MARIO_SIDE_MATCH_CLUES, ...WORLD_MATCH_CLUES }).map(([id, clue]) => {
   const question = QUESTIONS.find(item => item.id === id);
   if (!question) throw new Error(`Missing matching source: ${id}`);
   return { id, name: question.answer, clue, difficulty: question.difficulty, question };
 });
 
 export const knowledgeLevel = (difficulty: Difficulty) => ['explorer', 'scientist', 'professor'].indexOf(difficulty);
+
+// Different labels can still mean the same visible answer. Never offer both
+// “DK Mountain” and “GCN DK Mountain”, or two equivalent boost descriptions.
+export function matchNameKey(name: string): string {
+  const normal = name.replace(/^(?:SNES|N64|GBA|GCN|DS|Wii|3DS|Tour) /, '').toLowerCase().replace(/[’']/g, '');
+  return ['you get a short boost', 'a small speed boost'].includes(normal) ? 'speed boost' : normal;
+}

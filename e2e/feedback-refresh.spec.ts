@@ -5,15 +5,20 @@ import { QUESTION_FUN_FACTS } from '../src/mario/funFacts.ts';
 import { createHash } from 'node:crypto';
 
 test('whole-bank editorial refresh preserves the answer key and keeps all feedback phone-sized', () => {
-  // Deliberate editorial baseline: a future content expansion must review and
-  // update this snapshot, rather than silently changing an answer during a copy edit.
-  const key = QUESTIONS.map(({ id, knowledgeId, prompt, choices, answer, difficulty, sourceUrl }) =>
-    ({ id, knowledgeId, prompt, choices, answer, difficulty, sourceUrl }));
+  // Keep the entire pre-expansion answer key locked. World additions have their
+  // own coverage/history checks; adding them must not rewrite existing records.
+  const baseline = QUESTIONS.filter(q => !/^(world|adventure|platform)-/.test(q.id));
+  expect(baseline).toHaveLength(191);
+  const key = baseline.map(({ id, knowledgeId, prompt, choices, answer, difficulty, sourceUrl }) =>
+    // Only the duplicate spin-jump knowledge link changed; retain the original
+    // hash for all wording, answers, levels and sources.
+    ({ id, knowledgeId: id === 'family-wonder-bubble-spin' ? id : knowledgeId, prompt, choices, answer, difficulty, sourceUrl }));
   expect(createHash('sha256').update(JSON.stringify(key)).digest('hex'))
     // Three source links now point to the Nintendo tips/interview supporting
     // the richer feedback; IDs, questions, choices and answers are unchanged.
     .toBe('77299b5a9b6d7eae0458d7f7317557af251baec7510bfaee08e7016e22e3541b');
-  expect(QUESTIONS).toHaveLength(191);
+  expect(QUESTIONS).toHaveLength(252);
+  expect(QUESTIONS.find(q => q.id === 'family-wonder-bubble-spin')!.knowledgeId).toBe('expanded-16');
   for (const q of QUESTIONS) {
     expect(q.explanation.trim().split(/\s+/).length, q.id).toBeLessThanOrEqual(48);
     expect(q.funFact.trim().split(/\s+/).length, q.id).toBeLessThanOrEqual(35);
@@ -28,7 +33,7 @@ test('whole-bank editorial refresh preserves the answer key and keeps all feedba
   }
 });
 
-for (const id of ['mario-scientist-5', 'expanded-18', 'fresh-12', 'gameplay-fury-partner', 'mario-luigi-gooigi', 'family-smb-time-limit', 'gameplay-3dw-cherry', 'gameplay-world-kamek']) {
+for (const id of ['mario-scientist-5', 'expanded-18', 'fresh-12', 'gameplay-fury-partner', 'mario-luigi-gooigi', 'family-smb-time-limit', 'gameplay-3dw-cherry', 'gameplay-world-kamek', 'world-coin-cap', 'world-third-turbo', 'world-engine-sounds']) {
   test(`${id}: correct answers and wrong-answer retries reach the refreshed feedback`, async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 740 });
     const question = QUESTIONS.find(q => q.id === id)!;

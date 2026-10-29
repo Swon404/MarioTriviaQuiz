@@ -102,7 +102,8 @@ async function open(page: Page, mode = 'Quiz Battle') {
   if (await page.locator('.setup-settings:not([open])').count()) await page.locator('.setup-settings > summary').click();
 }
 async function history(page: Page): Promise<Record<string, string[]>> {
-  return page.evaluate(key => JSON.parse(localStorage.getItem(key) ?? '{}'), KEY);
+  // Board exposure is tested here; extras have separate cross-mode checks.
+  return page.evaluate(key => Object.fromEntries(Object.entries(JSON.parse(localStorage.getItem(key) ?? '{}')).map(([name, ids]) => [name, (ids as string[]).filter(id => !id.startsWith('extra:'))])), KEY);
 }
 async function currentKnowledge(page: Page) {
   const prompt = await page.locator('.quiz-panel h1').textContent();

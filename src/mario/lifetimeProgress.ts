@@ -31,8 +31,8 @@ function merge(...groups: readonly ProgressResult[][]): ProgressResult[] {
   return [...entries.values()];
 }
 
-// Persist before the visible result list is trimmed. IDs are retained to make
-// retrying an old completion safe even after it leaves the Top Scores history.
+// Retain award IDs so retrying an old completion stays safe after explicit score
+// cleanup. The result history also keeps older records until the user removes them.
 export function syncLifetime(results: readonly ProgressResult[]): ProgressResult[] {
   let stored: ProgressResult[] = [];
   let readable = true;

@@ -1,6 +1,7 @@
 // Only equivalent facts belong here. Replaced questions keep their old IDs:
 // for example expanded-27 (old wording) is not expanded-27-v2 automatically.
 const ALIASES: Readonly<Record<string, string>> = {
+  'family-wonder-bubble-spin': 'expanded-16',
   'mario-professor-8': 'mario-explorer-5',
   'mario-professor-2': 'mario-professor-1',
   'mario-professor-10': 'mario-professor-3',

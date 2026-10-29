@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 import { createHash } from 'node:crypto';
 import { CLUE_SUBJECTS } from '../src/mario/clues.ts';
 import { TRACK_CHALLENGES, trackLabel } from '../src/mario/trackChallenges.ts';
-import { BOOSTER_COURSES } from '../src/mario/courses.ts';
+import { FINDER_COURSES as BOOSTER_COURSES } from '../src/mario/trackChallenges.ts';
 import { TRACK_DISCOVERIES } from '../src/mario/discoveries.ts';
 import { captureSpeech } from './speech-capture.ts';
 
@@ -11,7 +11,7 @@ test('feedback refresh preserves every clue, target and answer while staying con
     [CLUE_SUBJECTS, '0f7cc59a531bacbe0d6f8c66f383623f28ff3ddc2b22b797b4e4e06e33d9acfe'],
     [TRACK_CHALLENGES, '4ceb039f13b294ac2f444f119bc9239bac074c95326aaf60f8d520b2f67c302f'],
   ] as const) {
-    const key = bank.map(({ explanation, funFact, funFactSourceUrl, ...unchanged }) => unchanged);
+    const key = bank.filter(item => !/^(world|advent)-/.test(item.id)).map(({ explanation, funFact, funFactSourceUrl, ...unchanged }) => unchanged);
     expect(createHash('sha256').update(JSON.stringify(key)).digest('hex')).toBe(expected);
     for (const item of bank) {
       expect(item.explanation.split(/\s+/).length, item.id).toBeLessThanOrEqual(48);
@@ -19,8 +19,8 @@ test('feedback refresh preserves every clue, target and answer while staying con
       expect(item.funFact, item.id).not.toBe(item.explanation);
     }
   }
-  expect(CLUE_SUBJECTS).toHaveLength(28);
-  expect(TRACK_CHALLENGES).toHaveLength(23);
+  expect(CLUE_SUBJECTS).toHaveLength(66);
+  expect(TRACK_CHALLENGES).toHaveLength(33);
   for (const task of TRACK_CHALLENGES.filter(task => task.kind === 'cup')) {
     const cup = BOOSTER_COURSES.filter(course => task.correctIds.includes(course.id));
     expect(task.explanation).toContain(trackLabel(cup[0].title));
@@ -62,6 +62,8 @@ test('Track Finder cup, system and feature feedback follows the actual board and
   await page.goto('./');
   await page.getByRole('button', { name: 'Play Games' }).click();
   await page.getByRole('button', { name: 'Track Finder' }).click();
+  await page.locator('.setup-settings > summary').click();
+  await page.getByRole('button', { name: 'Pro', exact: false }).click();
   await page.getByRole('button', { name: 'Start!', exact: true }).click();
   const kinds = new Set<string>();
   for (let round = 0; round < 3; round++) {
