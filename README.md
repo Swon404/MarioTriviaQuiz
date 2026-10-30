@@ -1,55 +1,106 @@
 # Mushroom Power Quiz (working title)
 
-Unfinished games now offer **Resume game** on Home after a refresh, including all seven modes and championships. Running timers include time away; solved times stay frozen. One game is saved locally per browser, and starting a new game replaces it. Recovery storage failures show a warning. See [recovery details](docs/recovery-review-2026-10-04.md).
+An unofficial family game about Mario and Mario Kart, with seven modes, solo play,
+two players on one device, and the visible computer challenger **Shroomer**.
+The [main experience plan](docs/family-experience-plan-2026-10-18.md) is the active
+backlog and verification record. Earlier plans describe historical versions.
 
-The public-facing title is deliberately neutral and provisional; it has not been cleared for release. The app describes its Mario subject matter plainly without using Nintendo's name or a named item as the app brand. The repository and Pages URL still use the internal `MarioTriviaQuiz` name.
+## Games and current content
 
-Championship combines two or more supported games in Quick, Standard or Epic length. Choose Solo, Two Players or Play Shroomer. Players alternate individual turns with separate questions and puzzles. Shroomer takes visible turns too. Clue Duel passes clues on a shared subject, and relaxed Hunt uses a shared memory board; timed Hunt uses separate boards. The selected difficulty carries through every game, earned points add to each player's total, and the matching games have three rounds. Championship results are saved locally and shown on High Scores.
+| Game | Current behaviour |
+| --- | --- |
+| Quiz Battle | 252 reviewed records covering 240 distinct facts. New competitive games allow one attempt; solo learning keeps level-based retries. |
+| Game Order | 30 titles ordered by original US release year. Choose 4/6/8 tiles and Easy/Medium/Hard feedback. Years stay hidden until solved; checking penalties appear by the timer. |
+| Track Finder | 48 Mario Kart 8 Deluxe Booster courses and ten Mario Kart World courses, with 33 tasks. Rookie uses landmarks/features; higher levels also use cups and origins. |
+| Clue Match Up | 125 sourced name/clue pairs. Two boards in standalone play, one board per player in new Championships. |
+| Match & Hunt | 41 picture/name pairs, Hunt or Time Trial, shared relaxed play or separate timed turns. Timed games use three rounds; target and unlock options remain explicit. |
+| Clue Duel | 66 characters, tracks, items and places, with five progressively clearer clues and compatible choices. Shared competitive clues allow bonus guesses. |
+| Category Finder | 60 tiles across broad groups and game-specific relationships. Pro presents exactly one correct tile among nine. |
 
-The Elemental Quiz-style voice controls are present on the home screen, with read-aloud buttons for questions and feedback. Correct answers earn difficulty-based EP with streak bonuses; the home screen shows the player's Mario rank, EP progress, best streak and milestones. Championship totals add the EP actually earned in each game. The optional timer is currently a stopwatch, so it does not award the original countdown speed bonus.
+Rookie/Pro/Legend controls appear where they affect knowledge or Shroomer's behaviour.
+Human Game Order and Match & Hunt use explicit board/settings controls.
+Matching targets are worth one point, like other pairs. There are no streak,
+difficulty or speed multipliers; streaks remain available for achievements.
 
-Explore opens a searchable Learning Zone with 72 source-checked cards (28 gameplay-pilot records and 44 reviewed older questions) and the reviewed Booster Course Pass track guide. Reviewed quiz feedback opens its learning card without leaving the round; more content will be added as it is audited.
+Explore offers searchable Learning Zone cards, source links and a separate track
+guide. Seen knowledge and revealed extra facts are remembered for the human viewers.
+Eligible unseen material comes first; exhausted extras are omitted. Sources,
+editions and review dates are listed in the
+[coverage register](docs/content-coverage-2026-10-29.md).
 
-An unofficial fan quiz about Mario games and Mario Kart. Match & Hunt now uses 38 web-sourced character/item images, console photographs and cup emblems. Track scenery has been replaced with nine distinctive racers. Grand Prix and Time Trials retain clear trophy/stopwatch symbols. See [artwork sources](docs/matching-artwork-sources.md). This is a separate local fork of ElementalQuiz at source commit `acbe7c70c4ecc9ad35020bd855b7955afce35d1f`.
+## Championship and progress
 
-The computer challenger is **Shroomer**, a smiling red mushroom with white spots, not a robot. Match & Hunt setup explicitly offers a shared board or separate timed turns. Separate turns have three rounds each; Hunt ends at the unlocked target (or a full board without a target), and Time Trial supports a chosen pair goal or All. Shroomer's private matching turns now visibly flip cards using observed-card memory, resolve real matches/misses and use actual elapsed time. They never enter human leaderboards. Restart and exit cancel pending flips; reload restores progress. Game Order still uses its separately labelled simulated computer time.
+Choose two or more games and Quick, Standard or Epic length. In new competitive
+Championships, **each game win earns one Championship point; a drawn game earns
+one each**. Equal final totals mean a draw. The result breakdown shows game scores
+and Championship awards separately. Solo Championship sums game points.
 
-Game and championship setup use the combined Mario games and Mario Kart content pool automatically; there is no topic selector.
+Game points continue to feed lifetime progress, without adding Championship points
+again. Ranks unlock at **0/20/60/120/240/400** points; point milestones at **100/500**.
+Existing points and earned achievements are preserved. Older results and resumed
+Championships keep their recorded scoring and matching-board rules.
 
-The current playable milestone has seven games: Quiz Battle, Game Order, Track Finder, Clue Match Up, Match & Hunt, Clue Duel and Category Finder. Pick Solo, 2 Players or Play Shroomer on the game hub, then choose a game. Quiz Battle alternates turns with five distinct questions per side; the other games alternate individual turns with distinct puzzles. Clue Duel and relaxed Hunt share their current subject or board, following Elemental's specific rules. Its home screen, game hub, setup screens, round layout and results use the Elemental Quiz visual style and navigation pattern. Quiz Battle draws from 166 sourced multiple-choice questions: 87 general Mario and 79 Mario Kart, tagged by subject and balanced across categories in each game; a game avoids repeating the same answer when possible. Topics include characters, baddies, power-ups and items, games, consoles, tracks, and documented bugs that Nintendo has fixed. Game Order uses dated titles from Nintendo's Mario history, unlimited timed checks, 3–8 selectable tiles, Easy/Medium/Hard feedback rules and immediately saved Top 10 times; Track Finder uses the Mario Kart 8 Deluxe Booster Course Pass catalogue with cup, original-console and feature questions. Clue Match Up presents three fresh name-to-clue boards; a wrong pair uses a retry, with three retries on Rookie, one on Pro and none on Legend. Match & Hunt is one face-down icon-and-word card game with a Hunt / Time Trial switch, as in Elemental Quiz. Its icons mix original generic illustrations, emoji and text. Hunt can be relaxed or timed, with no target, a random target or a chosen target and 0–5 pairs required to unlock it. Time Trial finds 3, 5, 8 or all pairs on a 12-, 16- or 20-pair board. Relaxed Hunt has one standalone board; timed Hunt and Time Trial have three. Championship always has three matching boards, and its Time Trial board contains three times the required matches. Normal pairs earn one point; the Hunt target earns two plus a two-point win bonus. Clue Duel uses five progressively revealing clues for each of 24 authored character or track subjects, with five non-repeating rounds and more answer choices at higher levels. Category Finder uses a 46-item Mario catalogue; its three rounds show consecutive 3×3, 4×4 or 5×5 windows with a valid target type. Pro and Legend also ask about original platforms and release eras; all valid memberships count. Choose Rookie, Pro or Legend and optionally show a timer. Feedback adds a related fact, and Rewind restarts the current round before Next; both matching games let you restart a go mid-round. Completed results are saved locally and visible on the High Scores screen. A text guide lists all 48 Booster Course Pass tracks by wave and cup.
+Shroomer takes visible turns. Its matching decisions use observed-card memory;
+Game Order uses separately labelled simulated computer times. Bot and practice
+attempts cannot enter human timed leaderboards.
 
-The games share `src/mario/rounds.ts` for round creation and answer checks and `src/mario/session.ts` for submitting, rewinding, scoring and advancing. Championship rules and fixed Shroomer answers are in `src/mario/championship.ts`. Standalone two-player and Shroomer Quiz Battle use the same question bank with a separate turn-state engine in `src/mario/versus.ts`. Rewind does not reroll Shroomer answers.
+## Saving, phone play and offline use
 
-Development:
+- One unfinished game can resume on the same browser after reload. Running timers
+  include time away; completed times freeze. Starting another game replaces that
+  active checkpoint.
+- Timed results save immediately to comparable human Top 5 tables. Saved replays
+  show the actual boards, selections, targets and clock. Restarted boards are practice.
+- Result history is not silently trimmed. Confirmed keep-best cleanup has Undo;
+  lifetime awards use a separate ledger to prevent duplicate credit.
+- High Scores offers [progress backup and merge](docs/progress-backup-2026-10-29.md),
+  including lifetime progress, results, timed replays and learning history.
+  Active games and device settings are excluded. Existing record IDs win on merge.
+- Storage failures warn; interrupted imports retain a recovery copy. Browser
+  storage limits and clearing site data still apply. The reported restart-related
+  score loss remains unresolved; it has not been claimed fixed.
+- Updates are offered between games. Activating an update in another tab must not
+  reload an active board. A visible build, Home Screen icons, zoom, reduced motion
+  and readable slow/error artwork fallbacks support phone use.
+
+Data stays in local browser storage under the `mariotrivia_` prefix. No account,
+cloud sync or AI API is needed. ElementalQuiz data is not read or changed.
+Physical iPhone/Safari, Home Screen, VoiceOver and family acceptance remain separate
+from browser emulation: use the [short acceptance checklist](docs/phone-acceptance-2026-10-29.md).
+
+## Development and verification
 
 ```sh
-npm install --legacy-peer-deps
+npm ci --legacy-peer-deps
 npx playwright install chromium webkit
 npm run dev
 npm run test:all
 ```
 
-The full gate runs the complete Chromium suite plus 37 WebKit phone checks for
-all seven mode layouts, repeat turns/settings, countdowns, recovery, simple points,
-Championship totals and same-board replays. Run the phone project alone with
-`npx playwright test --project=webkit-phone`. WebKit uses the iPhone 13 device
-profile; this is browser emulation, not physical iPhone/Safari certification.
-Screenshots from shared tests are stored in per-test, per-project directories.
-On resource-constrained machines, set `PLAYWRIGHT_WORKERS=1` before the full gate.
+The full gate runs the content/rules audit, complete browser suite, TypeScript and
+production build, then the actual production service-worker update/offline test.
+Run phone checks with `npx playwright test --project=webkit-phone`.
+WebKit uses an iPhone 13 profile; it does not certify physical-device behaviour.
+Set `PLAYWRIGHT_WORKERS=1` on resource-constrained machines.
 
-The app currently uses a local browser profile name and the `mariotrivia_` storage prefix. No login, account service or AI API is needed to play. Existing ElementalQuiz saved data is not read or changed.
+Round creation is in `src/mario/rounds.ts`; session/competitive Quiz state is in
+`session.ts` and `versus.ts`; Championship rules are in `championship.ts`.
+Follow [AGENTS.md](AGENTS.md) before committing or publishing.
 
-The fork lives in a public GitHub repository. GitHub Actions runs the question audit, browser tests and production build on pushes and pull requests; a passing `main` build deploys the playable site to [GitHub Pages](https://swon404.github.io/MarioTriviaQuiz/). The public name and branding are still under review. See [the main experience plan](docs/family-experience-plan-2026-10-18.md) for remaining work, content priorities and acceptance checks. Earlier plans are historical records.
+GitHub Actions tests pushes and pull requests. A passing main build deploys to
+[GitHub Pages](https://swon404.github.io/MarioTriviaQuiz/). Local commits are not
+proof that the deployed site contains those changes; check the exact commit's
+test and deployment jobs.
 
-Nintendo owns the Mario names, characters and games referenced in the questions. This fan project is not affiliated with or endorsed by Nintendo.
-The background in `public/platform-landscape.png` is original AI-generated platform-game scenery. Current matching art is downloaded from the individually credited Super Mario Wiki file pages, including Nintendo artwork and game screenshots. Legacy SVGs remain for old replays. Source attribution is not rights clearance for distribution.
+## Attribution and release scope
 
-Setup choices are remembered on this device. Track Finder uses 4/6/9 tiles by level with clear result feedback. The [30 September Elemental parity audit](docs/elemental-parity-audit-2026-09-30.md) is historical; use the family experience plan below for current completed and remaining work.
+This is a separate fork of ElementalQuiz at source commit
+`acbe7c70c4ecc9ad35020bd855b7955afce35d1f`. The title is provisional and has not
+been cleared for public release. Nintendo owns the Mario names, characters and
+games referenced here; this project is not affiliated with or endorsed by Nintendo.
 
-Quiz Battle and Clue Match Up share a history of facts actually shown to each player on this device. Clue Duel, Track Finder and Category Finder prefer unseen subjects/tasks, with labelled fallback when eligible pools are exhausted. Memory boards prefer pairs the players have not revealed; explicit Hunt targets are still honoured. Solo, two-player, Shroomer and championship formats use this history; hidden handovers and future generated questions do not count as seen. The full semantic-duplicate audit and cross-mode links beyond quiz/matching remain unfinished.
-
-Lifetime EP, ranks and milestones use a separate compact ledger instead of depending on the latest 200 detailed results. Existing retained results migrate automatically; previously discarded records cannot be reconstructed. Browser storage limits and clearing site data still apply.
-
-Timed Game Order and Match & Hunt rounds save immediately to configuration-specific human leaderboards. Restarted boards are practice, not new ranked attempts. New results include step-by-step replays of selections, checks and card reveals, including the original Hunt target. High Scores offers confirmed keep-best-per-table cleanup with Undo; this never removes earned EP. Old scores have no retrospective recording. Game Order now uses 22 titles from Nintendo's US history timeline, and its older timings remain in separate Legacy tables. Unfinished-game exits require confirmation; reload/resume remains in the active plan.
-
-The [family experience plan and progress log](docs/family-experience-improvement-plan-2026-10-02.md) tracks the next improvements. The first batch adds 105 dedicated matching clues using the existing knowledge bank (not 105 new quiz facts), level-bounded clue selection, clearer pair identities, an irregular consecutive Category Finder catalogue without visible index numbers, and memory-based shared-Hunt Shroomer turns. Private timed Shroomer results remain simulations, now explicitly labelled and based on the relevant game's board rather than unrelated settings. The main quiz bank now has 150 questions, including a source-checked 12-question gameplay pilot covering Odyssey, Bowser’s Fury, Mario Kart World and course features. Reading guidance targets clear English around an 11–12-year-old reading level while retaining specialist gaming knowledge.
+The landscape background is original AI-generated platform-game scenery.
+Matching artwork includes individually credited Nintendo artwork, screenshots and
+console photographs from Super Mario Wiki; legacy SVGs remain for older replays.
+See [artwork sources](docs/matching-artwork-sources.md). Attribution is not rights
+clearance for distribution.

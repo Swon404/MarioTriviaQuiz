@@ -1,9 +1,39 @@
 import { expect, test } from '@playwright/test';
+import { getRank, getNextRank, playerProgress, RANKS, MILESTONES } from '../src/mario/scoring.ts';
 
 const RESULTS = 'mariotrivia_results_v1';
 const LIFETIME = 'mariotrivia_lifetime_v1';
 const PROFILE = 'mariotrivia_profile_v1';
 const sample = { id: 'original', player: 'Ada', topic: 'mixed', difficulty: 'explorer', correct: 1, total: 1, points: 100, bestStreak: 7, elapsedMs: 1000, completedAt: '2026-10-04T10:00:00Z' };
+
+test('quicker progression unlocks at the agreed boundaries without downgrading earned ranks or milestones', () => {
+  const thresholds = [0, 20, 60, 120, 240, 400];
+  for (let index = 1; index < thresholds.length; index++) {
+    expect(getRank(thresholds[index] - 1).name).toBe(RANKS[index - 1].name);
+    expect(getNextRank(thresholds[index] - 1)?.minEP).toBe(thresholds[index]);
+    expect(getRank(thresholds[index]).name).toBe(RANKS[index].name);
+  }
+  expect(getRank(0).name).toBe('Rookie Racer');
+  expect(getNextRank(400)).toBeNull();
+  for (const [points, milestones] of [[99, [false, false]], [100, [true, false]], [499, [true, false]], [500, [true, true]]] as const) {
+    const record = Object.freeze({ ...sample, points });
+    const progress = playerProgress([record], 'Ada');
+    expect(progress.totalEP).toBe(points);
+    expect(progress.milestoneUnlocks.slice(5, 7)).toEqual(milestones);
+    expect(progress.bestStreak).toBe(7);
+    expect(progress.milestoneUnlocks[7]).toBe(true);
+  }
+  expect(MILESTONES[5].description).toBe('Earn 100 points');
+  expect(MILESTONES[6].description).toBe('Earn 500 points');
+  const earlier = [0, 50, 150, 300, 500, 800];
+  const regressions = Array.from({ length: 2001 }, (_, points) => points).filter(points => {
+    const oldRank = earlier.filter(value => points >= value).length - 1;
+    const newRank = RANKS.findIndex(rank => rank.name === getRank(points).name);
+    const milestones = playerProgress([{ ...sample, points }], 'Ada').milestoneUnlocks;
+    return newRank < oldRank || (points >= 500 && !milestones[5]) || (points >= 2000 && !milestones[6]);
+  });
+  expect(regressions).toEqual([]);
+});
 
 test('Lifetime migrates old results and preserves points, streak and milestones beyond 200 games', async ({ page }) => {
   await page.goto('./');
@@ -27,11 +57,13 @@ test('Lifetime migrates old results and preserves points, streak and milestones 
   expect(state.lifetime[0]).not.toHaveProperty('elapsedMs');
   await page.reload();
   await expect(page.getByText('300 points', { exact: true })).toBeVisible();
-  await expect(page.getByText('Star Player', { exact: true })).toBeVisible();
+  await expect(page.getByText('Castle Champion', { exact: true })).toBeVisible();
   await expect(page.getByText('🔥 Best streak: 7', { exact: true })).toBeVisible();
   await expect(page.getByText('🏆 201 games', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: /milestones/ }).click();
   await expect(page.locator('.milestone-done').filter({ hasText: 'Perfect Game' })).toHaveCount(1);
+  await expect(page.locator('.milestone-done').filter({ hasText: 'Rising Star' })).toContainText('Earn 100 points');
+  await expect(page.locator('.milestone-locked').filter({ hasText: 'Super Star' })).toContainText('Earn 500 points');
 });
 
 test('Shared results preserve both players awards and Player 2 perfect-game milestone', async ({ page }) => {

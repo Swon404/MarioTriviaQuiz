@@ -8,7 +8,7 @@ That roadmap and earlier plans remain historical evidence, not competing task li
 Unchecked items below are not claimed complete merely because they have tests or
 appear in this document. Proposed rule changes still require a family decision.
 
-## 29 October — implementation checkpoint, not family acceptance
+## 29–30 October — implementation checkpoint, not family acceptance
 
 - User approved **one competitive attempt**. Implemented for new two-player,
   Shroomer and competitive Championship Quiz. Solo retries and old checkpoints
@@ -47,8 +47,9 @@ appear in this document. Proposed rule changes still require a family decision.
 - [x] Stage-one final gate passed: 289 browser tests (213 Chromium, 76 WebKit),
   content audit, TypeScript/production build and real production-worker update/offline
   checks. Whitespace check passed. This verifies the expansion/reliability stage.
-- [ ] [Rank/milestone pacing](progression-pacing-proposal-2026-10-29.md) is approved;
-  implementing in the following stage. Thresholds have not changed yet.
+- [x] Implement approved [rank/milestone pacing](progression-pacing-proposal-2026-10-29.md):
+  ranks 0/20/60/120/240/400, point milestones 100/500. Existing points, ranks and
+  achievements are preserved or improved. Family judgement of pacing remains open.
 - [ ] Physical Safari/Home Screen, Files backup, family challenge/interest and
   Shroomer calibration remain. Use the [three-session checklist](phone-acceptance-2026-10-29.md).
   These are acceptance work, not unfinished implementation to hide with test counts.
@@ -56,7 +57,12 @@ appear in this document. Proposed rule changes still require a family decision.
 - Stage two implements balanced Championship and one matching board per player;
   final `test:all` passed 297 browser checks (217 Chromium, 80 WebKit), content
   audit, TypeScript/production build and production-worker update/offline checks.
-  Phone result screenshot and whitespace checks passed. Ready for its stage commit.
+  Phone result screenshot and whitespace checks passed. Committed as `9ce2680`.
+- Stage three implements quicker progression and refreshes the outdated README.
+  Final `test:all` passed **298 browser checks (218 Chromium, 80 WebKit)**,
+  the content audit, TypeScript/production build and actual production-worker
+  update/offline checks. Whitespace check passed. This record accompanies the
+  progression stage commit; no bonus points, resets or new rewards were added.
   No push or deployment of this local batch is claimed.
 
 ## 28 October — earlier checkpoint and World content batch
@@ -287,7 +293,8 @@ or family playtest**. Documentation updates do not constitute a new app release.
   in the [22 October audit](championship-scoring-audit-2026-10-22.md).
   Concrete concern: Quick Rookie Quiz offers 3 answer points, while two Clue Match
   boards offer 8 pair points. Simple arithmetic does not ensure equal game influence.
-- [ ] Observe actual game contributions in family play; report evidence before changing rules.
+- [ ] Observe the approved scoring in family play; confirm understandable results
+  and satisfying challenge before proposing any further changes.
 - [x] **Decision received 29 October:** each competitive game win earns one
   Championship point, a draw one each. Preserve raw points for lifetime progress.
   Also approved: one matching board per player in new Championships; old saves
@@ -384,9 +391,10 @@ iOS/browser and settings so each failure can become a regression test.
 
 ## 5. Reward return visits and protect progress
 
-- [ ] Recalibrate rank/milestone pacing after the simple-points change; review 500/2,000-point
-  milestones against real session earnings. Preserve historical progress and achievements;
-  obtain agreement on new thresholds, with no unapproved bonus currency or multipliers.
+- [x] Implement the approved quicker ranks and 100/500-point milestones after
+  reviewing simple-point earnings scenarios. Preserve historical progress and
+  achievements; no bonus currency or multipliers. Real family pacing remains
+  an acceptance check, not a claim established by arithmetic.
 - [x] Show useful personal-best improvements only against the same rules/configuration;
   keep bot and practice records separate.
 - [x] Prefer unseen eligible material while retaining preferred settings; no extra reward popups.
@@ -411,7 +419,7 @@ iOS/browser and settings so each failure can become a regression test.
 - [ ] Require zero known score-loss, missing-target, stuck-turn, skipped-round or hidden-answer bugs.
 - [ ] Both players can play independently, find appropriate challenge, learn interesting facts
   and voluntarily choose another game. Their judgement—not a test count—defines success.
-- [ ] After final app/test/config/asset edits run `npm run test:all`, then whitespace checks.
+- [x] After final app/test/config/asset edits run `npm run test:all`, then whitespace checks.
   For requested pushes verify the exact commit's GitHub tests AND deployment. Documentation-only
   changes need whitespace checks; do not claim another gameplay validation from those checks.
 
