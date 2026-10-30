@@ -30,7 +30,7 @@ export function rankingPoints(result: FinishedScore): number {
 }
 export function scoreGroupKey(result: FinishedScore): string {
   return JSON.stringify([result.scoringVersion, result.topic, scoreUsesLevel(result) ? result.difficulty : null, result.format ?? 'solo', result.scoreConfiguration,
-    'games' in result ? [result.size, result.games.map(game => [game.mode, game.variant, game.total]).sort()] : [result.mode ?? 'quiz', result.variant, result.total]]);
+    'games' in result ? [result.championshipRules, result.size, result.games.map(game => [game.mode, game.variant, game.total]).sort()] : [result.mode ?? 'quiz', result.variant, result.total]]);
 }
 export function groupedScores<T extends FinishedScore>(records: readonly T[]): { key: string; records: T[] }[] {
   const groups = new Map<string, T[]>();

@@ -268,8 +268,10 @@ test('championship alternates every question with distinct questions and totals'
   const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('mariotrivia_championships_v1')!)[0]);
   expect(saved.games).toHaveLength(2);
   expect(saved.opponentGames).toHaveLength(2);
-  expect(saved.points).toBe(6);
-  expect(saved.opponentPoints).toBe(6);
+  expect(saved.points).toBe(2);
+  expect(saved.opponentPoints).toBe(2);
+  expect(saved.games.map((game: { points: number }) => game.points)).toEqual([3, 3]);
+  expect(saved.championshipRules).toBe('game-wins-v1');
 });
 
 test('Clue Duel passes clues and gives one bonus guess before alternating the next subject', async ({ page }) => {

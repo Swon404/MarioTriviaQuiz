@@ -16,7 +16,7 @@ test('phone championship shows game and total scores through locked quiz answers
   }
   await page.getByRole('button', { name: 'Start Championship', exact: true }).click();
   const points = [0, 0];
-  const check = async (game: number[], totals = game) => {
+  const check = async (game: number[], totals = [0, 0]) => {
     const table = page.getByRole('table', { name: 'Championship scores' });
     await expect(table).toHaveCount(1);
     await expect(table.getByRole('columnheader', { name: 'This game', exact: true })).toBeVisible();
@@ -49,7 +49,7 @@ test('phone championship shows game and total scores through locked quiz answers
   for (const [index, name] of ['Blaize', 'Dad'].entries()) {
     const cells = results.getByRole('row').filter({ has: page.getByRole('rowheader', { name: new RegExp(`^${name}`) }) }).locator('td');
     await expect(cells.nth(0)).toHaveText(String(points[index]));
-    await expect(cells.nth(1)).toHaveText(String(points[index]));
+    await expect(cells.nth(1)).toHaveText('1');
   }
   await expect(results.getByRole('columnheader')).toHaveText(['Player', 'Current game', 'Championship']);
   await expect(page.getByLabel('Championship total')).toHaveCount(0);
@@ -60,7 +60,7 @@ test('phone championship shows game and total scores through locked quiz answers
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.screenshot({ path: test.info().outputPath('phone-game-result-scores.png'), fullPage: true });
   await page.getByRole('button', { name: 'Next: Track Finder' }).click();
-  await check([0, 0], points);
-  await check([0, 0], points);
+  await check([0, 0], [1, 1]);
+  await check([0, 0], [1, 1]);
   await page.screenshot({ path: test.info().outputPath('phone-championship-scores.png'), fullPage: true });
 });

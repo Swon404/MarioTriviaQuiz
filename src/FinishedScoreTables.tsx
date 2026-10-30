@@ -9,7 +9,7 @@ function description(result: FinishedScore): string {
   const game = 'games' in result ? `${result.size} · ${result.games.map(game => modes[game.mode]).join(' + ')}` : `${modes[result.mode ?? 'quiz']}${result.variant ? ` · ${result.variant === 'hunt' ? 'Hunt' : 'Time Trial'}` : ''} · ${result.total} rounds`;
   const knowledge = 'games' in result ? result.games.some(game => usesKnowledgeLevel(game.mode)) : usesKnowledgeLevel(result.mode ?? 'quiz');
   const level = scoreUsesLevel(result) ? ` · ${knowledge ? '' : 'Shroomer: '}${levels[result.difficulty]}` : '';
-  return `${game}${level} · ${formats[result.format ?? 'solo']} · ${result.topic === 'mixed' ? 'A bit of both' : result.topic === 'kart' ? 'Mario Kart' : 'Mario games'}`;
+  return `${'games' in result && result.championshipRules ? 'Balanced Championship · ' : ''}${game}${level} · ${formats[result.format ?? 'solo']} · ${result.topic === 'mixed' ? 'A bit of both' : result.topic === 'kart' ? 'Mario Kart' : 'Mario games'}`;
 }
 export default function FinishedScoreTables({ records }: { records: FinishedScore[] }) {
   const groups = groupedScores(records);

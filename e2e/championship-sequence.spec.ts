@@ -70,7 +70,7 @@ for (const size of ['quick', 'standard', 'epic'] as const) test(`${size} Champio
     const scores = page.getByRole('table', { name: 'Game results' }).locator('tbody td');
     await expect(scores).toHaveCount(2);
     const values = (await scores.allTextContents()).map(Number);
-    const expected = mode === 'match-hunt' ? 8 : championshipRoundCount(mode, size);
+    const expected = mode === 'match-hunt' ? 4 : championshipRoundCount(mode, size);
     expect(values[0]).toBe(expected);
     total += expected;
     expect(values[1]).toBe(total);

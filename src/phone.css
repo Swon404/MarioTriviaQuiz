@@ -93,3 +93,5 @@ body:has(.mario-app .replay-stage[open]) { overflow: hidden; }
 .progress-backup label { display: block; margin: 14px 0; }
 .progress-backup input { max-width: 100%; }
 .progress-backup button { min-height: 44px; margin: 6px 0; }
+.mario-app .champ-total-row { flex-wrap: wrap; margin: 12px 0; }
+.mario-app .champ-total-row small { flex-basis: 100%; }

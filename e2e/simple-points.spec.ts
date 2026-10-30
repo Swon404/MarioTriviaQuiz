@@ -79,10 +79,10 @@ test('Championship timed award is visible immediately and Next commits it only o
     await page.reload();
     await page.getByRole('button', { name: 'Resume game', exact: true }).click();
     const table = page.getByRole('table', { name: 'Championship scores' });
-    await expect(table.locator('tbody td')).toHaveText(index === 0 ? ['0 points', '0 points', '0 points', '0 points'] : ['0 points', '0 points', '1 point', '1 point']);
+    await expect(table.locator('tbody td')).toHaveText(index === 0 ? ['0 points', '0 points', '0 points', '0 points'] : ['0 points', '0 points', '1 point', '0 points']);
     if (index === 0) await expect(page.locator('.order-result')).toContainText('Waiting for the other player');
     else await expect(page.locator('.order-result')).toContainText('+1 point');
     await page.getByRole('button', { name: 'Next turn', exact: false }).click();
-    await expect(table.locator('tbody td')).toHaveText(index === 0 ? ['0 points', '0 points', '0 points', '0 points'] : ['0 points', '0 points', '1 point', '1 point']);
+    await expect(table.locator('tbody td')).toHaveText(index === 0 ? ['0 points', '0 points', '0 points', '0 points'] : ['0 points', '0 points', '1 point', '0 points']);
   }
 });

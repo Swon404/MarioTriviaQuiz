@@ -651,7 +651,7 @@ for (const difficulty of ['explorer', 'scientist', 'professor']) {
       if (mode === 'quiz') assert.equal(new Set(rounds.map(round => round.question.knowledgeId)).size, rounds.length);
       if (mode === 'clue-duel') assert.equal(new Set(rounds.map(round => round.answerId)).size, rounds.length);
       if (mode === 'match-hunt') {
-        assert.equal(rounds.length, 4, 'Clue Match Up has two rounds per player at every championship length');
+        assert.equal(rounds.length, 2, 'Clue Match Up has one board per player at every championship length');
         const names = rounds.flatMap(round => round.pairs.map(pair => pair.name));
         assert.equal(new Set(names).size, names.length, 'Both players need fresh matching clues');
       }

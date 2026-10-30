@@ -22,7 +22,7 @@ New facts avoid patched-glitch claims. Existing historical glitches stay Legend.
 | Mode | Local catalogue and audit |
 | --- | --- |
 | Quiz / Learning | 252 records, 240 distinct facts; 90 Rookie / 87 Pro / 75 Legend. Longest 16-question competitive Quiz pool checked across seeds and levels. |
-| Clue Match Up | 125 sourced clues. All clue/answer pairs read for ambiguity. Two boards retained; no higher-level borrowing. |
+| Clue Match Up | 125 sourced clues. All clue/answer pairs read for ambiguity. Two standalone boards; one per player in new Championships, as requested. No higher-level borrowing. |
 | Game Order | 30 original US releases, all different years. Eight added games have individual release sources and an extra discovery. |
 | Track Finder | 58 courses: all 48 MK8 Deluxe Booster courses plus ten labelled World courses. 33 tasks; Rookie uses landmarks/features. |
 | Clue Duel | 66 subjects: 20 characters/enemies, 22 tracks, 16 items and eight Odyssey places. Five clues each; compatible item/place/character/track choices. |
@@ -56,6 +56,13 @@ Cup lineups do not mark wave-number questions seen. Learning catalogue browsing
 remains freely available; simply rendering all its cards does not mark all facts read.
 
 ## Order and score integrity
+
+Dad approved balanced competitive Championship on 29 October: one point per
+game won, one each for a drawn game, equal final totals mean a draw. New records
+carry `game-wins-v1`; old results/runs keep action totals. Game scores continue
+to feed lifetime progress, without adding the Championship tally again. New
+matching legs have one board per player; an old resumed run retains two even
+when that leg has not started yet. Solo retains action totals.
 
 New Order boards carry `order-v3`. Older resumed boards without metadata save as
 `order-v2`; historical labels and score groups remain intact. Both v2 and v3

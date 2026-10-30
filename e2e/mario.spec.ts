@@ -589,7 +589,7 @@ test('Shroomer Quiz Battle shows its choices then answers automatically after on
   expect(overflow).toBe(false);
 });
 
-test('solo championship carries points into two Clue Match Up rounds and saves the total', async ({ page }) => {
+test('solo championship carries points into one Clue Match Up board and saves the total', async ({ page }) => {
   await page.setViewportSize({ width: 360, height: 740 });
   await page.goto('./');
   await page.getByRole('button', { name: 'Play Games' }).click();
@@ -614,29 +614,29 @@ test('solo championship carries points into two Clue Match Up rounds and saves t
   }
   await expect(page.getByRole('table', { name: 'Game results' }).locator('tbody td')).toHaveText(['3', '3']);
   await page.getByRole('button', { name: 'Next: Clue Match Up' }).click();
-  for (let i = 0; i < 2; i += 1) {
-    await expect(page.getByText(`Question ${i + 1} of 2`)).toBeVisible();
+  for (let i = 0; i < 1; i += 1) {
+    await expect(page.getByText(`Question ${i + 1} of 1`)).toBeVisible();
     const clues = await page.locator('.match-column').last().locator('button').allTextContents();
     for (const clue of clues) {
       const answer = MATCH_CLUES.find(item => item.clue === clue)!.name;
       await page.locator('.match-column').first().getByRole('button', { name: answer, exact: true }).click();
       await page.locator('.match-column').last().getByRole('button', { name: clue, exact: true }).click();
     }
-    await page.getByRole('button', { name: i === 1 ? 'See result' : 'Next question' }).click();
+    await page.getByRole('button', { name: 'See result' }).click();
   }
-  await expect(page.getByRole('table', { name: 'Game results' }).locator('tbody td')).toHaveText(['8', '11']);
+  await expect(page.getByRole('table', { name: 'Game results' }).locator('tbody td')).toHaveText(['4', '7']);
   await page.getByRole('button', { name: 'See championship result' }).click();
   await expect(page.getByText('CHAMPIONSHIP COMPLETE')).toBeVisible();
-  await expect(page.locator('.result-card')).toContainText('11');
+  await expect(page.locator('.result-card')).toContainText('7');
   const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('mariotrivia_championships_v1') || '[]'));
-  expect(saved[0].points).toBe(11);
-  expect(saved[0].games.map((game: { correct: number }) => game.correct)).toEqual([3, 2]);
+  expect(saved[0].points).toBe(7);
+  expect(saved[0].games.map((game: { correct: number }) => game.correct)).toEqual([3, 1]);
   await page.getByRole('button', { name: 'High Scores' }).click();
   await expect(page.getByText('Championships')).toBeVisible();
-  await expect(page.locator('.score-list').last()).toContainText('11 points');
+  await expect(page.locator('.score-list').last()).toContainText('7 points');
   await page.getByRole('button', { name: 'Back to games' }).click();
   await page.getByRole('button', { name: 'Home' }).click();
-  await expect(page.getByText('11 points', { exact: true })).toBeVisible();
+  await expect(page.getByText('7 points', { exact: true })).toBeVisible();
   await expect(page.getByText('Rookie Racer', { exact: false })).toBeVisible();
 });
 

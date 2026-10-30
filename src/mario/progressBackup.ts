@@ -38,6 +38,8 @@ function validateData(key: Key, data: unknown): asserts data is Data[Key] {
     if (key === 'mariotrivia_results_v1') return result(v);
     if (key === 'mariotrivia_lifetime_v1') return result(v, true);
     if (key === 'mariotrivia_championships_v1') return text(v.player) && number(v.points) && date(v.completedAt) && level(v.difficulty)
+      && optional(v, 'championshipRules', value => value === 'game-wins-v1')
+      && (v.championshipRules === undefined || (['two-player', 'computer'].includes(v.format) && text(v.opponent) && number(v.opponentPoints) && Array.isArray(v.opponentGames)))
       && ['mario', 'kart', 'mixed'].includes(v.topic) && ['quick', 'standard', 'epic'].includes(v.size)
       && Array.isArray(v.games) && v.games.length > 0 && v.games.length <= 7 && v.games.every(leg)
       && optional(v, 'opponent', text) && optional(v, 'opponentPoints', number)

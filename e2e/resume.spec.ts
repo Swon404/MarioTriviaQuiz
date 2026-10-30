@@ -187,7 +187,7 @@ test('Championship recovery keeps totals and the next player across a leg bounda
   await page.getByRole('button', { name: 'Next: Track Finder', exact: true }).click();
   await expect(page.locator('.versus-now-playing').filter({ hasText: "Ada's turn" })).toBeVisible();
   expect(await page.evaluate(() => localStorage.getItem('mariotrivia_results_v1'))).toBe(results);
-  await expect(page.locator('.champ-live-total')).toContainText('3 points');
+  await expect(page.locator('.champ-live-total')).toContainText('1 point');
 });
 test('Reload during a shared Hunt mismatch passes the turn and unlocks the board', async ({ page }) => {
   await openBoard(page, 'Match & Hunt');

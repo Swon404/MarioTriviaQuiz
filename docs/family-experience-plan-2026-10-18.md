@@ -1,6 +1,6 @@
 # Mushroom Power Quiz — main experience plan
 
-Updated 29 October 2026. **This is the main plan and single active backlog.**
+Updated 30 October 2026. **This is the main plan and single active backlog.**
 
 It combines the 18 October whole-game audit with every outstanding workstream
 and acceptance check from the [previous roadmap](family-experience-roadmap-2026-10-11.md).
@@ -13,10 +13,11 @@ appear in this document. Proposed rule changes still require a family decision.
 - User approved **one competitive attempt**. Implemented for new two-player,
   Shroomer and competitive Championship Quiz. Solo retries and old checkpoints
   retain their prior rules; score configurations distinguish the new competition.
-- User requested **balanced scoring for review**. The concrete
-  [Championship proposal](championship-balance-proposal-2026-10-28.md) is prepared;
-  activation is awaiting a reply. Current scoring remains earned action points.
-  Optional setup help now explains available points, timed ties and the total.
+- User approved the [balanced Championship rule](championship-balance-proposal-2026-10-28.md):
+  game win 1, loss 0, draw 1 each. Implemented for new competitive runs; raw
+  game points still feed lifetime progress. Old runs and solo keep action totals.
+  User also requested one Clue Match Up board per player in new Championships.
+  Standalone matching and old Championships retain their previous board counts.
 - [x] Expand to **252 Quiz/Learning records / 240 distinct facts / 125 matching
   clues**, with the complete [coverage register](content-coverage-2026-10-29.md).
 - [x] Expand and audit the other catalogues: 30 Order titles, 66 Clue Duel subjects,
@@ -46,13 +47,16 @@ appear in this document. Proposed rule changes still require a family decision.
 - [x] Stage-one final gate passed: 289 browser tests (213 Chromium, 76 WebKit),
   content audit, TypeScript/production build and real production-worker update/offline
   checks. Whitespace check passed. This verifies the expansion/reliability stage.
-- [ ] [Rank/milestone pacing proposal](progression-pacing-proposal-2026-10-29.md)
-  awaits agreement; thresholds and earned progress have not changed.
+- [ ] [Rank/milestone pacing](progression-pacing-proposal-2026-10-29.md) is approved;
+  implementing in the following stage. Thresholds have not changed yet.
 - [ ] Physical Safari/Home Screen, Files backup, family challenge/interest and
   Shroomer calibration remain. Use the [three-session checklist](phone-acceptance-2026-10-29.md).
   These are acceptance work, not unfinished implementation to hide with test counts.
-- User requested stage-by-stage commits. The next stage changes Championship
-  Clue Match Up to one board per player; standalone play keeps its two boards.
+- Stage one committed as `a6b712e`. User requested stage-by-stage commits.
+- Stage two implements balanced Championship and one matching board per player;
+  final `test:all` passed 297 browser checks (217 Chromium, 80 WebKit), content
+  audit, TypeScript/production build and production-worker update/offline checks.
+  Phone result screenshot and whitespace checks passed. Ready for its stage commit.
   No push or deployment of this local batch is claimed.
 
 ## 28 October — earlier checkpoint and World content batch
@@ -181,7 +185,7 @@ or family playtest**. Documentation updates do not constitute a new app release.
 | Area | Current local coverage (29 October) |
 | --- | --- |
 | Quiz Battle / Learning Zone | 252 reviewed questions/cards, 240 distinct facts; 90 Rookie / 87 Pro / 75 Legend records |
-| Clue Match Up | 125 dedicated clues derived from quiz knowledge; two boards per player |
+| Clue Match Up | 125 dedicated clues; two standalone boards, one per player in new Championships |
 | Clue Duel | 66 subjects: 20 characters/enemies, 22 tracks, 16 items, eight places |
 | Track Finder | 48 MK8 Deluxe DLC and ten World courses; 33 cup/origin/feature tasks |
 | Game Order | 30 titles; documented original US release chronology |
@@ -284,9 +288,10 @@ or family playtest**. Documentation updates do not constitute a new app release.
   Concrete concern: Quick Rookie Quiz offers 3 answer points, while two Clue Match
   boards offer 8 pair points. Simple arithmetic does not ensure equal game influence.
 - [ ] Observe actual game contributions in family play; report evidence before changing rules.
-- [ ] **Decision required:** agree whether to equalise opportunities through board/round
-  sizes or accept different game weights. Preserve one-point scoring unless explicitly changed.
-  Two Clue Match rounds remain the approved rule; do not silently alter them for balance.
+- [x] **Decision received 29 October:** each competitive game win earns one
+  Championship point, a draw one each. Preserve raw points for lifetime progress.
+  Also approved: one matching board per player in new Championships; old saves
+  retain two. No other board sizes or round counts changed.
 - [x] Make available points and the winner/draw explanation clear with minimal text.
 - [x] Audit comparable Order work, Hunt goals/unlocks, distinct questions where intended,
   three-round timed turns, carried totals and documented draws/tiebreakers.
@@ -297,9 +302,9 @@ or family playtest**. Documentation updates do not constitute a new app release.
   from observed runs, with no hidden-information advantage in memory games.
 - [x] **Decision received:** one competitive attempt, implemented for new competition.
   Solo learning retries and old checkpoints remain intact. Handicaps, per-player
-  competitive levels and score weighting have not been approved or changed.
+  competitive levels have not been approved or changed. Weighting is approved above.
 
-Acceptance: both players can explain who won and why; totals match earned actions;
+Acceptance: both players can explain who won and why; totals match the recorded rules;
 both find a satisfying challenge and enjoy close games. No silent rebalancing.
 
 ## 2. Expand the knowledge the family actually enjoys
@@ -334,7 +339,7 @@ review labels are honest; recent sessions feel varied to both players, not just 
 | Quiz Battle | Expanded to 240 distinct facts with reviewed distractors and extras. One competitive attempt is approved and implemented; solo retries stay. Family-calibrate levels and judge whether wrong answers teach something interesting. |
 | Game Order | Expanded to 30 sourced US releases. Eight tiles, long names, equal swap work, hidden years, check penalties and old-rule recovery checked. Family-check readability and challenge. |
 | Track Finder | Ten World courses added through landmarks, hazards and routes; all 48 Booster courses retained. Rookie avoids cup/origin trivia. Valid visible answers and feedback audited. Family recognition remains; MK8 Deluxe base courses stay in the later backlog. |
-| Clue Match Up | All 125 clues reviewed; ambiguous descriptions and equivalent answer labels corrected. Two boards, compact layout and stable feedback retained. Family-check clarity and challenge. |
+| Clue Match Up | All 125 clues reviewed; ambiguous descriptions and equivalent answer labels corrected. Two standalone boards; one per player in new Championships. Compact layout and stable feedback retained. Family-check clarity and challenge. |
 | Match & Hunt | Automated target/unlock, rapid-flip, image fallback and 16/20-pair checks pass. Enlarged text gets wider tiles; normal text keeps four columns at 390px. Family-check recognition of all 41 pairs and Shroomer's pace. No track-scenery pictures. |
 | Clue Duel | Expanded to 66 five-clue subjects, including World tracks/items and Mario enemies, powers and places. Compatible choices, progressive clues, bonus turns and feedback audited. Family-check early-clue fairness and difficulty. |
 | Category Finder | Expanded to 60 tiles within the existing layout; original-release memberships and near misses checked. Pro retains exactly one correct choice. Family judgement of Pro/Legend difficulty remains. |

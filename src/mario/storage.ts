@@ -7,6 +7,7 @@ const RESULTS_KEY = 'mariotrivia_results_v1';
 const CHAMPIONSHIPS_KEY = 'mariotrivia_championships_v1';
 
 export type ChampionshipResult = {
+  championshipRules?: import('./championship.ts').ChampionshipRules;
   scoringVersion?: string;
   scoreConfiguration?: string;
   id: string;

@@ -1,6 +1,7 @@
 # Progression pacing for review
 
-No thresholds changed. These are arithmetic scenarios, not observed family earnings.
+Approved by Dad on 29 October; implementation is the next stage. These are
+arithmetic scenarios, not observed family earnings.
 Lifetime points remain the actual points earned in games, even if Championship
 standings later award one point per game won. No bonus currency or multipliers.
 
