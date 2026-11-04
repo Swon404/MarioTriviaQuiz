@@ -1,10 +1,10 @@
-import type { Difficulty } from './questions.ts';
+import { shuffled, type Difficulty } from './questions.ts';
 import { fitsCategory } from './categoryCatalog.ts';
 import { availableModes, createRounds, DEFAULT_PAIR_OPTIONS, type GameMode, type GameRound, type PairMatchOptions, type Section } from './rounds.ts';
 import type { Answer } from './session.ts';
 import type { OrderOptions } from './gameOrder.ts';
 
-export type ChampionshipSize = 'quick' | 'standard' | 'epic';
+export type ChampionshipSize = 'super-quick' | 'quick' | 'standard' | 'epic';
 export const BALANCED_CHAMPIONSHIP = 'game-wins-v1';
 export type ChampionshipRules = typeof BALANCED_CHAMPIONSHIP;
 export function championshipAward(own: number, opponent: number): [number, number] {
@@ -18,16 +18,28 @@ export function championshipStandings(own: readonly { correct: number; points?: 
     return [total[0] + award[0], total[1] + award[1]];
   }, [0, 0]);
 }
-export const CHAMPIONSHIP_SIZES: readonly ChampionshipSize[] = ['quick', 'standard', 'epic'];
+export const CHAMPIONSHIP_SIZES: readonly ChampionshipSize[] = ['super-quick', 'quick', 'standard', 'epic'];
+
+export function championshipSizeLabel(size: ChampionshipSize): string {
+  return size === 'super-quick' ? 'Super Quick' : size[0].toUpperCase() + size.slice(1);
+}
+
+export function championshipTrialTarget(size: ChampionshipSize): 3 | 4 | 5 {
+  return size === 'epic' ? 5 : size === 'standard' ? 4 : 3;
+}
+
+export function randomChampionshipModes(section: Section, random = Math.random): GameMode[] {
+  return shuffled(availableModes(section), random).slice(0, 3);
+}
 
 const ROUND_COUNTS: Record<GameMode, Record<ChampionshipSize, number>> = {
-  quiz: { quick: 3, standard: 5, epic: 8 },
-  'game-order': { quick: 3, standard: 4, epic: 5 },
-  'track-finder': { quick: 3, standard: 4, epic: 5 },
-  'match-hunt': { quick: 1, standard: 1, epic: 1 },
-  'pair-match': { quick: 3, standard: 3, epic: 3 },
-  'clue-duel': { quick: 3, standard: 4, epic: 5 },
-  'category-finder': { quick: 3, standard: 3, epic: 3 },
+  quiz: { 'super-quick': 1, quick: 3, standard: 5, epic: 8 },
+  'game-order': { 'super-quick': 1, quick: 3, standard: 4, epic: 5 },
+  'track-finder': { 'super-quick': 1, quick: 3, standard: 4, epic: 5 },
+  'match-hunt': { 'super-quick': 1, quick: 1, standard: 1, epic: 1 },
+  'pair-match': { 'super-quick': 1, quick: 3, standard: 3, epic: 3 },
+  'clue-duel': { 'super-quick': 1, quick: 3, standard: 4, epic: 5 },
+  'category-finder': { 'super-quick': 1, quick: 3, standard: 3, epic: 3 },
 };
 
 export function championshipRoundCount(mode: GameMode, size: ChampionshipSize): number {
@@ -46,9 +58,9 @@ export function championshipScoring(mode: GameMode, size: ChampionshipSize, diff
 
 export function createChampionshipRounds(mode: GameMode, section: Section, difficulty: Difficulty, size: ChampionshipSize, random = Math.random, pairOptions: PairMatchOptions = DEFAULT_PAIR_OPTIONS, players = 1, orderOptions?: OrderOptions, recent: readonly string[] = [], matchBoards: 1 | 2 = 1): GameRound[] {
   if (!availableModes(section).includes(mode)) throw new Error(`${mode} is not available in ${section}.`);
-  const atomicCount = ROUND_COUNTS['game-order'][size];
+  const atomicCount = championshipTrialTarget(size);
   const options = mode === 'pair-match' ? {
-    ...pairOptions, roundCount: 3,
+    ...pairOptions, roundCount: championshipRoundCount('pair-match', size),
     pairCount: pairOptions.variant === 'time-trial' ? atomicCount * 3 : pairOptions.pairCount,
     trialTarget: pairOptions.variant === 'time-trial' ? atomicCount as 3 | 4 | 5 : pairOptions.trialTarget,
   } : pairOptions;

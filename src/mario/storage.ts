@@ -14,7 +14,7 @@ export type ChampionshipResult = {
   player: string;
   topic: Topic | 'mixed';
   difficulty: Difficulty;
-  size: 'quick' | 'standard' | 'epic';
+  size: 'super-quick' | 'quick' | 'standard' | 'epic';
   games: { mode: GameMode; variant?: PairVariant; correct: number; total: number; points: number }[];
   points: number;
   format?: 'solo' | 'two-player' | 'computer';

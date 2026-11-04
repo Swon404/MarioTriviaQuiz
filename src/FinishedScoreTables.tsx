@@ -6,7 +6,7 @@ const levels = { explorer: 'Rookie', scientist: 'Pro', professor: 'Legend' };
 const modes: Record<string, string> = { quiz: 'Quiz Battle', 'game-order': 'Game Order', 'pair-match': 'Match & Hunt', 'match-hunt': 'Clue Match Up', 'clue-duel': 'Clue Duel', 'track-finder': 'Track Finder', 'category-finder': 'Category Finder' };
 const formats = { solo: 'Solo', 'two-player': 'Two players', computer: 'Play Shroomer' };
 function description(result: FinishedScore): string {
-  const game = 'games' in result ? `${result.size} · ${result.games.map(game => modes[game.mode]).join(' + ')}` : `${modes[result.mode ?? 'quiz']}${result.variant ? ` · ${result.variant === 'hunt' ? 'Hunt' : 'Time Trial'}` : ''} · ${result.total} rounds`;
+  const game = 'games' in result ? `${result.size === 'super-quick' ? 'Super Quick' : result.size} · ${result.games.map(game => modes[game.mode]).join(' + ')}` : `${modes[result.mode ?? 'quiz']}${result.variant ? ` · ${result.variant === 'hunt' ? 'Hunt' : 'Time Trial'}` : ''} · ${result.total} rounds`;
   const knowledge = 'games' in result ? result.games.some(game => usesKnowledgeLevel(game.mode)) : usesKnowledgeLevel(result.mode ?? 'quiz');
   const level = scoreUsesLevel(result) ? ` · ${knowledge ? '' : 'Shroomer: '}${levels[result.difficulty]}` : '';
   return `${'games' in result && result.championshipRules ? 'Balanced Championship · ' : ''}${game}${level} · ${formats[result.format ?? 'solo']} · ${result.topic === 'mixed' ? 'A bit of both' : result.topic === 'kart' ? 'Mario Kart' : 'Mario games'}`;

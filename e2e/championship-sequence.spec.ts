@@ -40,14 +40,14 @@ async function solve(page: Page, round: GameRound) {
   }
 }
 
-for (const size of ['quick', 'standard', 'epic'] as const) test(`${size} Championship enters and leaves all seven games with reloads and carried totals`, async ({ page }) => {
+for (const size of ['super-quick', 'quick', 'standard', 'epic'] as const) test(`${size} Championship enters and leaves all seven games with reloads and carried totals`, async ({ page }) => {
   test.setTimeout(150_000); // Seven complete games, including timed boards and reloads.
   await page.clock.install();
   await page.goto('./');
   await page.getByRole('button', { name: 'Play Games' }).click();
   await page.getByRole('button', { name: 'Championship', exact: false }).click();
   await page.locator('.setup-settings > summary').click();
-  await page.getByRole('button', { name: size[0].toUpperCase() + size.slice(1), exact: true }).click();
+  await page.getByRole('button', { name: size === 'super-quick' ? 'Super Quick' : size[0].toUpperCase() + size.slice(1), exact: true }).click();
   await page.getByRole('group', { name: 'Matching mode' }).getByRole('button', { name: /Time Trial/ }).click();
   await expect(page.locator('.champ-game-toggle.selected')).toHaveCount(7);
   await page.getByRole('button', { name: 'Start Solo Championship', exact: true }).click();

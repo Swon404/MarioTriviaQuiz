@@ -225,7 +225,7 @@ test('Match & Hunt Time Trial uses three timed championship boards sized from Ga
   await page.getByRole('button', { name: 'Play Games' }).click();
   await page.getByRole('button', { name: 'Championship', exact: false }).click();
   if (await page.locator('.setup-settings:not([open])').count()) await page.locator('.setup-settings > summary').click();
-  await page.getByRole('button', { name: 'Quick' }).click();
+  await page.getByRole('button', { name: 'Quick', exact: true }).click();
   for (const game of ['Game Order', 'Track Finder', 'Clue Match Up', 'Clue Duel', 'Category Finder']) {
     await page.locator('.champ-game-toggle').filter({ hasText: game }).click();
   }
@@ -600,7 +600,7 @@ test('solo championship carries points into one Clue Match Up board and saves th
   await expect(page.locator('.champ-game-toggle')).toHaveCount(7);
   expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(false);
   await page.getByLabel('Player name').fill('Blaize');
-  await page.getByRole('button', { name: 'Quick' }).click();
+  await page.getByRole('button', { name: 'Quick', exact: true }).click();
   for (const game of ['Game Order', 'Track Finder', 'Match & Hunt', 'Clue Duel', 'Category Finder']) {
     await page.locator('.champ-game-toggle').filter({ hasText: game }).click();
   }

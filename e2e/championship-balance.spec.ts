@@ -7,7 +7,7 @@ import { createProgressBackup, importProgressBackup, parseBackup } from '../src/
 import type { ChampionshipResult } from '../src/mario/storage.ts';
 
 test('every Championship game has equal influence; matching is one board each at every size and level', () => {
-  for (const size of ['quick', 'standard', 'epic'] as const) for (const level of ['explorer', 'scientist', 'professor'] as const) {
+  for (const size of ['super-quick', 'quick', 'standard', 'epic'] as const) for (const level of ['explorer', 'scientist', 'professor'] as const) {
     for (const players of [1, 2]) {
       const rounds = createChampionshipRounds('match-hunt', 'mixed', level, size, Math.random, DEFAULT_PAIR_OPTIONS, players);
       expect(rounds).toHaveLength(players);
@@ -33,7 +33,7 @@ test('every Championship game has equal influence; matching is one board each at
 test('balanced results retain their rules and raw games through backup and remain separate from old rankings', () => {
   const game = { mode: 'quiz' as const, correct: 3, total: 3, points: 3 };
   const old: ChampionshipResult = { id: 'old', player: 'Blaize', opponent: 'Dad', format: 'two-player', topic: 'mixed', difficulty: 'explorer', size: 'quick', games: [game], opponentGames: [game], points: 3, opponentPoints: 3, scoringVersion: SCORE_VERSION, scoreConfiguration: 'same games', completedAt: '2026-10-29T10:00:00Z' };
-  const balanced: ChampionshipResult = { ...old, id: 'new', championshipRules: BALANCED_CHAMPIONSHIP, points: 1, opponentPoints: 1 };
+  const balanced: ChampionshipResult = { ...old, id: 'new', size: 'super-quick', championshipRules: BALANCED_CHAMPIONSHIP, points: 1, opponentPoints: 1 };
   expect(scoreGroupKey(old)).not.toBe(scoreGroupKey(balanced));
   const map = new Map<string, string>();
   const storage = { get length() { return map.size; }, clear: () => map.clear(), key: (i: number) => [...map.keys()][i] ?? null, getItem: (key: string) => map.get(key) ?? null, setItem: (key: string, value: string) => { map.set(key, value); }, removeItem: (key: string) => { map.delete(key); } } satisfies Storage;
