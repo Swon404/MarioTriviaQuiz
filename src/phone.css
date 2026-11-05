@@ -79,6 +79,8 @@ body:has(.mario-app .replay-stage[open]) { overflow: hidden; }
   .mario-app .champ-options-group { margin: 8px 0; padding: 10px; }
   .mario-app .champ-setting-help { font-size: .9rem; }
   .mario-app .mario-setup > .start-btn { position: sticky; bottom: calc(8px + env(safe-area-inset-bottom)); width: 100%; z-index: 5; }
+  /* An open settings panel must not hide its lower controls behind Start. */
+  .mario-app .mario-setup:has(.setup-settings[open]) > .start-btn { position: static; }
   .mario-app .home-header { margin-bottom: 8px; }
   .mario-app .shroomer-home { margin-bottom: 8px; }
   .mario-app .shroomer-home-portrait { width: 90px; height: 90px; }

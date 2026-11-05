@@ -125,8 +125,16 @@ test('Shroomer finder shows its board and records the answered challenge', async
   await expect(page.locator('.category-grid')).toBeVisible();
   expect(await history(page)).toEqual(seen);
   await expect(page.locator('.feedback')).toBeVisible();
-  await expect.poll(async () => (await history(page)).ada.length).toBe(2);
+  // Revealed fun facts may add separate knowledge entries. Check the actual
+  // two category challenges rather than assuming history contains no extras.
+  const answeredId = await page.evaluate(() => {
+    const saved = JSON.parse(JSON.parse(localStorage.getItem('mariotrivia_checkpoint_v1')!).payload);
+    return saved.session.rounds[saved.session.index].id as string;
+  });
+  await expect.poll(async () => (await history(page)).ada.filter(id => id.startsWith('category-')).length).toBe(2);
+  expect((await history(page)).ada).toContain(answeredId);
   expect((await history(page)).mushbot).toBeUndefined();
+  expect((await history(page)).shroomer).toBeUndefined();
 });
 
 for (const format of ['Solo', 'Two Players', 'Play Shroomer']) {
