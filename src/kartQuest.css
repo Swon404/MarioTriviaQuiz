@@ -1,17 +1,72 @@
-.kart-quest { width: min(100%, 42rem); margin: 0 auto; padding: 1rem; box-sizing: border-box; }
-.kart-quest h1 { margin: .7rem 0; }
-.kart-quest h2 { font-size: 1.3rem; }
-.kart-standings { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; }
-.kart-driver { display: flex; flex-direction: column; gap: .3rem; border: 2px solid #ffbdba; border-radius: 1rem; padding: .7rem; background: #38203b; overflow-wrap: anywhere; }
-.kart-driver-1 { border-color: #93d8ff; }
-.kart-message, .kart-destination { background: #38203be8; border: 1px solid #ffe66a; border-radius: 1rem; padding: 1rem; }
-.kart-quest .round-btn { margin: .3rem; min-height: 44px; white-space: normal; }
-.kart-quest .start-btn { margin: .6rem 0; width: 100%; }
-.kart-track { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .35rem; }
-.kart-track li { display: flex; flex-direction: column; min-height: 4rem; padding: .3rem; border: 1px solid #cda8c2; border-radius: .6rem; background: #38203b; text-align: center; }
-.kart-track .kart-landed { border: 3px solid #ffe66a; }
-.kart-track small { font-size: .75rem; }
-.kart-track b { min-height: 1.4rem; }
-.kart-quest details { margin: 1rem 0; }
-.kart-quest summary { cursor: pointer; min-height: 44px; }
-@media (max-width: 360px) { .kart-quest { padding: .5rem; } }
+.kart-quest { width:min(100%,44rem); margin:0 auto; padding:.8rem 1rem; box-sizing:border-box; color:#f5f7ff; }
+.kart-header { display:flex; align-items:center; justify-content:space-between; gap:1rem; margin-bottom:1rem; }
+.kart-header h1 { display:flex; align-items:center; gap:.5rem; margin:0; font-size:clamp(1.65rem,6vw,2.4rem); font-style:italic; letter-spacing:-.05em; text-shadow:0 3px 0 #162137; }
+.kart-header h1 > span { font-size:.7em; }
+.kart-kicker { margin:0 0 .15rem; font-size:.62rem; font-weight:800; letter-spacing:.18em; color:#ffe290; }
+.kart-header .back-btn { margin:0; font-size:.75rem; padding:.6rem .7rem; }
+.kart-standings { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:.65rem; }
+.kart-driver { --kart-accent:#ff7977; position:relative; display:flex; align-items:center; gap:.6rem; border:1px solid #ffffff25; border-top:3px solid var(--kart-accent); border-radius:.9rem; padding:.65rem; background:linear-gradient(135deg,#27344e,#152138); box-shadow:0 4px 12px #0a102530; min-width:0; }
+.kart-driver-1 { --kart-accent:#67cfff; }
+.kart-driver-active { box-shadow:0 0 0 2px #ffe290,0 6px 16px #0a102550; }
+.kart-driver-info { display:flex; flex-direction:column; min-width:0; gap:.1rem; }
+.kart-driver-info > strong { font-size:.85rem; overflow-wrap:anywhere; padding-right:.4rem; }
+.kart-driver-info b { font-size:1.35rem; line-height:1.1; font-variant-numeric:tabular-nums; }
+.kart-driver-info small { font-size:.62rem; color:#c6d3e8; }
+.kart-turn-light { position:absolute; right:.5rem; top:.5rem; width:.4rem; height:.4rem; background:#ffe290; border-radius:50%; box-shadow:0 0 8px #ffe290; }
+.kart-token { display:block; flex-shrink:0; width:2rem; height:2.5rem; color:#f65160; filter:drop-shadow(0 3px 2px #0008); }
+.kart-token-1 { color:#299de8; }
+.kart-turn-heading { display:flex; align-items:center; justify-content:space-between; gap:.6rem; margin:.9rem 0 .3rem; }
+.kart-turn-heading h2 { font-size:1rem; margin:0; overflow-wrap:anywhere; }
+.kart-turn-heading > span { white-space:nowrap; font-size:.65rem; letter-spacing:.06em; padding:.25rem .5rem; background:#13213bc9; border-radius:2rem; color:#d9e6f9; }
+.kart-turn-heading b { color:#ffe290; }
+.kart-message { font-size:.8rem; line-height:1.4; margin:.25rem 0 .5rem; color:#eef3ff; }
+.kart-destination { background:#17263bef; border:1px solid #ffe29080; border-radius:1rem; padding:1rem; margin:.75rem 0; }
+.kart-destination h3 { margin:0 0 .4rem; }
+.kart-destination p { font-size:.85rem; }
+.kart-quest .round-btn { margin:.3rem; min-height:44px; white-space:normal; }
+.kart-quest .start-btn { margin:.5rem 0; width:100%; }
+.mario-app .kart-quest .kart-roll { display:flex; align-items:center; justify-content:center; gap:.8rem; padding:.6rem 1rem; min-height:62px; color:#19263a; border:1px solid #ffefb3; border-radius:1rem; background:linear-gradient(135deg,#ffe696,#ffc64e); box-shadow:0 4px 0 #be7e21,0 8px 18px #151e3c35; text-align:left; }
+.mario-app .kart-quest .kart-roll:hover { background:linear-gradient(135deg,#fff0b8,#ffd66e); }
+.kart-roll > span:nth-child(2) { flex:1; font-weight:900; font-size:1.15rem; }
+.kart-roll small { display:block; font-size:.65rem; font-weight:600; opacity:.8; margin-top:.1rem; }
+.kart-die { display:grid; place-items:center; font-size:2.15rem; line-height:1; width:2.5rem; height:2.5rem; background:#fff7df; border-radius:.65rem; transform:rotate(-9deg); box-shadow:0 3px 0 #d9a943; }
+.kart-roll-arrow { font-size:1.5rem; }
+.kart-course { margin-top:1rem; padding:.7rem; border-radius:1.2rem; border:1px solid #a6ebc34d; background:radial-gradient(ellipse at 20% 30%,#487b55 0,transparent 50%),linear-gradient(135deg,#285943,#173c38); box-shadow:inset 0 1px 0 #ffffff25,0 10px 28px #0c172745; overflow:hidden; }
+.kart-course-heading { display:flex; justify-content:space-between; align-items:center; gap:.5rem; font-size:.57rem; letter-spacing:.08em; color:#d6f2dc; font-weight:800; }
+.kart-course-heading > span:first-child { padding:.2rem .45rem; background:#183c30; border-radius:.3rem; color:#fff2b1; }
+.kart-start-grid { display:flex; gap:.8rem; margin:.5rem 0; padding:.3rem .6rem; border-left:4px solid #fff4bf; background:repeating-linear-gradient(90deg,#f2f5e90b 0 12px,transparent 12px 24px),#142a2d; border-radius:.4rem; }
+.kart-start-grid > span { display:flex; align-items:center; gap:.35rem; min-width:0; }
+.kart-start-grid .kart-token { width:1.2rem; height:1.5rem; transform:rotate(90deg); }
+.kart-start-grid small { font-size:.65rem; overflow-wrap:anywhere; }
+.kart-road-board { position:relative; margin:.5rem -.25rem; }
+.kart-road { position:absolute; inset:0; width:100%; height:100%; overflow:visible; pointer-events:none; }
+.kart-road path { fill:none; stroke:#b5c5b2; stroke-width:69; stroke-linecap:round; }
+.kart-road .kart-road-surface { fill:none; stroke:#27364b; stroke-width:63; stroke-linecap:round; }
+.kart-road .kart-road-line { fill:none; stroke:#ffffff60; stroke-width:2; stroke-dasharray:5 7; }
+.kart-track { position:relative; list-style:none; padding:0 .35rem; margin:0; display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); grid-template-rows:repeat(6,76px); gap:12px 10px; }
+.kart-track .kart-space { --space-accent:#91a5bd; position:relative; display:flex; flex-direction:column; justify-content:center; align-items:center; min-width:0; border:1px solid var(--space-accent); border-bottom:4px solid color-mix(in srgb,var(--space-accent),#101c2c 50%); border-radius:.8rem; background:linear-gradient(145deg,#34465b,#1c2b41); box-shadow:0 3px 5px #07152655; }
+.kart-space-number { position:absolute; left:.3rem; top:.2rem; font-size:.72rem; line-height:1; font-weight:900; color:#e0e8f4; }
+.kart-space-icon { font-size:1.65rem; line-height:1.2; margin:.15rem 0; filter:drop-shadow(0 2px 0 #0004); }
+.kart-pipe { position:relative; display:block; width:1.25rem; height:1.5rem; margin:.1rem .25rem; border:2px solid #123c24; border-radius:0 0 .15rem .15rem; background:linear-gradient(90deg,#249149,#84f588 25%,#42bd5b 45%,#188140); }
+.kart-pipe::before { content:''; position:absolute; top:-.2rem; left:-.35rem; width:1.75rem; height:.65rem; border:2px solid #123c24; border-radius:.15rem; background:linear-gradient(90deg,#2cb550,#a2ff9d 25%,#4cd765 45%,#219948); }
+.kart-track small { font-size:.72rem; font-weight:700; color:#f1f5ff; line-height:1.1; }
+.kart-track .kart-space-banana { --space-accent:#f1d76b; background:linear-gradient(145deg,#635c35,#3c3c2d); }
+.kart-track .kart-space-pipe { --space-accent:#70dea3; background:linear-gradient(145deg,#2c6753,#1a403d); }
+.kart-track .kart-space-box { --space-accent:#83cbfa; background:linear-gradient(145deg,#345b83,#263950); }
+.kart-track .kart-space-mushroom { --space-accent:#ff9e8f; background:linear-gradient(145deg,#784747,#4e303e); }
+.kart-track .kart-space-star { --space-accent:#cfb2ff; background:linear-gradient(145deg,#655284,#3c3558); }
+.kart-track .kart-space-rival { --space-accent:#d8e2ef; }
+.kart-space-icon.kart-item-box { display:grid; place-items:center; width:1.5rem; height:1.5rem; margin:.15rem 0 .25rem; font:900 1.2rem/1 sans-serif; color:white; background:linear-gradient(135deg,#ffc65b,#ed912e); border:2px solid #ffeb9f; border-radius:.3rem; box-shadow:2px 2px 0 #9c602a; }
+.kart-track .kart-landed { outline:3px solid #fff0a3; outline-offset:2px; z-index:2; }
+.kart-track .kart-finish { background:repeating-conic-gradient(#ffffff12 0 25%,transparent 0 50%) 0 0 / 14px 14px,#23364d; }
+.kart-space-racers { display:flex; position:absolute; right:-.15rem; bottom:-.5rem; gap:0; z-index:3; }
+.kart-space-racers .kart-token { width:1.6rem; height:1.9rem; transform:rotate(12deg); }
+.kart-fork { position:absolute; top:.1rem; right:.25rem; font-size:.8rem; color:#ffe290; }
+.kart-course-legend { display:flex; flex-wrap:wrap; justify-content:center; gap:.5rem .8rem; margin:.8rem 0 .1rem; font-size:.61rem; color:#e1f2e8; }
+.kart-quest details { margin:.75rem 0; font-size:.85rem; border-bottom:1px solid #ffffff25; }
+.kart-quest summary { cursor:pointer; min-height:44px; display:flex; align-items:center; gap:.5rem; font-weight:700; }
+.kart-quest summary::before { content:'+'; color:#ffe290; }
+.kart-quest details[open] > summary::before { content:'−'; }
+@media (min-width:600px) { .kart-track { grid-template-rows:repeat(6,84px); gap:16px; padding:0 .7rem; } .kart-space-icon { font-size:2rem; } .kart-driver { padding:.75rem 1rem; } .kart-driver-info > strong { font-size:1rem; } }
+@media (max-width:360px) { .kart-quest { padding:.6rem; } .kart-driver { padding:.5rem; gap:.3rem; } .kart-driver > .kart-token { width:1.5rem; } .kart-course { padding:.55rem; } .kart-track { gap:12px 8px; } }
+@media (prefers-reduced-motion:reduce) { .kart-quest *, .kart-quest *::before { animation:none !important; transition:none !important; } }

@@ -5,6 +5,11 @@ import { kartHistory, saveKartHistory } from './mario/kartHistory.ts';
 import { useEffect } from 'react';
 
 export const KART_GAME_NAMES: Record<string, string> = { 'pair-match': 'Match & Hunt', 'game-order': 'Game Order', quiz: 'Quiz Battle', 'clue-duel': 'Clue Duel', 'track-finder': 'Track Finder', 'category-finder': 'Category Finder' };
+const ROAD_PATH = 'M50 50H350Q390 50 390 100T350 150H50Q10 150 10 200T50 250H350Q390 250 390 300T350 350H50Q10 350 10 400T50 450H350Q390 450 390 500T350 550H50';
+
+function KartToken({ player }: { player: number }) {
+  return <svg className={`kart-token kart-token-${player}`} viewBox="0 0 48 56" aria-hidden="true"><rect x="3" y="12" width="9" height="15" rx="3" fill="#101827" /><rect x="36" y="12" width="9" height="15" rx="3" fill="#101827" /><rect x="3" y="35" width="9" height="15" rx="3" fill="#101827" /><rect x="36" y="35" width="9" height="15" rx="3" fill="#101827" /><path d="M15 4h18l5 14v31H10V18Z" fill="currentColor" stroke="white" strokeWidth="2" /><rect x="16" y="15" width="16" height="17" rx="6" fill="#18283f" /><circle cx="24" cy="24" r="6" fill="#ffe4b3" /><path d="M15 40h18M20 5v8h8V5" stroke="white" strokeWidth="4" /><text x="24" y="49" textAnchor="middle" fill="white" fontSize="10" fontWeight="900">{player + 1}</text></svg>;
+}
 
 export default function KartQuest({ race, names, onStart, onChange, onChallenge, onExit }: {
   race: KartRace | null; names: [string, string]; onStart: (names: [string, string]) => void;
@@ -35,15 +40,14 @@ export default function KartQuest({ race, names, onStart, onChange, onChallenge,
   const finished = race.phase === 'finished';
   const winning = race.positions[0] === race.positions[1] ? "It's a shared victory!" : `${race.players[race.positions[0] > race.positions[1] ? 0 : 1]} wins!`;
   return <section className="kart-quest">
-    <button className="back-btn" onClick={onExit}>← Games</button>
-    <h1>🏎️ Kart Quest</h1>
+    <header className="kart-header"><div><p className="kart-kicker">MUSHROOM MOTORWAY</p><h1>Kart Quest<span aria-hidden="true">🏁</span></h1></div><button className="back-btn" onClick={onExit}>← Games</button></header>
     {historyWarning && <p role="alert">This race could not be saved to history. Keep this tab open and try again when storage is available.</p>}
-    <div className="kart-standings" aria-label="Race positions">{race.players.map((name, i) => <div key={i} className={`kart-driver kart-driver-${i}`}><strong>{i === 0 ? '🔴' : '🔵'} {name}</strong><span>Space {race.positions[i]} / 24</span><small>{race.items[i] === 'star' ? '⭐ Star shield' : race.items[i] === 'mushroom' ? '🍄 Mushroom boost' : 'No item'}</small></div>)}</div>
-    {finished ? <h2 role="status">{winning}</h2> : <h2>{race.players[active]}'s roll · {Math.floor(race.turn / 2) + 1}/6 each</h2>}
-    <p className="kart-message" role="status">{race.message}</p>
+    <div className="kart-standings" aria-label="Race positions">{race.players.map((name, i) => <div key={i} className={`kart-driver kart-driver-${i} ${!finished && active === i ? 'kart-driver-active' : ''}`}><KartToken player={i} /><div className="kart-driver-info"><strong>{name}</strong><span><b>{race.positions[i]}</b><small> / 24 spaces</small></span><small>{race.items[i] === 'star' ? '⭐ Star shield' : race.items[i] === 'mushroom' ? '🍄 Mushroom boost' : 'Item slot empty'}</small></div>{!finished && active === i && <span className="kart-turn-light" aria-label="Current player" />}</div>)}</div>
+    <div className="kart-turn-heading">{finished ? <h2 role="status">{winning}</h2> : <><h2>{race.players[active]}'s turn</h2><span>ROLL <b>{Math.floor(race.turn / 2) + 1}</b> / 6</span></>}</div>
+    <p className="kart-message" role="status">{race.turn === 0 && race.phase === 'roll' ? 'Roll out! Race to 24. Both players get equal turns.' : race.message}</p>
     {race.phase === 'roll' && <div className="kart-actions">
       {race.turn % 2 === 1 && Math.max(...race.positions) >= 24 && <p>Final roll! Both players get equal turns.</p>}
-      <button className="start-btn" onClick={() => onChange(current => rollKart(current))}>🎲 Roll die</button>
+      <button className="start-btn kart-roll" aria-label="🎲 Roll die" onClick={() => onChange(current => rollKart(current))}><span className="kart-die" aria-hidden="true">⚄</span><span>Roll die<small>Let’s hit the track</small></span><span className="kart-roll-arrow" aria-hidden="true">→</span></button>
       {race.items[active] === 'mushroom' && <button className="round-btn" onClick={() => onChange(current => rollKart(current, true))}>Use Mushroom: roll +2</button>}
     </div>}
     {race.phase === 'landed' && <div className="kart-destination">
@@ -56,7 +60,15 @@ export default function KartQuest({ race, names, onStart, onChange, onChallenge,
     {race.phase === 'reward' && race.rewardPlayer !== null && <div className="kart-destination"><h3>{race.players[race.rewardPlayer]}, choose your item</h3><p>One item at a time. Choosing replaces your current item.</p><button className="round-btn" onClick={() => onChange(current => claimKartItem(current, 'mushroom'))}>🍄 Mushroom: next roll +2</button><button className="round-btn" onClick={() => onChange(current => claimKartItem(current, 'star'))}>⭐ Star: block one banana</button></div>}
     {race.phase === 'summary' && <button className="start-btn" onClick={() => onChange(nextKartTurn)}>{(race.turn + 1) % 2 === 0 && (Math.max(...race.positions) >= 24 || race.turn >= 11) ? 'See race result' : 'Next roll'}</button>}
     {finished && <><p>Final positions after {race.turn / 2} rolls each. Furthest wins; equal positions share the victory.</p><button className="start-btn" onClick={() => onStart(race.players)}>Race again</button></>}
-    <ol className="kart-track" aria-label="Race track">{KART_TRACK.map((tile, index) => <li key={index} style={{ gridRow: Math.floor(index / 4) + 1, gridColumn: Math.floor(index / 4) % 2 === 0 ? index % 4 + 1 : 4 - index % 4 }} className={race.space === index + 1 ? 'kart-landed' : ''} aria-label={`Space ${index + 1}: ${KART_EFFECTS[tile.effect].name}, ${KART_GAME_NAMES[tile.mode]}`}><span>{index + 1} {index === 23 ? '🏁' : KART_EFFECTS[tile.effect].icon}</span><small>{tile.mode === 'pair-match' ? 'Match' : tile.mode === 'game-order' ? 'Order' : tile.mode === 'quiz' ? 'Quiz' : tile.mode === 'clue-duel' ? 'Clues' : 'Find'}</small><b>{race.positions.map((pos, player) => Math.min(24, pos) === index + 1 ? player === 0 ? '🔴' : '🔵' : '').join('')}</b></li>)}</ol>
+    <div className="kart-course">
+      <div className="kart-course-heading"><span>START <span aria-hidden="true">→</span></span><span>FOLLOW THE ROAD TO <b>24</b> 🏁</span></div>
+      {race.positions.some(pos => pos === 0) && <div className="kart-start-grid" aria-label="Starting grid">{race.players.map((name, i) => race.positions[i] === 0 && <span key={i} aria-label={`${name} at the start`}><KartToken player={i} /><small>{name}</small></span>)}</div>}
+      <div className="kart-road-board">
+        <svg className="kart-road" viewBox="0 0 400 600" preserveAspectRatio="none" aria-hidden="true"><path d={ROAD_PATH} /><path d={ROAD_PATH} className="kart-road-surface" /><path d={ROAD_PATH} className="kart-road-line" /></svg>
+        <ol className="kart-track" aria-label="Race track">{KART_TRACK.map((tile, index) => <li key={index} style={{ gridRow: Math.floor(index / 4) + 1, gridColumn: Math.floor(index / 4) % 2 === 0 ? index % 4 + 1 : 4 - index % 4 }} className={`kart-space kart-space-${tile.effect} ${race.space === index + 1 ? 'kart-landed' : ''} ${index === 23 ? 'kart-finish' : ''}`} aria-label={`Space ${index + 1}: ${KART_EFFECTS[tile.effect].name}, ${KART_GAME_NAMES[tile.mode]}`}><span className="kart-space-number">{index + 1}</span><span className={`kart-space-icon ${tile.effect === 'box' ? 'kart-item-box' : ''}`} aria-hidden="true">{index === 23 ? '🏁' : tile.effect === 'box' ? '?' : tile.effect === 'pipe' ? <span className="kart-pipe" /> : tile.effect === 'road' ? Math.floor(index / 4) % 2 === 0 ? '→' : '←' : KART_EFFECTS[tile.effect].icon}</span><small>{tile.mode === 'pair-match' ? 'Match' : tile.mode === 'game-order' ? 'Order' : tile.mode === 'quiz' ? 'Quiz' : tile.mode === 'clue-duel' ? 'Clues' : 'Find'}</small><div className="kart-space-racers">{race.players.map((name, player) => Math.min(24, race.positions[player]) === index + 1 && <span key={player} aria-label={`${name} on space ${race.positions[player]}`}><KartToken player={player} /></span>)}</div>{tile.fork && <span className="kart-fork" aria-label="Route choice">⑂</span>}</li>)}</ol>
+      </div>
+      <div className="kart-course-legend"><span>🍌 Dodge</span><span>🟢 Shortcut</span><span>❓ Item</span><span>🏁 Race</span></div>
+    </div>
     <details><summary>Track rules and items</summary><p>Roll 1–6. Bonus moves never trigger another space. No missed turns. A Star is used automatically when a banana would move you back. A Mushroom adds two to a roll when you choose to use it.</p>{Object.values(KART_EFFECTS).map(item => <p key={item.name}><strong>{item.icon} {item.name}:</strong> {item.rule}</p>)}</details>
     {race.log.length > 0 && <details><summary>Race recap</summary><ol>{race.log.map((line, i) => <li key={i}>{line}</li>)}</ol></details>}
     {historyPanel}
