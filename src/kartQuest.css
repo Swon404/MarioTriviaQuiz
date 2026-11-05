@@ -36,37 +36,43 @@
 .kart-course-heading > span:first-child { padding:.2rem .45rem; background:#183c30; border-radius:.3rem; color:#fff2b1; }
 .kart-start-grid { display:flex; gap:.8rem; margin:.5rem 0; padding:.3rem .6rem; border-left:4px solid #fff4bf; background:repeating-linear-gradient(90deg,#f2f5e90b 0 12px,transparent 12px 24px),#142a2d; border-radius:.4rem; }
 .kart-start-grid > span { display:flex; align-items:center; gap:.35rem; min-width:0; }
-.kart-start-grid .kart-token { width:1.2rem; height:1.5rem; transform:rotate(90deg); }
+.kart-start-grid .kart-token { width:2rem; height:2.5rem; transform:rotate(90deg); }
 .kart-start-grid small { font-size:.65rem; overflow-wrap:anywhere; }
 .kart-road-board { position:relative; margin:.5rem -.25rem; }
 .kart-road { position:absolute; inset:0; width:100%; height:100%; overflow:visible; pointer-events:none; }
-.kart-road path { fill:none; stroke:#b5c5b2; stroke-width:69; stroke-linecap:round; }
-.kart-road .kart-road-surface { fill:none; stroke:#27364b; stroke-width:63; stroke-linecap:round; }
-.kart-road .kart-road-line { fill:none; stroke:#ffffff60; stroke-width:2; stroke-dasharray:5 7; }
-.kart-track { position:relative; list-style:none; padding:0 .35rem; margin:0; display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); grid-template-rows:repeat(6,76px); gap:12px 10px; }
-.kart-track .kart-space { --space-accent:#91a5bd; position:relative; display:flex; flex-direction:column; justify-content:center; align-items:center; min-width:0; border:1px solid var(--space-accent); border-bottom:4px solid color-mix(in srgb,var(--space-accent),#101c2c 50%); border-radius:.8rem; background:linear-gradient(145deg,#34465b,#1c2b41); box-shadow:0 3px 5px #07152655; }
-.kart-space-number { position:absolute; left:.3rem; top:.2rem; font-size:.72rem; line-height:1; font-weight:900; color:#e0e8f4; }
-.kart-space-icon { font-size:1.65rem; line-height:1.2; margin:.15rem 0; filter:drop-shadow(0 2px 0 #0004); }
+.kart-road path { fill:none; stroke:#f4e9cf; stroke-width:84; stroke-linecap:round; }
+.kart-road .kart-road-surface { fill:none; stroke:#263440; stroke-width:76; stroke-linecap:round; }
+.kart-road .kart-road-line { fill:none; stroke:#f7e8a47a; stroke-width:2; stroke-dasharray:5 8; }
+.kart-track { position:relative; list-style:none; padding:0; margin:0; display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); grid-template-rows:repeat(6,90px); gap:0; }
+.kart-track .kart-space { --space-accent:#bac8d5; position:relative; display:flex; flex-direction:column; justify-content:center; align-items:center; min-width:0; border:0; border-radius:0; background:none; box-shadow:none; }
+.kart-space-number { position:absolute; left:50%; top:1px; transform:translateX(-50%); font-size:.65rem; line-height:1.2; font-weight:900; color:#ffffffc4; padding:1px 4px; border-radius:3px; background:#213d33; }
+.kart-space-icon { display:grid; place-items:center; font-size:1.5rem; line-height:1; width:2.4rem; height:2.4rem; margin:0; border:1px dashed var(--space-accent); border-radius:50%; background:#14212c90; filter:drop-shadow(0 2px 0 #0004); }
 .kart-pipe { position:relative; display:block; width:1.25rem; height:1.5rem; margin:.1rem .25rem; border:2px solid #123c24; border-radius:0 0 .15rem .15rem; background:linear-gradient(90deg,#249149,#84f588 25%,#42bd5b 45%,#188140); }
 .kart-pipe::before { content:''; position:absolute; top:-.2rem; left:-.35rem; width:1.75rem; height:.65rem; border:2px solid #123c24; border-radius:.15rem; background:linear-gradient(90deg,#2cb550,#a2ff9d 25%,#4cd765 45%,#219948); }
-.kart-track small { font-size:.72rem; font-weight:700; color:#f1f5ff; line-height:1.1; }
-.kart-track .kart-space-banana { --space-accent:#f1d76b; background:linear-gradient(145deg,#635c35,#3c3c2d); }
-.kart-track .kart-space-pipe { --space-accent:#70dea3; background:linear-gradient(145deg,#2c6753,#1a403d); }
-.kart-track .kart-space-box { --space-accent:#83cbfa; background:linear-gradient(145deg,#345b83,#263950); }
-.kart-track .kart-space-mushroom { --space-accent:#ff9e8f; background:linear-gradient(145deg,#784747,#4e303e); }
-.kart-track .kart-space-star { --space-accent:#cfb2ff; background:linear-gradient(145deg,#655284,#3c3558); }
+.kart-track small { position:absolute; bottom:1px; font-size:.62rem; font-weight:700; color:#eef7ef; line-height:1.1; padding:2px 4px; border-radius:3px; background:#213d33; }
+.kart-track .kart-space-banana { --space-accent:#f1d76b; }
+.kart-track .kart-space-pipe { --space-accent:#70dea3; }
+.kart-track .kart-space-box { --space-accent:#83cbfa; }
+.kart-track .kart-space-mushroom { --space-accent:#ff9e8f; }
+.kart-track .kart-space-star { --space-accent:#cfb2ff; }
 .kart-track .kart-space-rival { --space-accent:#d8e2ef; }
 .kart-space-icon.kart-item-box { display:grid; place-items:center; width:1.5rem; height:1.5rem; margin:.15rem 0 .25rem; font:900 1.2rem/1 sans-serif; color:white; background:linear-gradient(135deg,#ffc65b,#ed912e); border:2px solid #ffeb9f; border-radius:.3rem; box-shadow:2px 2px 0 #9c602a; }
-.kart-track .kart-landed { outline:3px solid #fff0a3; outline-offset:2px; z-index:2; }
-.kart-track .kart-finish { background:repeating-conic-gradient(#ffffff12 0 25%,transparent 0 50%) 0 0 / 14px 14px,#23364d; }
-.kart-space-racers { display:flex; position:absolute; right:-.15rem; bottom:-.5rem; gap:0; z-index:3; }
-.kart-space-racers .kart-token { width:1.6rem; height:1.9rem; transform:rotate(12deg); }
-.kart-fork { position:absolute; top:.1rem; right:.25rem; font-size:.8rem; color:#ffe290; }
+.kart-track .kart-landed .kart-space-icon { box-shadow:0 0 0 3px #ffe290,0 0 16px #ffdf7a60; }
+.kart-track .kart-finish::before { content:''; position:absolute; left:12%; top:18%; width:10px; height:64%; background:repeating-conic-gradient(#f5f2de 0 25%,#172534 0 50%) 0 0 / 10px 10px; transform:rotate(-8deg); }
+.kart-racer-layer { position:absolute; inset:0; pointer-events:none; }
+.kart-road-racer-1 { margin-top:26px; }
+.kart-road-racer .kart-token { width:2rem; height:2.5rem; transform:rotate(90deg); filter:drop-shadow(0 3px 2px #000b); }
+.kart-road-racer.kart-facing-left .kart-token { transform:rotate(-90deg); }
+.kart-racer-name { position:absolute; bottom:100%; left:50%; transform:translateX(-50%); max-width:4rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:.55rem; padding:1px 4px; border-radius:3px; background:#b82340; color:white; font-weight:800; }
+.kart-road-racer-1 .kart-racer-name { top:100%; bottom:auto; background:#076092; }
+.kart-occupied .kart-space-icon { opacity:.3; }
+.kart-road-racer { position:absolute; z-index:4; width:2rem; height:2.5rem; transform:translate(-50%,calc(-50% - 13px)); }
+.kart-fork { position:absolute; top:0; right:15%; font-size:.8rem; color:#ffe290; }
 .kart-course-legend { display:flex; flex-wrap:wrap; justify-content:center; gap:.5rem .8rem; margin:.8rem 0 .1rem; font-size:.61rem; color:#e1f2e8; }
 .kart-quest details { margin:.75rem 0; font-size:.85rem; border-bottom:1px solid #ffffff25; }
 .kart-quest summary { cursor:pointer; min-height:44px; display:flex; align-items:center; gap:.5rem; font-weight:700; }
 .kart-quest summary::before { content:'+'; color:#ffe290; }
 .kart-quest details[open] > summary::before { content:'−'; }
-@media (min-width:600px) { .kart-track { grid-template-rows:repeat(6,84px); gap:16px; padding:0 .7rem; } .kart-space-icon { font-size:2rem; } .kart-driver { padding:.75rem 1rem; } .kart-driver-info > strong { font-size:1rem; } }
-@media (max-width:360px) { .kart-quest { padding:.6rem; } .kart-driver { padding:.5rem; gap:.3rem; } .kart-driver > .kart-token { width:1.5rem; } .kart-course { padding:.55rem; } .kart-track { gap:12px 8px; } }
+@media (min-width:600px) { .kart-track { grid-template-rows:repeat(6,100px); } .kart-space-icon { font-size:1.8rem; } .kart-driver { padding:.75rem 1rem; } .kart-driver-info > strong { font-size:1rem; } }
+@media (max-width:360px) { .kart-quest { padding:.6rem; } .kart-driver { padding:.5rem; gap:.3rem; } .kart-driver > .kart-token { width:1.5rem; } .kart-course { padding:.55rem; } }
 @media (prefers-reduced-motion:reduce) { .kart-quest *, .kart-quest *::before { animation:none !important; transition:none !important; } }
