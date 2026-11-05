@@ -1,0 +1,17 @@
+.kart-quest { width: min(100%, 42rem); margin: 0 auto; padding: 1rem; box-sizing: border-box; }
+.kart-quest h1 { margin: .7rem 0; }
+.kart-quest h2 { font-size: 1.3rem; }
+.kart-standings { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; }
+.kart-driver { display: flex; flex-direction: column; gap: .3rem; border: 2px solid #ffbdba; border-radius: 1rem; padding: .7rem; background: #38203b; overflow-wrap: anywhere; }
+.kart-driver-1 { border-color: #93d8ff; }
+.kart-message, .kart-destination { background: #38203be8; border: 1px solid #ffe66a; border-radius: 1rem; padding: 1rem; }
+.kart-quest .round-btn { margin: .3rem; min-height: 44px; white-space: normal; }
+.kart-quest .start-btn { margin: .6rem 0; width: 100%; }
+.kart-track { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .35rem; }
+.kart-track li { display: flex; flex-direction: column; min-height: 4rem; padding: .3rem; border: 1px solid #cda8c2; border-radius: .6rem; background: #38203b; text-align: center; }
+.kart-track .kart-landed { border: 3px solid #ffe66a; }
+.kart-track small { font-size: .75rem; }
+.kart-track b { min-height: 1.4rem; }
+.kart-quest details { margin: 1rem 0; }
+.kart-quest summary { cursor: pointer; min-height: 44px; }
+@media (max-width: 360px) { .kart-quest { padding: .5rem; } }

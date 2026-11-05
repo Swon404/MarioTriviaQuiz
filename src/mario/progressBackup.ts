@@ -1,9 +1,10 @@
 import { getOrderTimes } from './gameOrder.ts';
 import { getPairTimes } from './pairTimes.ts';
 import { validReplay } from './replay.ts';
+import { validKartResult } from './kartHistory.ts';
 
 export const BACKUP_KEYS = ['mariotrivia_results_v1', 'mariotrivia_championships_v1', 'mariotrivia_lifetime_v1',
-  'mariotrivia_order_times_v1', 'mariotrivia_pair_times_v1', 'mariotrivia_question_history_v1'] as const;
+  'mariotrivia_order_times_v1', 'mariotrivia_pair_times_v1', 'mariotrivia_question_history_v1', 'mariotrivia_kart_races_v1'] as const;
 const JOURNAL = 'mariotrivia_import_recovery_v1';
 type Key = typeof BACKUP_KEYS[number];
 type RecordData = Record<string, unknown> & { id: string };
@@ -35,6 +36,7 @@ function validateData(key: Key, data: unknown): asserts data is Data[Key] {
   if (!Array.isArray(data) || data.length > 100000 || !data.every(v => object(v) && text(v.id))) throw new Error('Invalid progress records.');
   if (new Set(data.map(v => v.id)).size !== data.length) throw new Error('Duplicate record IDs in backup.');
   const valid = data.every(v => {
+    if (key === 'mariotrivia_kart_races_v1') return validKartResult(v);
     if (key === 'mariotrivia_results_v1') return result(v);
     if (key === 'mariotrivia_lifetime_v1') return result(v, true);
     if (key === 'mariotrivia_championships_v1') return text(v.player) && number(v.points) && date(v.completedAt) && level(v.difficulty)

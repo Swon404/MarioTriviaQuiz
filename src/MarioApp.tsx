@@ -41,8 +41,10 @@ import { personalTimeBest, personalBestMessage } from './mario/personalBest.ts';
 import { difficultyDetails, usesKnowledgeLevel } from './mario/difficultyDetails.ts';
 import AppMaintenance from './AppMaintenance.tsx';
 import ProgressBackup from './ProgressBackup.tsx';
+import KartQuest from './KartQuest.tsx';
+import { newKartRace, kartActive, beginKartChallenge, resolveKart, KART_TRACK, type KartRace } from './mario/kartQuest.ts';
 
-type Screen = 'home' | 'hub' | 'setup' | 'championship-setup' | 'championship-handover' | 'game' | 'result' | 'championship-result' | 'versus-game' | 'versus-result' | 'scores' | 'tracks' | 'explore';
+type Screen = 'home' | 'hub' | 'kart' | 'setup' | 'championship-setup' | 'championship-handover' | 'game' | 'result' | 'championship-result' | 'versus-game' | 'versus-result' | 'scores' | 'tracks' | 'explore';
 type QuizFormat = 'solo' | 'two-player' | 'computer';
 type ChampionshipRun = { championshipRules?: ChampionshipRules; matchBoards?: 1; quizAttempts?: 1; id: string; size: ChampionshipSize; topic: Section; difficulty: Difficulty; modes: GameMode[]; index: number; legs: QuizResult[]; pairOptions: PairMatchOptions; format: QuizFormat; opponent: string; turnIndex: 0 | 1; rounds: GameRound[]; computerAnswers: Answer[] };
 type StandaloneRun = { format: 'two-player' | 'computer'; opponent: string; turnIndex: 0 | 1; rounds: GameRound[]; computerAnswers: Answer[]; firstResult?: QuizResult };
@@ -88,7 +90,7 @@ export default function MarioApp() {
   const orderOptions: OrderOptions = { challenge: orderChallenge, tiles: orderTiles };
   const [orderReset, setOrderReset] = useState(0);
   const [orderCheckpoint, setOrderCheckpoint] = useState<OrderCheckpoint | null>(null);
-  const [runId, setRunId] = useState(() => crypto.randomUUID());
+  const [runId, setRunId] = useState<string>(() => crypto.randomUUID());
   const [scoringVersion, setScoringVersion] = useState<string | undefined>(SCORE_VERSION);
   const [turnScores, setTurnScores] = useState<TurnScores | null>(null);
   const [clueBonus, setClueBonus] = useState(false);
@@ -100,6 +102,7 @@ export default function MarioApp() {
   const [huntChosenTarget, setHuntChosenTarget] = useSavedSetting<string | null>('hunt-target', null, value => value === null || ICON_PAIRS.some(pair => pair.id === value));
   const [huntUnlockPairs, setHuntUnlockPairs] = useSavedSetting('hunt-unlock', 0, oneOf([0, 1, 2, 3, 4, 5]));
   const [screen, setScreen] = useState<Screen>('home');
+  const [kart, setKart] = useState<KartRace | null>(null);
   const [session, setSession] = useState<GameSession | null>(null);
   const [versus, setVersus] = useState<VersusQuiz | null>(null);
   const [versusReady, setVersusReady] = useState(false);
@@ -223,7 +226,7 @@ export default function MarioApp() {
   const [botTimes, setBotTimes] = useState<number[]>([]);
   const [clueWrongIds, setClueWrongIds] = useState<string[]>([]);
   const recoveryCheckpoint = { kind: 'game-recovery-v1', orderCheckpoint, player, opponentName, mode, difficulty, quizFormat, timerEnabled,
-    screen, session, versus, versusReady, runId, scoringVersion, turnScores, championship, standalone, latestResult,
+    screen, kart, session, versus, versusReady, runId, scoringVersion, turnScores, championship, standalone, latestResult,
     orderChallenge, orderCounts, pairVariant, pairCount, trialTarget, huntTimed, huntTargetMode, huntChosenTarget, huntUnlockPairs,
     matchedIds, selectedMatchName, selectedMatchClue, matchMessage, matchMistakes,
     flippedCards, foundPairs, pairMoves, pairLocked, pairMessage, pairScore, pairTimerReady,
@@ -232,19 +235,19 @@ export default function MarioApp() {
     botTimes, startedAt: startTime.current, previousRoundMs: previousRoundMs.current, completedMs: pairRoundCompletedMs.current };
   const [pendingResume, setPendingResume] = useState(() => {
     const saved = readCheckpoint<typeof recoveryCheckpoint>();
-    return saved?.kind === 'game-recovery-v1' && ['game', 'versus-game', 'championship-handover', 'result'].includes(saved.screen) ? saved : null;
+    return saved?.kind === 'game-recovery-v1' && ['kart', 'game', 'versus-game', 'championship-handover', 'result'].includes(saved.screen) ? saved : null;
   });
   const [checkpointWarning, setCheckpointWarning] = useState(false);
   const lastCheckpoint = useRef('');
   // Persist committed actions before paint: a reload must not race a visible selection.
   useLayoutEffect(() => {
-    const inProgress = ['game', 'versus-game', 'championship-handover'].includes(screen) || (screen === 'result' && championship !== null);
+    const inProgress = ['game', 'versus-game', 'championship-handover'].includes(screen) || (screen === 'kart' && kart !== null) || (screen === 'result' && (championship !== null || kart !== null));
     if (!inProgress) return;
     const payload = JSON.stringify(recoveryCheckpoint);
     if (payload === lastCheckpoint.current) return;
     if (saveCheckpoint(recoveryCheckpoint)) { lastCheckpoint.current = payload; setCheckpointWarning(false); }
     else setCheckpointWarning(true);
-  }, [screen, mode, session, versus, versusReady, runId, turnScores, championship, standalone, latestResult,
+  }, [screen, kart, mode, session, versus, versusReady, runId, turnScores, championship, standalone, latestResult,
     botTimes, orderCheckpoint, player, opponentName, difficulty, quizFormat, timerEnabled, orderChallenge, orderCounts,
     pairVariant, pairCount, trialTarget, huntTimed, huntTargetMode, huntChosenTarget, huntUnlockPairs,
     matchedIds, selectedMatchName, selectedMatchClue, matchMessage, matchMistakes, flippedCards, foundPairs,
@@ -252,6 +255,7 @@ export default function MarioApp() {
   const resumeGame = () => {
     if (!pendingResume) return;
     const saved = pendingResume;
+    setKart(saved.kart ?? null);
     setScoringVersion(saved.scoringVersion === SCORE_VERSION ? SCORE_VERSION : undefined);
     setPlayer(saved.player); savePlayer(saved.player); setOpponentName((saved.championship?.format ?? saved.standalone?.format ?? saved.quizFormat) === 'computer' ? MUSHBOT : saved.opponentName);
     setMode(saved.mode); setDifficulty(saved.difficulty); setQuizFormat(saved.quizFormat); setTimerEnabled(saved.timerEnabled);
@@ -296,6 +300,7 @@ export default function MarioApp() {
   };
 
   const openGame = (next: GameMode) => {
+    setKart(null);
     setChampionship(null);
     setStandalone(null);
     setTurnScores(null);
@@ -399,7 +404,47 @@ export default function MarioApp() {
     setScreen('game');
   };
 
+  const startKart = (names: [string, string]) => {
+    const first = names[0].trim().slice(0, 24) || 'Player';
+    const wanted = names[1].trim().slice(0, 24) || 'Player 2';
+    const second = wanted.toLowerCase() === first.toLowerCase() ? `${wanted.slice(0, 22)} 2` : wanted;
+    clearCheckpoint(); setPendingResume(null); lastCheckpoint.current = '';
+    setKart(newKartRace([first, second]));
+    setChampionship(null); setStandalone(null); setTurnScores(null); setSession(null);
+    setPlayer(first); savePlayer(first); setOpponentName(second);
+    setScoringVersion(SCORE_VERSION);
+    setScreen('kart');
+  };
+  const playKartChallenge = () => {
+    if (!kart || kart.phase !== 'landed' || !kart.routeChosen) return;
+    const active = kartActive(kart);
+    const name = kart.players[active], other = kart.players[1 - active];
+    const nextMode = KART_TRACK[kart.space - 1].mode;
+    const options: PairMatchOptions = { variant: 'time-trial', pairCount: 9, trialTarget: 3, huntTimed: true, targetMode: 'none', chosenTargetId: null, unlockPairs: 0 };
+    const rounds = createChampionshipRounds(nextMode, 'mixed', 'explorer', 'super-quick', Math.random, options, 2, { challenge: 'easy', tiles: 4 }, recentKnowledge(kart.players));
+    setKart(beginKartChallenge(kart));
+    setPlayer(name); setOpponentName(other); setDifficulty('explorer');
+    setQuizFormat('two-player'); setMode(nextMode); setChampionship(null);
+    setStandalone({ format: 'two-player', opponent: other, turnIndex: 0, rounds, computerAnswers: [] });
+    setRunId(`${kart.id}:turn-${kart.turn}`); setScoringVersion(SCORE_VERSION);
+    setTurnScores(newTurnScores()); setBotTimes([]);
+    setPairVariant('time-trial'); setHuntTimed(true); setTimerEnabled(false);
+    setOrderChallenge('easy'); setOrderTiles(4);
+    setSession(startSession(rounds, 'explorer', 1)); prepareRound(rounds[0]);
+    setLatestResult(null); setElapsedMs(0); previousRoundMs.current = 0; startTime.current = Date.now();
+    setScreen('game');
+  };
+  const returnToKart = () => {
+    if (!kart || !latestResult) return;
+    const points: [number, number] = latestResult.player === kart.players[0]
+      ? [latestResult.points ?? 0, latestResult.opponentPoints ?? 0]
+      : [latestResult.opponentPoints ?? 0, latestResult.points ?? 0];
+    setKart(current => current ? resolveKart(current, points) : current);
+    setStandalone(null); setSession(null); setScreen('kart');
+  };
+
   const startChampionship = () => {
+    setKart(null);
     if (chosenChampionshipModes.length < 2) return;
     clearCheckpoint(); setPendingResume(null); lastCheckpoint.current = '';
     const name = draftName.trim().slice(0, 24) || 'Player';
@@ -481,7 +526,11 @@ export default function MarioApp() {
       const combined = { ...results[0], opponent: opponentName, opponentCorrect: results[1].correct, opponentPoints: results[1].points, opponentBestStreak: results[1].bestStreak, format: championship?.format ?? standalone?.format };
       setSession(updated);
       setTurnScores(null);
-      if (championship) {
+      if (kart) {
+        saveResult(combined);
+        setLatestResult(combined);
+        setScreen('result');
+      } else if (championship) {
         results.forEach(saveResult);
         setChampionship({ ...championship, legs: [...championship.legs, ...results] });
         setLatestResult(combined);
@@ -547,9 +596,10 @@ export default function MarioApp() {
   };
 
   const leaveGame = () => {
-    const unfinished = ['game', 'versus-game', 'championship-handover'].includes(screen) || (screen === 'result' && championship !== null);
+    const unfinished = Boolean(kart && kart.phase !== 'finished') || ['game', 'versus-game', 'championship-handover'].includes(screen) || (screen === 'result' && championship !== null);
     if (unfinished && !window.confirm('Leave this game? Your unfinished game will be lost. Completed records are kept. Choose Cancel to keep playing.')) return;
     clearCheckpoint(); setPendingResume(null);
+    setKart(null);
     if (pairFlipTimeout.current !== null) window.clearTimeout(pairFlipTimeout.current);
     pairFlipTimeout.current = null;
     setChampionship(null);
@@ -833,7 +883,7 @@ export default function MarioApp() {
     {checkpointWarning && <p className="review-note" role="alert">This game could not be saved for recovery. Keep this tab open; refreshing may lose your current turn.</p>}
     {progressStorageProblem() && <p className="review-note" role="alert">Some progress could not be saved on this device. Keep this tab open; unsaved progress may be lost if you close or reload it.</p>}
     {screen === 'home' && <section className="home-screen">
-      {pendingResume && <section className="resume-game" aria-label="Unfinished game"><h2>Continue your game?</h2><p>{pendingResume.player} · {MODE_LABELS[pendingResume.mode]}{pendingResume.championship ? ' · Championship' : ''}. Your answers and turn are saved. Any running timer includes time away. Starting a new game replaces this saved game.</p><button className="start-btn" onClick={resumeGame}>Resume game</button><button className="back-btn" onClick={() => { if (window.confirm('Discard this unfinished game? Completed records are kept.')) { if (clearCheckpoint()) setPendingResume(null); else setCheckpointWarning(true); } }}>Discard saved game</button></section>}
+      {pendingResume && <section className="resume-game" aria-label="Unfinished game"><h2>Continue your game?</h2><p>{pendingResume.player} · {pendingResume.kart ? 'Kart Quest' : MODE_LABELS[pendingResume.mode]}{pendingResume.championship ? ' · Championship' : ''}. Your answers and turn are saved. Any running timer includes time away. Starting a new game replaces this saved game.</p><button className="start-btn" onClick={resumeGame}>Resume game</button><button className="back-btn" onClick={() => { if (window.confirm('Discard this unfinished game? Completed records are kept.')) { if (clearCheckpoint()) setPendingResume(null); else setCheckpointWarning(true); } }}>Discard saved game</button></section>}
       <div className="home-header">
         <h1 className="game-title" aria-label="Mushroom Power Quiz">{['Mushroom', 'Power', 'Quiz'].map(word => <span className="title-word" aria-hidden="true" key={word}>{Array.from(word).map((letter, index) => <span className="title-letter" key={index}>{letter}</span>)}</span>)}</h1>
         <p className="mario-tagline">Unofficial Mario trivia and matching games.</p>
@@ -859,6 +909,7 @@ export default function MarioApp() {
       {showVoiceSettings && <div className="voice-settings-panel"><h3>🔊 Voice Settings</h3>{speechAvailable() ? <><label className="voice-setting-label">Voice<select className="voice-select" value={selectedVoice} onChange={event => { setSelectedVoice(event.target.value); setVoiceName(event.target.value); }}><option value="">Browser default</option>{voices.map(voice => <option key={`${voice.name}-${voice.lang}`} value={voice.name}>{voice.name} ({voice.lang})</option>)}</select></label><label className="voice-setting-label">Speed: {speechRate.toFixed(1)}x<input className="voice-range" type="range" min="0.5" max="2" step="0.1" value={speechRate} onChange={event => { const rate = Number(event.target.value); setRate(rate); setSpeechRate(rate); }} /></label><button className="start-btn" onClick={() => speakText('Hello! Ready for a Mario challenge?')}>🔊 Test Voice</button></> : <p>Voice reading is not available in this browser.</p>}</div>}
     </section>}
 
+    {screen === 'kart' && <KartQuest race={kart} names={[draftName, draftOpponent]} onStart={startKart} onChange={change => setKart(current => current ? change(current) : current)} onChallenge={playKartChallenge} onExit={leaveGame} />}
     {screen === 'hub' && <section className="two-player-setup play-mode-hub">
       <button className="back-btn" onClick={() => setScreen('home')}>← Home</button>
       <h2 className="setup-title">🎮 Play Games</h2>
@@ -872,6 +923,7 @@ export default function MarioApp() {
       </div>
       <div className="play-selection-heading"><h3>Choose a game</h3><button className="high-scores-link" onClick={() => setScreen('scores')}>🏆 High Scores</button></div>
       <button className="game-mode-btn championship mario-champ-entry" onClick={() => setScreen('championship-setup')}><span className="gm-icon">🏆</span><span className="gm-name">Championship</span><span className="gm-desc">Play several games in a row. Every point adds to your total.</span></button>
+      <button className="game-mode-btn" onClick={() => { setKart(null); setChampionship(null); setStandalone(null); setScreen('kart'); }}><span className="gm-icon">🏎️</span><span className="gm-name">Kart Quest</span><span className="gm-desc">Two-player board race. Roll, dodge bananas and win short challenges.</span></button>
       <div className="game-mode-grid">{(Object.keys(MODE_LABELS) as GameMode[]).map(item => <button key={item} className="game-mode-btn" onClick={() => openGame(item)}><span className="gm-icon">{MODE_ICONS[item]}</span><span className="gm-name">{MODE_LABELS[item]}</span><span className="gm-desc">{MODE_DESCRIPTIONS[item]}</span></button>)}</div>
     </section>}
 
@@ -1088,9 +1140,9 @@ export default function MarioApp() {
         </details>
         <p>{latestResult.mode === 'pair-match' ? 'Match & Hunt' : latestResult.mode === 'game-order' ? `Game Order · ${ORDER_RULES[orderChallenge].label} · ${orderTiles} tiles` : DIFFICULTY_LABELS[latestResult.difficulty]}{timed ? ` · ${(latestResult.elapsedMs / 1000).toFixed(1)}s` : ''}</p>
       </div>
-      {championship ? <button className="start-btn" onClick={continueChampionship}>{championship.index + 1 === championship.modes.length ? 'See championship result' : 'Next: ' + MODE_LABELS[championship.modes[championship.index + 1]]}</button> : <button className="start-btn" onClick={start}>Play again</button>}
+      {kart ? <button className="start-btn" onClick={returnToKart}>Return to track</button> : championship ? <button className="start-btn" onClick={continueChampionship}>{championship.index + 1 === championship.modes.length ? 'See championship result' : 'Next: ' + MODE_LABELS[championship.modes[championship.index + 1]]}</button> : <button className="start-btn" onClick={start}>Play again</button>}
       <button className="back-btn" onClick={leaveGame}>← Back to games</button>
-      {!championship && <button className="high-scores-link" onClick={() => setScreen('scores')}>🏆 High Scores</button>}
+      {!championship && !kart && <button className="high-scores-link" onClick={() => setScreen('scores')}>🏆 High Scores</button>}
     </section>}
 
     {screen === 'championship-result' && finishedChampionship && <section className="quiz-result result-panel">

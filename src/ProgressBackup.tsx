@@ -8,7 +8,7 @@ export default function ProgressBackup() {
   const fail = (error: unknown) => setMessage(error instanceof Error ? error.message : 'The backup could not be read.');
   return <details className="progress-backup">
     <summary>Back up or restore progress</summary>
-    <p>Includes scores, lifetime progress, timed records with replays, and learning history. Active rounds and device settings stay on this device. Keep a copy in Files to use on another device.</p>
+    <p>Includes scores, lifetime progress, Kart Quest race history, timed records with replays, and learning history. Active rounds and device settings stay on this device. Keep a copy in Files to use on another device.</p>
     <button className="btn-secondary" disabled={busy} onClick={() => { try { downloadProgress(createProgressBackup()); setMessage('Backup prepared. Keep the downloaded file somewhere safe.'); } catch (error) { fail(error); } }}>Download progress backup</button>
     <label>Choose progress backup <input type="file" accept="application/json,.json" disabled={busy} onChange={async event => {
       const file = event.target.files?.[0];
