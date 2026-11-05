@@ -29,7 +29,20 @@
 .mario-app .kart-quest .kart-roll:hover { background:linear-gradient(135deg,#fff0b8,#ffd66e); }
 .kart-roll > span:nth-child(2) { flex:1; font-weight:900; font-size:1.15rem; }
 .kart-roll small { display:block; font-size:.65rem; font-weight:600; opacity:.8; margin-top:.1rem; }
-.kart-die { display:grid; place-items:center; font-size:2.15rem; line-height:1; width:2.5rem; height:2.5rem; background:#fff7df; border-radius:.65rem; transform:rotate(-9deg); box-shadow:0 3px 0 #d9a943; }
+.kart-die-face { flex-shrink:0; display:grid; grid-template-columns:repeat(3,1fr); grid-template-rows:repeat(3,1fr); gap:3px; padding:7px; box-sizing:border-box; width:2.6rem; height:2.6rem; background:#fff7df; border:1px solid #fff; border-radius:.65rem; color:#19263a; box-shadow:0 3px 0 #d9a943,0 5px 8px #0002; }
+.kart-die-face i { display:block; border-radius:50%; }
+.kart-die-face .die-pip { background:currentColor; }
+.kart-die-rolling { animation:kart-dice-tumble .85s ease-in-out both; }
+.mario-app .kart-quest .kart-roll:disabled { opacity:1; cursor:wait; }
+.kart-roll-result { display:flex; align-items:center; gap:.7rem; padding:.5rem .7rem; margin:.6rem 0; background:#17263be8; border-radius:.8rem; color:#ffe290; }
+@keyframes kart-dice-tumble {
+  0% { transform:translateY(0) rotate(0) scale(1); }
+  20% { transform:translateY(-8px) rotate(-35deg) scale(1.08); }
+  40% { transform:translateY(2px) rotate(75deg) scale(.95); }
+  65% { transform:translateY(-6px) rotate(180deg) scale(1.08); }
+  85% { transform:translateY(0) rotate(290deg) scale(.97); }
+  100% { transform:translateY(0) rotate(360deg) scale(1); }
+}
 .kart-roll-arrow { font-size:1.5rem; }
 .kart-course { margin-top:1rem; padding:.7rem; border-radius:1.2rem; border:1px solid #a6ebc34d; background:radial-gradient(ellipse at 20% 30%,#487b55 0,transparent 50%),linear-gradient(135deg,#285943,#173c38); box-shadow:inset 0 1px 0 #ffffff25,0 10px 28px #0c172745; overflow:hidden; }
 .kart-course-heading { display:flex; justify-content:space-between; align-items:center; gap:.5rem; font-size:.57rem; letter-spacing:.08em; color:#d6f2dc; font-weight:800; }

@@ -71,11 +71,54 @@ async function start(page: Page) {
   await page.getByLabel('Blue kart name').fill('Blue');
   await page.getByRole('button', { name: 'Start Kart Quest', exact: true }).click();
 }
-async function roll(page: Page, die: number) {
+async function roll(page: Page, die: number, settle = true) {
   await page.evaluate(value => { (window as unknown as { originalRandom: typeof Math.random }).originalRandom = Math.random; Math.random = () => (value - 0.5) / 6; }, die);
   await page.getByRole('button', { name: '🎲 Roll die', exact: true }).click();
   await page.evaluate(() => { Math.random = (window as unknown as { originalRandom: typeof Math.random }).originalRandom; });
+  if (settle) await page.clock.runFor(900);
 }
+
+test('dice tumbles once, locks repeat rolls, and settles on the saved result', async ({ page }) => {
+  await start(page);
+  await page.clock.pauseAt(await page.evaluate(() => Date.now() + 1000));
+  await roll(page, 4, false);
+  const committed = (await saved(page)).kart;
+  expect(committed.die).toBe(4);
+  await expect(page.getByRole('button', { name: /Roll die/ })).toBeDisabled();
+  await expect(page.locator('.kart-die-rolling')).toBeVisible();
+  await expect(page.getByLabel('Dice result: 4')).toHaveCount(0);
+  await page.clock.runFor(100);
+  await expect(page.locator('.kart-die-rolling .die-pip')).toHaveCount(2);
+  await page.getByRole('button', { name: /Roll die/ }).dispatchEvent('click');
+  expect((await saved(page)).kart).toEqual(committed);
+  await page.clock.runFor(800);
+  await expect(page.getByLabel('Dice result: 4')).toBeVisible();
+  await expect(page.locator('.kart-roll-result .die-pip')).toHaveCount(4);
+  await expect(page.locator('.kart-die-rolling')).toHaveCount(0);
+  expect((await saved(page)).kart).toEqual(committed);
+});
+
+test('reload during dice animation keeps the committed roll', async ({ page }) => {
+  await start(page);
+  await page.clock.pauseAt(await page.evaluate(() => Date.now() + 1000));
+  await roll(page, 6, false);
+  const committed = (await saved(page)).kart;
+  await page.reload();
+  await page.getByRole('button', { name: 'Resume game', exact: true }).click();
+  await expect(page.getByLabel('Dice result: 6')).toBeVisible();
+  expect((await saved(page)).kart).toEqual(committed);
+  await expect(page.getByRole('button', { name: /Roll die/ })).toHaveCount(0);
+});
+
+test('reduced motion reveals the actual die immediately without a tumble', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await start(page);
+  await page.clock.pauseAt(await page.evaluate(() => Date.now() + 1000));
+  await roll(page, 3, false);
+  await expect(page.getByLabel('Dice result: 3')).toBeVisible();
+  await expect(page.locator('.kart-die-rolling')).toHaveCount(0);
+  await expect(page.locator('.kart-roll-result .die-pip')).toHaveCount(3);
+});
 
 for (const [space, mode] of [[3, 'quiz'], [9, 'clue-duel'], [11, 'category-finder'], [15, 'track-finder']] as const) test(`Kart Quest ${mode} returns both players to the board with one score award`, async ({ page }) => {
   await start(page);

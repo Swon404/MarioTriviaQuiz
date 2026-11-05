@@ -6,17 +6,42 @@ import { useEffect } from 'react';
 
 export const KART_GAME_NAMES: Record<string, string> = { 'pair-match': 'Match & Hunt', 'game-order': 'Game Order', quiz: 'Quiz Battle', 'clue-duel': 'Clue Duel', 'track-finder': 'Track Finder', 'category-finder': 'Category Finder' };
 const ROAD_PATH = 'M50 50H350Q375 50 375 100T350 150H50Q25 150 25 200T50 250H350Q375 250 375 300T350 350H50Q25 350 25 400T50 450H350Q375 450 375 500T350 550H50';
+const DIE_PIPS = [[4], [0, 8], [0, 4, 8], [0, 2, 6, 8], [0, 2, 4, 6, 8], [0, 2, 3, 5, 6, 8]];
+
+function DieFace({ value, rolling = false }: { value: number; rolling?: boolean }) {
+  return <span className={`kart-die-face ${rolling ? 'kart-die-rolling' : ''}`} aria-hidden="true">{Array.from({ length: 9 }, (_, index) => <i key={index} className={DIE_PIPS[value - 1].includes(index) ? 'die-pip' : ''} />)}</span>;
+}
 
 function KartToken({ player }: { player: number }) {
   return <svg className={`kart-token kart-token-${player}`} viewBox="0 0 48 56" aria-hidden="true"><rect x="3" y="12" width="9" height="15" rx="3" fill="#101827" /><rect x="36" y="12" width="9" height="15" rx="3" fill="#101827" /><rect x="3" y="35" width="9" height="15" rx="3" fill="#101827" /><rect x="36" y="35" width="9" height="15" rx="3" fill="#101827" /><path d="M15 4h18l5 14v31H10V18Z" fill="currentColor" stroke="white" strokeWidth="2" /><rect x="16" y="15" width="16" height="17" rx="6" fill="#18283f" /><circle cx="24" cy="24" r="6" fill="#ffe4b3" /><path d="M15 40h18M20 5v8h8V5" stroke="white" strokeWidth="4" /><text x="24" y="49" textAnchor="middle" fill="white" fontSize="10" fontWeight="900">{player + 1}</text></svg>;
 }
 
-export default function KartQuest({ race, names, onStart, onChange, onChallenge, onExit }: {
+export default function KartQuest({ race: savedRace, names, onStart, onChange, onChallenge, onExit }: {
   race: KartRace | null; names: [string, string]; onStart: (names: [string, string]) => void;
   onChange: (change: (race: KartRace) => KartRace) => void; onChallenge: () => void; onExit: () => void;
 }) {
   const [first, setFirst] = useState(names[0]);
   const [second, setSecond] = useState(names[1]);
+  const [rolling, setRolling] = useState<KartRace | null>(null);
+  const [rollingFace, setRollingFace] = useState(1);
+  const race = rolling ?? savedRace;
+  useEffect(() => {
+    if (!rolling) return;
+    const faces = window.setInterval(() => setRollingFace(face => face % 6 + 1), 85);
+    const finish = window.setTimeout(() => setRolling(null), 850);
+    return () => { window.clearInterval(faces); window.clearTimeout(finish); };
+  }, [rolling]);
+  const rollDie = (boost = false) => {
+    if (!savedRace || savedRace.phase !== 'roll' || rolling) return;
+    // Commit the real roll immediately. The animation never determines the
+    // outcome, and reloading mid-roll restores it rather than rolling again.
+    const result = rollKart(savedRace, boost);
+    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      setRollingFace(1);
+      setRolling(savedRace);
+    }
+    onChange(current => current.id === savedRace.id && current.turn === savedRace.turn && current.phase === 'roll' ? result : current);
+  };
   const [historyWarning, setHistoryWarning] = useState(false);
   const readHistory = () => { try { return kartHistory(); } catch { return null; } };
   const [history, setHistory] = useState(readHistory);
@@ -44,11 +69,12 @@ export default function KartQuest({ race, names, onStart, onChange, onChallenge,
     {historyWarning && <p role="alert">This race could not be saved to history. Keep this tab open and try again when storage is available.</p>}
     <div className="kart-standings" aria-label="Race positions">{race.players.map((name, i) => <div key={i} className={`kart-driver kart-driver-${i} ${!finished && active === i ? 'kart-driver-active' : ''}`}><KartToken player={i} /><div className="kart-driver-info"><strong>{name}</strong><span><b>{race.positions[i]}</b><small> / 24 spaces</small></span><small>{race.items[i] === 'star' ? '⭐ Star shield' : race.items[i] === 'mushroom' ? '🍄 Mushroom boost' : 'Item slot empty'}</small></div>{!finished && active === i && <span className="kart-turn-light" aria-label="Current player" />}</div>)}</div>
     <div className="kart-turn-heading">{finished ? <h2 role="status">{winning}</h2> : <><h2>{race.players[active]}'s turn</h2><span>ROLL <b>{Math.floor(race.turn / 2) + 1}</b> / 6</span></>}</div>
-    <p className="kart-message" role="status">{race.turn === 0 && race.phase === 'roll' ? 'Roll out! Race to 24. Both players get equal turns.' : race.message}</p>
+    <p className="kart-message" role="status">{rolling ? 'Rolling the die…' : race.turn === 0 && race.phase === 'roll' ? 'Roll out! Race to 24. Both players get equal turns.' : race.message}</p>
+    {!rolling && race.phase === 'landed' && <div className="kart-roll-result" aria-label={`Dice result: ${race.die}`}><DieFace value={race.die} /><strong>You rolled {race.die}</strong></div>}
     {race.phase === 'roll' && <div className="kart-actions">
       {race.turn % 2 === 1 && Math.max(...race.positions) >= 24 && <p>Final roll! Both players get equal turns.</p>}
-      <button className="start-btn kart-roll" aria-label="🎲 Roll die" onClick={() => onChange(current => rollKart(current))}><span className="kart-die" aria-hidden="true">⚄</span><span>Roll die<small>Let’s hit the track</small></span><span className="kart-roll-arrow" aria-hidden="true">→</span></button>
-      {race.items[active] === 'mushroom' && <button className="round-btn" onClick={() => onChange(current => rollKart(current, true))}>Use Mushroom: roll +2</button>}
+      <button className="start-btn kart-roll" aria-label="🎲 Roll die" disabled={!!rolling} onClick={() => rollDie()}><DieFace value={rolling ? rollingFace : 5} rolling={!!rolling} /><span>{rolling ? 'Rolling…' : 'Roll die'}<small>{rolling ? 'Here we go!' : 'Let’s hit the track'}</small></span><span className="kart-roll-arrow" aria-hidden="true">→</span></button>
+      {race.items[active] === 'mushroom' && <button className="round-btn" disabled={!!rolling} onClick={() => rollDie(true)}>Use Mushroom: roll +2</button>}
     </div>}
     {race.phase === 'landed' && <div className="kart-destination">
       {!race.routeChosen ? <><h3>Choose your route</h3><p>Both routes play {KART_GAME_NAMES[space.mode]}.</p><button className="round-btn" onClick={() => onChange(current => chooseKartRoute(current, true))}>Open road: winner +2</button><button className="round-btn" onClick={() => onChange(current => chooseKartRoute(current, false))}>{effect.icon} {effect.name}: winner +3</button></> : <>
