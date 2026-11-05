@@ -1,6 +1,6 @@
 # Mushroom Power Quiz (working title)
 
-An unofficial family game about Mario and Mario Kart, with seven modes, solo play,
+An unofficial family game about Mario and Mario Kart, with seven challenge modes, a board race, solo play,
 two players on one device, and the visible computer challenger **Shroomer**.
 The [main experience plan](docs/family-experience-plan-2026-10-18.md) is the active
 backlog and verification record. Earlier plans describe historical versions.
@@ -30,7 +30,8 @@ editions and review dates are listed in the
 
 ## Championship and progress
 
-Choose two or more games and Quick, Standard or Epic length. In new competitive
+Choose two or more games and Super Quick, Quick, Standard or Epic length. Super
+Quick gives each selected game one round; Random games picks three editable choices. In new competitive
 Championships, **each game win earns one Championship point; a drawn game earns
 one each**. Equal final totals mean a draw. The result breakdown shows game scores
 and Championship awards separately. Solo Championship sums game points.
@@ -44,6 +45,19 @@ Shroomer takes visible turns. Its matching decisions use observed-card memory;
 Game Order uses separately labelled simulated computer times. Bot and practice
 attempts cannot enter human timed leaderboards.
 
+## Kart Quest
+
+Play Games → Kart Quest starts a two-person, 24-space board race. Roll a die,
+then both play a short challenge, with most spaces using Match & Hunt or Order.
+Win to dodge bananas, take pipe shortcuts or earn a Mushroom/Star. Junctions
+offer a normal or higher-stakes challenge; Mushroom spaces offer a safe +1.
+No skipped turns or chain reactions. Both players get equal rolls at the finish,
+with a six-roll-each cap. Race again keeps names and resets the race.
+
+The board and live challenge recover after reload. Finished races have separate
+history, included in progress backups; ordinary game points still count toward
+lifetime progress. See the [rules and acceptance plan](docs/mario-board-race-plan-2026-11-04.md).
+
 ## Saving, phone play and offline use
 
 - One unfinished game can resume on the same browser after reload. Running timers
@@ -54,7 +68,7 @@ attempts cannot enter human timed leaderboards.
 - Result history is not silently trimmed. Confirmed keep-best cleanup has Undo;
   lifetime awards use a separate ledger to prevent duplicate credit.
 - High Scores offers [progress backup and merge](docs/progress-backup-2026-10-29.md),
-  including lifetime progress, results, timed replays and learning history.
+  including lifetime progress, results, Kart Quest history, timed replays and learning history.
   Active games and device settings are excluded. Existing record IDs win on merge.
 - Storage failures warn; interrupted imports retain a recovery copy. Browser
   storage limits and clearing site data still apply. The reported restart-related

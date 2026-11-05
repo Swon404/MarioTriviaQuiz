@@ -1,89 +1,82 @@
-# Kart Quest: board-race proposal
+# Kart Quest — implemented rules and acceptance plan
 
-Status: proposed; the board mode is not implemented.
+Updated 5 November 2026. The user's approved banana challenge replaces the
+original automatic penalty. Kart Quest is now implemented for two people
+sharing one device; deployment has not been requested for this stage.
 
-## The experience
+## Play
 
-Two karts race along a colourful 24-space track. Take turns rolling a die,
-land on a game space, and both play a short challenge. Pipes are shortcuts;
-bananas and shells create small setbacks. Match & Hunt and Game Order get
-the most spaces because those are the family's favourites.
+Open Play Games → Kart Quest, enter both names, and start. A randomly chosen
+player rolls first. Each roll moves 1–6 spaces along a 24-space track, then
+both players play the landing challenge. The landing player plays first;
+this alternates with each roll. Matching uses a nine-pair Time Trial board
+with a three-pair goal; Order uses four tiles on Easy. Knowledge challenges
+use Rookie content with one competitive Quiz attempt.
 
-Aim for 10–15 minutes, to be measured in family play rather than promised.
-Start with two people sharing one phone. No computer opponent in the first version.
+The track contains eight matching spaces, ten Order spaces, one Quiz, one
+Track Finder, two Clue Duel and two Category Finder spaces. Clue Match Up is
+not in this first track. Each challenge reuses the existing games, scoring,
+timers, answer feedback and content history.
 
-## A turn
+## Space effects
 
-1. The active player rolls 1–6 and moves. Show the roll and destination clearly.
-2. The destination announces a game and any item or hazard before play starts.
-3. Both players play one short round. Alternate who goes first in timed games;
-   use equally sized boards and the same rules. Competitive Quiz gets one attempt.
-4. The challenge winner moves two bonus spaces; a draw moves both one space.
-5. Apply the announced space effect, show what changed, then pass the phone.
+| Space | Landing player wins | Landing player loses | Draw |
+| --- | --- | --- | --- |
+| Open road | +2 | Rival +2 | Both +1 |
+| Banana | Dodge and +2 | Slip −1; rival +2 | Neither moves |
+| Pipe | Shortcut +4 | Stay; rival +2 | Neither moves |
+| Rival race | +3 | Rival +3 | Both +1 |
+| Mushroom dash | +3 | Stay; rival +2 | Neither moves |
+| Item box | +2 and choose an item | Rival +2 and chooses | Both +1, no item |
+| Star challenge | +2 and earn a Star | Rival +2 and earns a Star | Both +1, no item |
 
-Bonus moves, pipes and setbacks never trigger another challenge or space effect.
-This prevents chains of extra turns. Never skip a player's turn or remove points.
-Use each game's existing winner rules, so finding more pairs does not create
-a larger movement bonus than winning a quiz question.
+Mushroom spaces also offer a safe +1 without playing. Three junctions offer
+a choice between Open Road (+2 to the winner) and a Rival Race (+3 to the
+winner). Rival Race spaces use Order. Pipes provide the larger shortcuts.
 
-## Finish and fairness
+Hold one item at a time; a new item replaces the previous one. An item-box
+winner chooses a Mushroom (add +2 to a future roll) or Star (automatically
+block one banana slip). No shells, skipped turns, hidden catch-up rules or
+chain reactions. Bonus movement never launches another space.
 
-- Crossing space 24 needs no exact roll. Finish the current pair of turns so
-  both players have rolled equally often; allow positions beyond 24 to settle it.
-- Furthest kart wins after that pair; equal positions share the victory.
-- Cap the race at six rolls each. Furthest wins then if nobody reached the finish.
-- Roll the starting player randomly. Dice and challenge bonuses both affect the race.
-- Keep race standings separate from Championship records. Count ordinary earned
-  game points toward lifetime progress once, using existing completion safeguards.
+## Finish
 
-## First track
+Reaching or passing 24 triggers the last pair of turns, so both players get
+the same number of rolls. Positions may exceed 24. Furthest wins; equal
+positions share the victory. End after six rolls each if neither reached 24.
+The result states final positions and rolls. Race again keeps both names,
+resets positions/items and generates fresh challenges.
 
-Use a fixed, balanced track with eight Match & Hunt spaces, six Game Order,
-three Quiz Battle, three Clue Duel, two Track Finder and two Category Finder.
-Keep Clue Match Up as an optional replacement, limited to one appearance per race.
-Shuffle challenge content, not the track balance. Avoid repeating the previous
-challenge where the content pool permits it.
+## Saves and records
 
-Every space has a game; a few also have a clearly marked effect:
+The existing recovery checkpoint stores the board, roll, item choices,
+challenge, timer and result. Reload and choose Resume game to continue.
+Leaving through Games explicitly confirms abandoning an unfinished race.
+Starting another game replaces the single active checkpoint, as before.
 
-| Effect | Rule |
-| --- | --- |
-| Mushroom | Active kart gets one extra space after the challenge. |
-| Pipe | Active kart takes a marked shortcut of three spaces. |
-| Banana | Active kart slips back one space. |
-| Shell | Active kart moves the other kart back one space. |
-| Star | Shield against the next banana or shell; one held at a time. |
+Race movement is separate from game points. Completed challenges earn normal
+lifetime points once, using a stable race-and-turn result ID. Finished race
+positions are stored separately from Championship scores. Past races are
+available in Kart Quest, and progress exports/imports include race history.
+An active race is same-device recovery, not part of a progress backup.
 
-Effects happen automatically in the first version. Explain a shield block on
-screen. Never move below the start. Keep hazards away from the opening spaces.
-Do not add hidden catch-up rules; tune the small effects after family testing.
+## Implementation stage
 
-## Phone presentation
+- Pure race transitions with guards against duplicate rolls, resolutions and rewards.
+- Phone board, named red/blue karts, visible positions, junction choices and items.
+- All six challenge adapters; alternating first player and equal rules.
+- Recovery, results, rematch, separate history and backup validation.
+- Chromium and WebKit tests for rules, all adapters, reloads and a full race.
+- Full repository verification required before the application commit.
 
-Show a compact track with both kart markers, current turn and large Roll button.
-Use icons plus names on spaces, a readable text position summary, and a clear
-preview of the next challenge. Open games in their existing full-screen layouts;
-return to the board for a brief movement celebration. Respect reduced motion.
-Avoid shrinking all 24 numbered spaces into tiny tap targets: spaces are a map,
-with a separate readable panel for the current destination.
+## Family acceptance still needed
 
-## Build stages
+Play on a physical iPhone, including Home Screen/offline mode. Measure total
+race duration and waiting time; the original 10–15 minute target is unverified.
+Check whether dice versus challenge movement feels fair, whether +4 pipes
+feel rewarding, and whether the child wants another race. Tune these values
+from play rather than adding complexity immediately.
 
-1. **Playable race:** pure rules/state, fixed track, dice, two players, Match & Hunt
-   and Order challenges, finish rules and save/resume. Review this first.
-2. **Variety and items:** remaining challenge adapters, the five effects, balanced
-   track and no-repeat selection. Commit each completed stage.
-3. **Phone polish:** movement feedback, sound controls, reduced motion, clear
-   winner explanation and separate race history.
-4. **Family trial:** measure duration, waiting time, whether luck feels fair and
-   whether another race is appealing. Tune before adding tracks or a computer.
-
-Test duplicate taps, refresh during a roll/challenge/effect, one-time awards,
-blocked hazards, tied games, equal final turns, the turn cap, and offline resume.
-Run the repository's full verification gate before committing application stages.
-
-## Delivered alongside this proposal
-
-Championship now offers Super Quick: one round per selected game. Time Trial
-uses a nine-pair board with a three-pair goal. Random games selects three
-available modes and leaves the selection editable before starting.
+Possible later additions: character selection, themed tracks, sound effects,
+shells, a computer opponent, and a genuinely branching track with different
+routes to the finish. None is required to play this version.
