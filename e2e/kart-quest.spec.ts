@@ -183,10 +183,14 @@ test('kart drives after the dice, takes the bend, and reload keeps its destinati
   expect(await page.locator('.kart-road-racer').evaluateAll(elements => elements.flatMap(el => el.getAnimations()).length)).toBe(0);
   await page.clock.runFor(1650);
   const racer = page.locator(`.kart-road-racer-${committed.starter}`);
+  await expect(racer).toBeInViewport();
+  const timing = await racer.evaluate(el => el.getAnimations()[0].effect!.getTiming());
+  expect(timing.duration).toBe(3300);
+  expect(timing.delay).toBe(350);
   const frames = await racer.evaluate(el => {
     const animation = el.getAnimations()[0];
     animation.pause();
-    animation.currentTime = 660;
+    animation.currentTime = 2000;
     return (animation.effect as KeyframeEffect).getKeyframes();
   });
   expect(Number.parseFloat(String(frames[0].top))).toBeCloseTo(20 / 6, 3);

@@ -33,10 +33,18 @@ function RoadRacer({ race, player, memory }: { race: KartRace; player: number; m
     const from = journey.current.from;
     if (!element.current || from === position || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     const frames = kartMotion(from, position);
-    const duration = Math.min(1800, Math.max(350, Math.abs(Math.min(24, position) - Math.min(24, from)) * 220));
-    const movement = element.current.animate(frames.map(({ left, top }) => ({ left, top })), { duration, easing: 'ease-in-out' });
-    const steering = element.current.querySelector('.kart-token')!.animate(frames.map(({ angle }) => ({ transform: `rotate(${angle}deg)` })), { duration, easing: 'ease-in-out' });
-    return () => { movement.cancel(); steering.cancel(); };
+    const duration = Math.min(4400, Math.max(650, Math.abs(Math.min(24, position) - Math.min(24, from)) * 550));
+    // Hold at the starting space while the road comes into view, then travel
+    // slowly enough to follow each space. The saved outcome is unchanged.
+    const timing: KeyframeAnimationOptions = { duration, delay: 350, fill: 'backwards', easing: 'linear' };
+    const movement = element.current.animate(frames.map(({ left, top }) => ({ left, top })), timing);
+    const steering = element.current.querySelector('.kart-token')!.animate(frames.map(({ angle }) => ({ transform: `rotate(${angle}deg)` })), timing);
+    const camera = window.requestAnimationFrame(() => {
+      const activeMarker = document.getElementById(`kart-player-${kartActive(race)}`);
+      // When both move, follow the current player rather than competing scrolls.
+      if (player === kartActive(race) || !activeMarker?.getAnimations().length) element.current?.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    });
+    return () => { window.cancelAnimationFrame(camera); movement.cancel(); steering.cancel(); };
   }, [race.id, position, player, memory]);
   return <span ref={element} id={`kart-player-${player}`} tabIndex={-1} className={`kart-road-racer kart-road-racer-${player} ${shared ? 'kart-sharing-space' : ''} ${point.x === 50 ? 'kart-edge-left' : point.x === 350 ? 'kart-edge-right' : ''} ${row % 2 ? 'kart-facing-left' : ''}`} style={{ left: `${point.x / 4}%`, top: `${point.y / 6}%` }} aria-label={position === 0 ? `${race.players[player]} at the start` : `${race.players[player]} on space ${position}`}><KartToken player={player} /><span className="kart-player-number" aria-hidden="true">{player + 1}</span><span className="kart-racer-name"><span>{race.players[player]}</span><b>{position === 0 ? 'START' : position >= 24 ? 'FINISH' : position}</b></span></span>;
 }
