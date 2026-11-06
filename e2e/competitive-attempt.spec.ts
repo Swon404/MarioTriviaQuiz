@@ -55,16 +55,16 @@ for (const format of ['Two Players', 'Play Shroomer', 'Championship'] as const) 
     await page.locator('.answer-grid').getByText(question.choices.find(choice => choice !== question.answer)!, { exact: true }).click();
     await expect(page.locator('.feedback h2')).toHaveText(`Answer: ${question.answer}`);
     await expect(page.locator('.mario-earned')).toHaveText('+0 points');
-    await expect(page.getByRole('button', { name: /Rewind/ })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: '↶ Rewind', exact: true })).toHaveCount(0);
     await expect(page.locator('.answer-grid button:not([disabled])')).toHaveCount(0);
     await page.reload();
     await page.getByRole('button', { name: 'Resume game', exact: true }).click();
     await expect(page.locator('.feedback h2')).toHaveText(`Answer: ${question.answer}`);
-    await expect(page.getByRole('button', { name: /Rewind/ })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: '↶ Rewind', exact: true })).toHaveCount(0);
     await page.getByRole('button', { name: 'Next turn', exact: false }).click();
     if (format === 'Play Shroomer') {
       await expect(page.locator('.feedback')).toBeVisible();
-      await expect(page.getByRole('button', { name: /Rewind/ })).toHaveCount(0);
+      await expect(page.getByRole('button', { name: '↶ Rewind', exact: true })).toHaveCount(0);
     } else {
       await expect(page.locator('.quiz-retries')).toHaveText('Attempts left: 1');
       await expect(page.locator('.feedback')).toHaveCount(0);
