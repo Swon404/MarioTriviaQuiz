@@ -566,7 +566,7 @@ export default function MarioApp() {
   };
 
   const undo = () => {
-    if (!session || !round) return;
+    if (kart || !session || !round) return;
     practisedRounds.current.add(runId + ':' + session.index);
     if (sharedHunt && turnScores) setTurnScores({ ...turnScores, active: (session.index % 2) as 0 | 1, points: [turnScores.points[0] - sharedAwards[0], turnScores.points[1] - sharedAwards[1]], correct: [turnScores.correct[0] - sharedMatches[0], turnScores.correct[1] - sharedMatches[1]] });
     setSession(rewind(session));
@@ -1066,7 +1066,7 @@ export default function MarioApp() {
         <p className="match-retries" aria-live="polite">{matchRetriesLeft === 0 ? 'No retries left — the next wrong pair ends this round.' : `${matchRetriesLeft} ${matchRetriesLeft === 1 ? 'retry' : 'retries'} left.`}</p>
         <p className="match-progress" aria-live="polite">{matchedIds.length}/{round.pairs.length} pairs found</p>
         {speechAvailable() && selectedMatchClue && <button className="back-btn match-read" onClick={() => speakText(round.pairs.find(pair => pair.id === selectedMatchClue)!.clue)}>🔊 Read selected clue</button>}
-        {!session.submission && <button className="back-btn match-restart" onClick={undo}>↶ Restart go</button>}
+        {!kart && !session.submission && <button className="back-btn match-restart" onClick={undo}>↶ Restart go</button>}
         <div className="match-board">
           <div className="match-column" aria-label="Names"><h2>Names</h2>{round.nameIds.map(id => {
             const pair = round.pairs.find(item => item.id === id)!;
@@ -1087,12 +1087,12 @@ export default function MarioApp() {
         </GameHelp>
         {round.variant === 'hunt' && <HuntTarget name={round.pairs.find(pair => pair.id === round.targetPairId)?.name} unlockPairs={round.unlockPairs} matchedPairs={foundPairs.length} />}
         <div className="pair-board-status"><p className="match-progress" aria-live="polite">{foundPairs.length}/{round.goal} pairs found · {pairMoves} {pairMoves === 1 ? 'move' : 'moves'}{!round.timed && ` · ${pointText(pairScore)}`}</p>
-        {!session.submission && pairTimerReady && <button className="back-btn match-restart" onClick={undo}>↶ Restart go</button>}</div>
+        {!kart && !session.submission && pairTimerReady && <button className="back-btn match-restart" onClick={undo}>↶ Restart go</button>}</div>
         {!pairTimerReady && <p className="help-copy">Ready? The cards appear on Go!</p>}
         {round.timed && <TimerCountdown key={round.id} autoStart={isBotTurn} ready={!pairTimerReady} onGo={() => { startTime.current = Date.now(); pairFrames.current = []; recordPairFrame('Timer started', [], [], 0); setElapsedMs(previousRoundMs.current); setPairTimerReady(true); }} />}
         {round.timed && !session.submission && <div className="pair-live-timer" role="timer" aria-label="Elapsed time"><span>{activeName} · Time</span><strong>{((pairTimerReady ? Math.max(0, elapsedMs - previousRoundMs.current) : 0) / 1000).toFixed(1)}<small>s</small></strong></div>}
         {pairTimerReady && <PairCards tiles={pairTilesFor(round.cards, flippedCards, foundPairs)} disabled={pairLocked || isBotTurn || session.submission !== null} onChoose={flipPairCard} />}
-        {pairMessage && <p className="match-message" aria-live="polite">{pairMessage}</p>}
+        {pairMessage && (!kart || !session.submission) && <p className="match-message" aria-live="polite">{pairMessage}</p>}
         {round.timed && !kart && <section className="order-leaderboard" aria-label="Match & Hunt Top 5"><h3>Match &amp; Hunt Top 5</h3><p>{round.pairs.length} pairs · {round.targetPairId ? `All targets · unlock after ${round.unlockPairs}` : `Find ${round.goal}`}</p><PairTimeList records={pairScores} currentId={session.submission && !practisedRounds.current.has(runId + ':' + session.index) ? runId + ':' + session.index : undefined} /></section>}
       </>}
 
@@ -1115,16 +1115,16 @@ export default function MarioApp() {
             {turnScores && session.index % 2 === 1 && turnScores.previousOrderMs !== null && <div><span>{player}’s time:</span><strong>{(turnScores.previousOrderMs / 1000).toFixed(1)}<small>s</small></strong></div>}
             <div><span>{activeName}’s time:</span><strong>{((pairRoundCompletedMs.current ?? 0) / 1000).toFixed(1)}<small>s</small></strong></div>
           </div>
-          {timedResultMessage && <p className="order-feedback">{timedResultMessage}</p>}
+          {timedResultMessage && <p className="order-feedback">{kart && session.index % 2 === 1 ? 'Both times are in — see who moves ahead!' : timedResultMessage}</p>}
         </section>}
         <p>{round.explanation}</p>
         {round.funFact && <p><strong>Fun fact:</strong> {round.funFact}</p>}
-        {!(turnScores && round.mode === 'pair-match' && round.timed) && <p className="mario-earned">+{session.submission.points} {session.submission.points === 1 ? 'point' : 'points'}</p>}
+        {!kart && !(turnScores && round.mode === 'pair-match' && round.timed) && <p className="mario-earned">+{session.submission.points} {session.submission.points === 1 ? 'point' : 'points'}</p>}
         {speechAvailable() && <button className="tts-btn tts-btn-small" title="Read explanation aloud" aria-label="Read explanation aloud" onClick={() => speakText(`${round.explanation}${round.funFact ? ` Fun fact: ${round.funFact}` : ''}`)}>🔊</button>}
         <a href={round.sourceUrl} target="_blank" rel="noreferrer">Check the source ↗</a>
         {round.funFact && round.funFactSourceUrl && round.funFactSourceUrl !== round.sourceUrl && <p><a href={round.funFactSourceUrl} target="_blank" rel="noreferrer">Tip / fun fact source ↗</a></p>}
         <LearningFeedback id={round.id} />
-        <div className="feedback-actions">{!(round.mode === 'quiz' && session.quizAttempts === 1) && <button className="back-btn" onClick={undo}>↶ Rewind</button>}<button className="start-btn" onClick={next}>{session.index + 1 === session.rounds.length ? 'See result' : turnScores ? 'Next turn →' : mode === 'pair-match' ? 'Next board →' : 'Next question →'}</button></div>
+        <div className="feedback-actions">{!kart && !(round.mode === 'quiz' && session.quizAttempts === 1) && <button className="back-btn" onClick={undo}>↶ Rewind</button>}<button className="start-btn" onClick={next}>{session.index + 1 === session.rounds.length ? 'See result' : turnScores ? 'Next turn →' : mode === 'pair-match' ? 'Next board →' : 'Next question →'}</button></div>
       </div>}
     </section>}
 

@@ -24,14 +24,14 @@ export const KART_EFFECTS: Record<KartEffect, { icon: string; name: string; rule
   mushroom: { icon: '🍄', name: 'Mushroom dash', rule: 'Take a safe +1 without a challenge, or race: landing player wins +3, loses +0 while rival gets +2. Draw: nobody moves.' },
 };
 export type KartRace = {
-  id: string; players: [string, string]; positions: [number, number]; items: [KartItem | null, KartItem | null];
+  itemRules?: 'boost-star-v2'; id: string; players: [string, string]; positions: [number, number]; items: [KartItem | null, KartItem | null];
   starter: 0 | 1; turn: number; phase: 'roll' | 'landed' | 'challenge' | 'reward' | 'summary' | 'finished';
   die: number; space: number; effect: KartEffect; routeChosen: boolean; rewardPlayer: 0 | 1 | null;
   message: string; log: string[];
 };
 export const kartActive = (race: KartRace): 0 | 1 => ((race.starter + race.turn) % 2) as 0 | 1;
 export function newKartRace(players: [string, string], random = Math.random): KartRace {
-  return { id: crypto.randomUUID(), players, positions: [0, 0], items: [null, null], starter: random() < 0.5 ? 0 : 1,
+  return { itemRules: 'boost-star-v2', id: crypto.randomUUID(), players, positions: [0, 0], items: [null, null], starter: random() < 0.5 ? 0 : 1,
     turn: 0, phase: 'roll', die: 0, space: 0, effect: 'road', routeChosen: false, rewardPlayer: null,
     message: 'Roll, land, then both play. First to 24 triggers the final pair of turns. Six rolls each at most.', log: [] };
 }
@@ -75,15 +75,24 @@ export function resolveKart(race: KartRace, points: [number, number]): KartRace 
   const winner = points[0] === points[1] ? null : points[0] > points[1] ? 0 : 1;
   const before = [...next.positions];
   let itemMessage = '';
+  const boostStar = race.itemRules === 'boost-star-v2';
   if (winner === null) {
     if (!['banana', 'pipe', 'mushroom'].includes(race.effect)) { next.positions[0]++; next.positions[1]++; }
   } else {
     next.positions[winner] += race.effect === 'rival' ? 3 : winner === active && race.effect === 'pipe' ? 4 : winner === active && race.effect === 'mushroom' ? 3 : 2;
+    if (boostStar && next.items[winner] === 'star') {
+      next.positions[winner] += 3;
+      next.items[winner] = null;
+      itemMessage += ` ${next.players[winner]}'s Star added +3!`;
+    }
     if (race.effect === 'banana' && winner !== active) {
-      if (next.items[active] === 'star') { next.items[active] = null; itemMessage = ' Star blocked the banana!'; }
+      if (next.items[active] === 'star') { next.items[active] = null; itemMessage += ' Star blocked the banana!'; }
       else next.positions[active] = Math.max(0, next.positions[active] - 1);
     }
-    if (race.effect === 'star') { next.items[winner] = 'star'; itemMessage = ` ${next.players[winner]} now holds a Star (replacing any held item).`; }
+    if (race.effect === 'star') {
+      if (boostStar && next.items[winner] !== null) itemMessage += ` ${next.players[winner]} kept their ${next.items[winner]}; no item was replaced.`;
+      else { next.items[winner] = 'star'; itemMessage += ` ${next.players[winner]} earned a Star${boostStar ? ': next win +3, or block one banana slip' : ' shield (replacing any held item)'}.`; }
+    }
     if (race.effect === 'box') next.rewardPlayer = winner;
   }
   summarise(next, `${winner === null ? 'Draw' : `${next.players[winner]} wins`}. ${next.players.map((name, i) => `${name}: ${next.positions[i] - before[i] >= 0 ? '+' : ''}${next.positions[i] - before[i]} spaces`).join(' · ')}.${itemMessage}`);

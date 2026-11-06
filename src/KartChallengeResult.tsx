@@ -18,7 +18,8 @@ export default function KartChallengeResult({ race, result, onReturn, onExit }: 
   const timed = result.mode === 'game-order' || result.mode === 'pair-match';
   const showTimes = timed && Number.isFinite(result.elapsedMs) && Number.isFinite(result.opponentElapsedMs);
   const active = kartActive(race);
-  const shieldUsed = race.items[active] === 'star' && next.items[active] === null;
+  const shieldUsed = race.effect === 'banana' && winner !== null && winner !== active && race.items[active] === 'star';
+  const starBoost = race.itemRules === 'boost-star-v2' && winner !== null && race.items[winner] === 'star';
   return <section className="quiz-result result-panel kart-challenge-result" aria-label="Track challenge result">
     <p className="eyebrow">KART QUEST · {KART_GAME_NAMES[result.mode ?? 'quiz']}</p>
     <h1>{winner === null ? "It's a draw!" : `${race.players[winner]} wins!`}</h1>
@@ -34,7 +35,8 @@ export default function KartChallengeResult({ race, result, onReturn, onExit }: 
     </div>
     {shieldUsed && <p className="kart-result-extra">⭐ {race.players[active]}’s Star blocked the banana!</p>}
     {next.rewardPlayer !== null && <p className="kart-result-extra">🎁 {race.players[next.rewardPlayer]}, choose a power-up back on the track.</p>}
-    {race.effect === 'star' && winner !== null && <p className="kart-result-extra">⭐ {race.players[winner]} gets a Star shield.</p>}
+    {starBoost && <p className="kart-result-extra">⭐ {race.players[winner!]}'s Star added +3 spaces!</p>}
+    {race.effect === 'star' && winner !== null && <p className="kart-result-extra">⭐ {race.players[winner]} {next.items[winner] === 'star' ? race.itemRules === 'boost-star-v2' ? 'holds a Star: next win +3, or block a banana slip.' : 'gets a Star shield.' : 'keeps their Mushroom boost.'}</p>}
     <button className="start-btn" onClick={onReturn}>Return to track</button>
     <button className="back-btn" onClick={onExit}>← Back to games</button>
   </section>;

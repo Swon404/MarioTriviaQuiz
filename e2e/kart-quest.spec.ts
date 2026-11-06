@@ -20,6 +20,22 @@ test('kart movement follows every hairpin in both directions and stops at the fi
 
 const challenge = (effect: KartEffect): KartRace => ({ ...newKartRace(['Red', 'Blue'], () => 0), positions: [8, 7], phase: 'challenge', effect });
 
+test('new Stars reward a win or block a slip, preserve held items and keep legacy saves unchanged', () => {
+  const boosted = { ...challenge('road'), items: ['star', null] as KartRace['items'] };
+  const won = resolveKart(boosted, [1, 0]);
+  expect(won.positions).toEqual([13, 7]);
+  expect(won.items[0]).toBeNull();
+  expect(resolveKart(won, [1, 0])).toEqual(won);
+  expect(resolveKart(boosted, [0, 1]).items[0]).toBe('star');
+  expect(resolveKart(boosted, [0, 0]).items[0]).toBe('star');
+  expect(resolveKart({ ...boosted, itemRules: undefined }, [1, 0]).positions).toEqual([10, 7]);
+  expect(resolveKart({ ...challenge('star'), items: ['mushroom', null] }, [1, 0]).items[0]).toBe('mushroom');
+  expect(resolveKart({ ...challenge('star'), itemRules: undefined, items: ['mushroom', null] }, [1, 0]).items[0]).toBe('star');
+  const both = resolveKart({ ...challenge('banana'), items: ['star', 'star'] }, [0, 1]);
+  expect(both.positions).toEqual([8, 12]);
+  expect(both.items).toEqual([null, null]);
+});
+
 test('track gives Clue Duel, Order and Hunt equal priority while preserving hazards and variety', () => {
   const counts = Object.fromEntries(['pair-match', 'game-order', 'clue-duel', 'quiz', 'track-finder', 'category-finder'].map(mode => [mode, KART_TRACK.filter(space => space.mode === mode).length]));
   expect(counts).toEqual({ 'pair-match': 7, 'game-order': 7, 'clue-duel': 7, quiz: 1, 'track-finder': 1, 'category-finder': 1 });
