@@ -24,6 +24,7 @@ function RoadRacer({ race, player, memory }: { race: KartRace; player: number; m
   const journey = useRef<{ id: string; to: number; from: number } | null>(null);
   const position = race.positions[player];
   const point = kartPoint(position);
+  const shared = Math.min(24, race.positions[0]) === Math.min(24, race.positions[1]);
   const row = Math.floor((Math.max(1, Math.min(24, position)) - 1) / 4);
   useLayoutEffect(() => {
     const previous = memory.current[player];
@@ -37,7 +38,7 @@ function RoadRacer({ race, player, memory }: { race: KartRace; player: number; m
     const steering = element.current.querySelector('.kart-token')!.animate(frames.map(({ angle }) => ({ transform: `rotate(${angle}deg)` })), { duration, easing: 'ease-in-out' });
     return () => { movement.cancel(); steering.cancel(); };
   }, [race.id, position, player, memory]);
-  return <span ref={element} className={`kart-road-racer kart-road-racer-${player} ${row % 2 ? 'kart-facing-left' : ''}`} style={{ left: `${point.x / 4}%`, top: `${point.y / 6}%` }} aria-label={position === 0 ? `${race.players[player]} at the start` : `${race.players[player]} on space ${position}`}><KartToken player={player} /><span className="kart-racer-name">{race.players[player]}</span></span>;
+  return <span ref={element} id={`kart-player-${player}`} tabIndex={-1} className={`kart-road-racer kart-road-racer-${player} ${shared ? 'kart-sharing-space' : ''} ${point.x === 50 ? 'kart-edge-left' : point.x === 350 ? 'kart-edge-right' : ''} ${row % 2 ? 'kart-facing-left' : ''}`} style={{ left: `${point.x / 4}%`, top: `${point.y / 6}%` }} aria-label={position === 0 ? `${race.players[player]} at the start` : `${race.players[player]} on space ${position}`}><KartToken player={player} /><span className="kart-player-number" aria-hidden="true">{player + 1}</span><span className="kart-racer-name"><span>{race.players[player]}</span><b>{position === 0 ? 'START' : position >= 24 ? 'FINISH' : position}</b></span></span>;
 }
 
 export default function KartQuest({ race: savedRace, positionMemory, names, onStart, onChange, onChallenge, onExit }: {
@@ -92,7 +93,7 @@ export default function KartQuest({ race: savedRace, positionMemory, names, onSt
   return <section className="kart-quest">
     <header className="kart-header"><div><p className="kart-kicker">MUSHROOM MOTORWAY</p><h1>Kart Quest<span aria-hidden="true">🏁</span></h1></div><button className="back-btn" onClick={onExit}>← Games</button></header>
     {historyWarning && <p role="alert">This race could not be saved to history. Keep this tab open and try again when storage is available.</p>}
-    <div className="kart-standings" aria-label="Race positions">{race.players.map((name, i) => <div key={i} className={`kart-driver kart-driver-${i} ${!finished && active === i ? 'kart-driver-active' : ''}`}><KartToken player={i} /><div className="kart-driver-info"><strong>{name}</strong><span><b>{race.positions[i]}</b><small> / 24 spaces</small></span><small>{race.items[i] === 'star' ? '⭐ Star shield' : race.items[i] === 'mushroom' ? '🍄 Mushroom boost' : 'Item slot empty'}</small></div>{!finished && active === i && <span className="kart-turn-light" aria-label="Current player" />}</div>)}</div>
+    <div className="kart-standings" aria-label="Race positions">{race.players.map((name, i) => <button key={i} type="button" aria-label={`Find ${name}'s kart`} onClick={() => { const marker = document.getElementById(`kart-player-${i}`); marker?.scrollIntoView({ block: 'center', behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' }); marker?.focus({ preventScroll: true }); }} className={`kart-driver kart-driver-${i} ${!finished && active === i ? 'kart-driver-active' : ''}`}><KartToken player={i} /><span className="kart-driver-info"><strong><span className="kart-driver-number">{i + 1}</span> {name}</strong><span><small>Space </small><b>{race.positions[i]}</b><small> / 24</small></span><small>{race.items[i] === 'star' ? '⭐ Star shield' : race.items[i] === 'mushroom' ? '🍄 Mushroom boost' : 'Item slot empty'}</small><small className="kart-find-hint">Find my kart ↗</small></span>{!finished && active === i && <span className="kart-turn-light" aria-label="Current player" />}</button>)}</div>
     <div className="kart-turn-heading">{finished ? <h2 role="status">{winning}</h2> : <><h2>{race.players[active]}'s turn</h2><span>ROLL <b>{Math.floor(race.turn / 2) + 1}</b> / 6</span></>}</div>
     <p className="kart-message" role="status">{rolling ? 'Rolling the die…' : race.turn === 0 && race.phase === 'roll' ? 'Roll out! Race to 24. Both players get equal turns.' : race.message}</p>
     {!rolling && race.phase === 'landed' && <div className="kart-roll-result" aria-label={`Dice result: ${race.die}`}><DieFace value={race.die} /><strong>You rolled {race.die}</strong></div>}

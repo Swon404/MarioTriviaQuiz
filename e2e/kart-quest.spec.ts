@@ -133,6 +133,44 @@ test('reduced motion reveals the actual die immediately without a tumble', async
   expect(await page.locator('.kart-road-racer').evaluateAll(elements => elements.flatMap(el => el.getAnimations({ subtree: true })).length)).toBe(0);
 });
 
+test('player cards locate distinct readable pieces when both share a space on a narrow phone', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await start(page);
+  await page.setViewportSize({ width: 320, height: 740 });
+  await page.evaluate(() => {
+    const envelope = JSON.parse(localStorage.getItem('mariotrivia_checkpoint_v1')!);
+    const value = JSON.parse(envelope.payload);
+    value.kart.positions = [8, 8];
+    envelope.payload = JSON.stringify(value);
+    let hash = 2166136261;
+    for (let i = 0; i < envelope.payload.length; i++) hash = Math.imul(hash ^ envelope.payload.charCodeAt(i), 16777619);
+    envelope.checksum = hash >>> 0;
+    localStorage.setItem('mariotrivia_checkpoint_v1', JSON.stringify(envelope));
+  });
+  await page.reload();
+  await page.getByRole('button', { name: 'Resume game', exact: true }).click();
+  const state = (await saved(page)).kart;
+  const course = (await page.locator('.kart-course').boundingBox())!;
+  for (const [i, name] of ['Red', 'Blue'].entries()) {
+    await page.getByRole('button', { name: `Find ${name}'s kart`, exact: true }).click();
+    const marker = page.locator(`#kart-player-${i}`);
+    await expect(marker).toBeFocused();
+    await expect(marker).toBeInViewport();
+    await expect(marker).toHaveAttribute('aria-label', `${name} on space 8`);
+    await expect(marker.locator('.kart-racer-name')).toHaveText(`${name}8`);
+    const box = await marker.locator('.kart-racer-name').boundingBox();
+    expect(box!.x).toBeGreaterThanOrEqual(course.x);
+    expect(box!.x + box!.width).toBeLessThanOrEqual(course.x + course.width);
+    const number = (await marker.locator('.kart-player-number').boundingBox())!;
+    expect(number.x).toBeGreaterThanOrEqual(course.x);
+  }
+  const red = (await page.locator('#kart-player-0').boundingBox())!;
+  const blue = (await page.locator('#kart-player-1').boundingBox())!;
+  expect(red.x + red.width).toBeLessThan(blue.x);
+  expect((await saved(page)).kart).toEqual(state);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(320);
+});
+
 test('kart drives after the dice, takes the bend, and reload keeps its destination', async ({ page }) => {
   await start(page);
   await page.clock.pauseAt(await page.evaluate(() => Date.now() + 1000));
