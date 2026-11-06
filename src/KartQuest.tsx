@@ -54,7 +54,7 @@ export default function KartQuest({ race: savedRace, positionMemory, names, onSt
   useEffect(() => {
     if (!rolling) return;
     const faces = window.setInterval(() => setRollingFace(face => face % 6 + 1), 85);
-    const finish = window.setTimeout(() => setRolling(null), 850);
+    const finish = window.setTimeout(() => setRolling(null), 1600);
     return () => { window.clearInterval(faces); window.clearTimeout(finish); };
   }, [rolling]);
   const rollDie = (boost = false) => {

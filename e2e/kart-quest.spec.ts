@@ -87,7 +87,7 @@ async function roll(page: Page, die: number, settle = true) {
   await page.evaluate(value => { (window as unknown as { originalRandom: typeof Math.random }).originalRandom = Math.random; Math.random = () => (value - 0.5) / 6; }, die);
   await page.getByRole('button', { name: '🎲 Roll die', exact: true }).click();
   await page.evaluate(() => { Math.random = (window as unknown as { originalRandom: typeof Math.random }).originalRandom; });
-  if (settle) await page.clock.runFor(900);
+  if (settle) await page.clock.runFor(1650);
 }
 
 test('dice tumbles once, locks repeat rolls, and settles on the saved result', async ({ page }) => {
@@ -104,6 +104,10 @@ test('dice tumbles once, locks repeat rolls, and settles on the saved result', a
   await page.getByRole('button', { name: /Roll die/ }).dispatchEvent('click');
   expect((await saved(page)).kart).toEqual(committed);
   await page.clock.runFor(800);
+  await expect(page.locator('.kart-die-rolling')).toBeVisible();
+  await expect(page.getByRole('button', { name: /Roll die/ })).toBeDisabled();
+  await expect(page.getByLabel('Dice result: 4')).toHaveCount(0);
+  await page.clock.runFor(750);
   await expect(page.getByLabel('Dice result: 4')).toBeVisible();
   await expect(page.locator('.kart-roll-result .die-pip')).toHaveCount(4);
   await expect(page.locator('.kart-die-rolling')).toHaveCount(0);
@@ -177,7 +181,7 @@ test('kart drives after the dice, takes the bend, and reload keeps its destinati
   await roll(page, 6, false);
   const committed = (await saved(page)).kart;
   expect(await page.locator('.kart-road-racer').evaluateAll(elements => elements.flatMap(el => el.getAnimations()).length)).toBe(0);
-  await page.clock.runFor(900);
+  await page.clock.runFor(1650);
   const racer = page.locator(`.kart-road-racer-${committed.starter}`);
   const frames = await racer.evaluate(el => {
     const animation = el.getAnimations()[0];
