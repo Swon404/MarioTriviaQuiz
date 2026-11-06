@@ -90,7 +90,7 @@ export default function KartQuest({ race: savedRace, positionMemory, names, onSt
     <p>Roll the die. Dodge bananas. Race through your favourite games!</p>
     <label className="field-label">Red kart name<input className="player-name-input" maxLength={24} value={first} onChange={e => setFirst(e.target.value)} /></label>
     <label className="field-label">Blue kart name<input className="player-name-input" maxLength={24} value={second} onChange={e => setSecond(e.target.value)} /></label>
-    <p>Both play each challenge. Lots of Match & Hunt and Order, plus short quiz and clue games. Reach 24, then finish the pair of turns. Six rolls each at most.</p>
+    <p>Match & Hunt, Game Order and Clue Duel lead the way — seven spaces each. Clue Duel is one shared challenge; other games give you one short go each. Reach 24, then finish the pair of turns. Six rolls each at most.</p>
     <button className="start-btn" onClick={() => onStart([first, second])}>Start Kart Quest</button>
     {historyPanel}
   </section>;
@@ -113,7 +113,7 @@ export default function KartQuest({ race: savedRace, positionMemory, names, onSt
     </div>}
     {race.phase === 'landed' && <div className="kart-destination">
       {!race.routeChosen ? <><h3>Choose your route</h3><p>Both routes play {KART_GAME_NAMES[space.mode]}.</p><button className="round-btn" onClick={() => onChange(current => chooseKartRoute(current, true))}>Open road: winner +2</button><button className="round-btn" onClick={() => onChange(current => chooseKartRoute(current, false))}>{effect.icon} {effect.name}: winner +3</button></> : <>
-        <h3>{effect.icon} {effect.name}</h3><p>{effect.rule}</p><p><strong>{KART_GAME_NAMES[space.mode]}</strong> · One short round each · {race.players[active]} plays first.</p>
+        <h3>{effect.icon} {effect.name}</h3><p>{effect.rule}</p><p><strong>{KART_GAME_NAMES[space.mode]}</strong> · {space.mode === 'clue-duel' ? 'One shared clue challenge' : 'One short round each'} · {race.players[active]} plays first.</p>
         {race.effect === 'mushroom' && <button className="round-btn" onClick={() => onChange(current => safeKartMushroom(current))}>Take safe +1</button>}
         <button className="start-btn" onClick={onChallenge}>{race.effect === 'mushroom' ? 'Race for +3' : 'Play challenge'}</button>
       </>}

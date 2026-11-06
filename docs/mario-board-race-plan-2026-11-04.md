@@ -1,6 +1,6 @@
 # Kart Quest — implemented rules and acceptance plan
 
-Updated 5 November 2026. The user's approved banana challenge replaces the
+Updated 6 November 2026. The user's approved banana challenge replaces the
 original automatic penalty. Kart Quest is now implemented for two people
 sharing one device; deployment has not been requested for this stage.
 
@@ -13,10 +13,13 @@ this alternates with each roll. Matching uses a nine-pair Time Trial board
 with a three-pair goal; Order uses four tiles on Easy. Knowledge challenges
 use Rookie content with one competitive Quiz attempt.
 
-The track contains eight matching spaces, ten Order spaces, one Quiz, one
-Track Finder, two Clue Duel and two Category Finder spaces. Clue Match Up is
-not in this first track. Each challenge reuses the existing games, scoring,
-timers, answer feedback and content history.
+The track prioritises Match & Hunt, Game Order and Clue Duel with seven spaces
+each, plus one Quiz, one Track Finder and one Category Finder space. Clue Duel
+uses one shared subject: players alternate guesses/passes, with the usual bonus
+guess after a miss. Solving or revealing that subject ends the challenge; there
+is no second subject. Other games keep one short go each. Existing active clue
+sessions retain their saved rounds. Clue Match Up is not in this track. Each
+challenge reuses the existing games, scoring, timers, feedback and history.
 
 ## Space effects
 
@@ -32,7 +35,8 @@ timers, answer feedback and content history.
 
 Mushroom spaces also offer a safe +1 without playing. Three junctions offer
 a choice between Open Road (+2 to the winner) and a Rival Race (+3 to the
-winner). Rival Race spaces use Order. Pipes provide the larger shortcuts.
+winner). These junctions feature Order, Clue Duel and Match & Hunt. Pipes
+provide the larger shortcuts.
 
 Hold one item at a time; a new item replaces the previous one. An item-box
 winner chooses a Mushroom (add +2 to a future roll) or Star (automatically

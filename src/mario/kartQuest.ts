@@ -3,9 +3,14 @@ import type { GameMode } from './rounds.ts';
 export type KartItem = 'mushroom' | 'star';
 export type KartEffect = 'road' | 'banana' | 'pipe' | 'box' | 'star' | 'rival' | 'mushroom';
 export type KartSpace = { mode: GameMode; effect: KartEffect; fork?: boolean };
+const TRACK_MODES: readonly GameMode[] = [
+  'pair-match', 'game-order', 'quiz', 'pair-match', 'clue-duel', 'game-order',
+  'pair-match', 'game-order', 'clue-duel', 'pair-match', 'category-finder', 'clue-duel',
+  'game-order', 'pair-match', 'track-finder', 'clue-duel', 'game-order', 'pair-match',
+  'clue-duel', 'game-order', 'clue-duel', 'pair-match', 'game-order', 'clue-duel',
+];
 export const KART_TRACK: readonly KartSpace[] = Array.from({ length: 24 }, (_, i) => ({
-  mode: i === 14 ? 'track-finder' : (['pair-match', 'game-order', 'quiz', 'pair-match', 'game-order', 'game-order',
-    'pair-match', 'game-order', 'clue-duel', 'pair-match', 'category-finder', 'game-order'] as GameMode[])[i % 12],
+  mode: TRACK_MODES[i],
   effect: (['road', 'box', 'road', 'banana', 'pipe', 'rival', 'mushroom', 'star', 'banana', 'box', 'pipe', 'rival'] as KartEffect[])[i % 12],
   fork: [5, 11, 17].includes(i),
 }));

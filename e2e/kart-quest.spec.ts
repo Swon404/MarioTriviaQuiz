@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { newKartRace, rollKart, beginKartChallenge, resolveKart, nextKartTurn, claimKartItem, safeKartMushroom, chooseKartRoute, type KartEffect, type KartRace } from '../src/mario/kartQuest.ts';
+import { KART_TRACK, newKartRace, rollKart, beginKartChallenge, resolveKart, nextKartTurn, claimKartItem, safeKartMushroom, chooseKartRoute, type KartEffect, type KartRace } from '../src/mario/kartQuest.ts';
 import { saveKartHistory, kartHistory, KART_HISTORY_KEY } from '../src/mario/kartHistory.ts';
 import { createProgressBackup, importProgressBackup } from '../src/mario/progressBackup.ts';
 import type { GameRound } from '../src/mario/rounds.ts';
@@ -19,6 +19,14 @@ test('kart movement follows every hairpin in both directions and stops at the fi
 });
 
 const challenge = (effect: KartEffect): KartRace => ({ ...newKartRace(['Red', 'Blue'], () => 0), positions: [8, 7], phase: 'challenge', effect });
+
+test('track gives Clue Duel, Order and Hunt equal priority while preserving hazards and variety', () => {
+  const counts = Object.fromEntries(['pair-match', 'game-order', 'clue-duel', 'quiz', 'track-finder', 'category-finder'].map(mode => [mode, KART_TRACK.filter(space => space.mode === mode).length]));
+  expect(counts).toEqual({ 'pair-match': 7, 'game-order': 7, 'clue-duel': 7, quiz: 1, 'track-finder': 1, 'category-finder': 1 });
+  expect(KART_TRACK.filter(space => space.fork).map(space => space.mode)).toEqual(['game-order', 'clue-duel', 'pair-match']);
+  expect(KART_TRACK.filter(space => space.effect === 'banana')).toHaveLength(4);
+  expect(KART_TRACK.filter(space => space.effect === 'pipe')).toHaveLength(4);
+});
 
 test('banana wins dodge, losses slip, draws stay; stars block once and resolutions are idempotent', () => {
   expect(resolveKart(challenge('banana'), [1, 0]).positions).toEqual([10, 7]);
@@ -224,6 +232,7 @@ for (const [space, mode] of [[3, 'quiz'], [9, 'clue-duel'], [11, 'category-finde
   const state = await saved(page);
   expect(state.mode).toBe(mode);
   expect(state.session.quizAttempts).toBe(1);
+  expect(state.session.rounds).toHaveLength(mode === 'clue-duel' ? 1 : 2);
   for (const round of state.session.rounds) await solve(page, round);
   await page.evaluate(() => {
     const original = Element.prototype.animate;
@@ -244,6 +253,44 @@ for (const [space, mode] of [[3, 'quiz'], [9, 'clue-duel'], [11, 'category-finde
   expect(records).toHaveLength(1);
   expect(records[0].opponent).toBeTruthy();
 });
+for (const outcome of ['pass', 'bonus', 'draw'] as const) test(`track Clue Duel ${outcome} ends after one shared subject and survives reload`, async ({ page }) => {
+  await start(page);
+  await roll(page, 5);
+  await expect(page.locator('.kart-destination')).toContainText('One shared clue challenge');
+  const landed = (await saved(page)).kart;
+  await page.getByRole('button', { name: 'Play challenge', exact: true }).click();
+  const state = await saved(page);
+  expect(state.session.rounds).toHaveLength(1);
+  const round = state.session.rounds[0];
+  expect(round.mode).toBe('clue-duel');
+  await expect(page.locator('.quiz-topline')).toContainText('One shared clue challenge');
+  if (outcome === 'pass') await page.getByRole('button', { name: /^Next clue — pass to/ }).click();
+  else await page.locator('.answer-grid').getByText(round.choices.find((c: { id: string }) => c.id !== round.answerId).label, { exact: true }).click();
+  expect((await saved(page)).turnScores.active).toBe(1);
+  await page.reload();
+  await page.getByRole('button', { name: 'Resume game', exact: true }).click();
+  const resumed = await saved(page);
+  expect(resumed.session.rounds).toHaveLength(1);
+  expect(resumed.turnScores.active).toBe(1);
+  expect(resumed.clueBonus).toBe(outcome !== 'pass');
+  const answer = round.choices.find((c: { id: string }) => outcome === 'draw' ? c.id !== round.answerId && !resumed.clueWrongIds.includes(c.id) : c.id === round.answerId);
+  await page.locator('.answer-grid').getByText(answer.label, { exact: true }).click();
+  await expect(page.locator('.feedback-actions .start-btn')).toHaveText('See result');
+  await page.locator('.feedback-actions .start-btn').click();
+  await expect(page.getByRole('region', { name: 'Track challenge result' })).toBeVisible();
+  const result = (await saved(page)).latestResult;
+  expect(result.total).toBe(1);
+  expect(result.points).toBe(0);
+  expect(result.opponentPoints).toBe(outcome === 'draw' ? 0 : 1);
+  expect((await saved(page)).kart.positions).toEqual(landed.positions);
+  await page.getByRole('button', { name: 'Return to track', exact: true }).click();
+  const expected = [...landed.positions];
+  if (outcome !== 'draw') expected[1 - landed.starter] += 2;
+  expect((await saved(page)).kart.positions).toEqual(expected);
+  expect((await saved(page)).kart.log).toHaveLength(1);
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('mariotrivia_results_v1')!).length)).toBe(1);
+});
+
 async function solve(page: Page, round: GameRound) {
   if (round.mode === 'quiz') await page.locator('.answer-grid').getByText(round.question.answer, { exact: true }).click();
   if (round.mode === 'clue-duel') await page.locator('.answer-grid').getByText(round.choices.find(c => c.id === round.answerId)!.label, { exact: true }).click();
