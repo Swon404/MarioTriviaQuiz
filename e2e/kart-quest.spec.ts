@@ -5,6 +5,18 @@ import { createProgressBackup, importProgressBackup } from '../src/mario/progres
 import type { GameRound } from '../src/mario/rounds.ts';
 import { fitsCategory } from '../src/mario/categoryCatalog.ts';
 import { trackLabel } from '../src/mario/trackChallenges.ts';
+import { kartPoint, kartMotion } from '../src/mario/kartMotion.ts';
+
+test('kart movement follows every hairpin in both directions and stops at the finish', () => {
+  for (const edge of [4, 8, 12, 16, 20]) {
+    const bend = kartPoint(edge + .5);
+    expect(bend.x).toBe(edge % 8 === 4 ? 375 : 25);
+    expect(bend.y).toBe(edge / 4 * 100);
+    expect(kartMotion(edge, edge + 1).map(p => [p.left, p.top])).toEqual(kartMotion(edge + 1, edge).reverse().map(p => [p.left, p.top]));
+  }
+  expect(kartPoint(30)).toEqual(kartPoint(24));
+  expect(kartPoint(-1)).toEqual(kartPoint(0));
+});
 
 const challenge = (effect: KartEffect): KartRace => ({ ...newKartRace(['Red', 'Blue'], () => 0), positions: [8, 7], phase: 'challenge', effect });
 
@@ -118,6 +130,33 @@ test('reduced motion reveals the actual die immediately without a tumble', async
   await expect(page.getByLabel('Dice result: 3')).toBeVisible();
   await expect(page.locator('.kart-die-rolling')).toHaveCount(0);
   await expect(page.locator('.kart-roll-result .die-pip')).toHaveCount(3);
+  expect(await page.locator('.kart-road-racer').evaluateAll(elements => elements.flatMap(el => el.getAnimations({ subtree: true })).length)).toBe(0);
+});
+
+test('kart drives after the dice, takes the bend, and reload keeps its destination', async ({ page }) => {
+  await start(page);
+  await page.clock.pauseAt(await page.evaluate(() => Date.now() + 1000));
+  await roll(page, 6, false);
+  const committed = (await saved(page)).kart;
+  expect(await page.locator('.kart-road-racer').evaluateAll(elements => elements.flatMap(el => el.getAnimations()).length)).toBe(0);
+  await page.clock.runFor(900);
+  const racer = page.locator(`.kart-road-racer-${committed.starter}`);
+  const frames = await racer.evaluate(el => {
+    const animation = el.getAnimations()[0];
+    animation.pause();
+    animation.currentTime = 660;
+    return (animation.effect as KeyframeEffect).getKeyframes();
+  });
+  expect(Number.parseFloat(String(frames[0].top))).toBeCloseTo(20 / 6, 3);
+  expect(frames.some(frame => Number.parseFloat(String(frame.left)) > 93)).toBe(true);
+  expect(frames.at(-1)?.left).toBe('62.5%');
+  expect(frames.at(-1)?.top).toBe('25%');
+  await racer.evaluate(el => el.getAnimations({ subtree: true }).forEach(animation => animation.finish()));
+  expect(await racer.evaluate(el => Number.parseFloat(getComputedStyle(el).left) / el.parentElement!.getBoundingClientRect().width)).toBeCloseTo(.625, 3);
+  await page.reload();
+  await page.getByRole('button', { name: 'Resume game', exact: true }).click();
+  expect((await saved(page)).kart).toEqual(committed);
+  expect(await page.locator('.kart-road-racer').evaluateAll(elements => elements.flatMap(el => el.getAnimations()).length)).toBe(0);
 });
 
 for (const [space, mode] of [[3, 'quiz'], [9, 'clue-duel'], [11, 'category-finder'], [15, 'track-finder']] as const) test(`Kart Quest ${mode} returns both players to the board with one score award`, async ({ page }) => {
@@ -140,8 +179,21 @@ for (const [space, mode] of [[3, 'quiz'], [9, 'clue-duel'], [11, 'category-finde
   expect(state.mode).toBe(mode);
   expect(state.session.quizAttempts).toBe(1);
   for (const round of state.session.rounds) await solve(page, round);
+  await page.evaluate(() => {
+    const original = Element.prototype.animate;
+    const moved = new Set<Element>();
+    (window as unknown as { kartAnimatedPlayers: () => number }).kartAnimatedPlayers = () => { Element.prototype.animate = original; return moved.size; };
+    Element.prototype.animate = function (...args) {
+      if (this.matches('.kart-road-racer')) moved.add(this);
+      return original.apply(this, args);
+    };
+  });
   await page.getByRole('button', { name: 'Return to track', exact: true }).click();
   expect((await saved(page)).kart.phase).toBe('summary');
+  // Returning to the board animates awarded moves; banana/pipe draws stay put.
+  const positions = (await saved(page)).kart.positions as number[];
+  const moved = positions.filter((position, i) => position !== state.kart.positions[i]).length;
+  expect(await page.evaluate(() => (window as unknown as { kartAnimatedPlayers: () => number }).kartAnimatedPlayers())).toBe(moved);
   const records = await page.evaluate(() => JSON.parse(localStorage.getItem('mariotrivia_results_v1')!));
   expect(records).toHaveLength(1);
   expect(records[0].opponent).toBeTruthy();

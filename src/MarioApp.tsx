@@ -41,7 +41,7 @@ import { personalTimeBest, personalBestMessage } from './mario/personalBest.ts';
 import { difficultyDetails, usesKnowledgeLevel } from './mario/difficultyDetails.ts';
 import AppMaintenance from './AppMaintenance.tsx';
 import ProgressBackup from './ProgressBackup.tsx';
-import KartQuest from './KartQuest.tsx';
+import KartQuest, { type KartPositionMemory } from './KartQuest.tsx';
 import { newKartRace, kartActive, beginKartChallenge, resolveKart, KART_TRACK, type KartRace } from './mario/kartQuest.ts';
 
 type Screen = 'home' | 'hub' | 'kart' | 'setup' | 'championship-setup' | 'championship-handover' | 'game' | 'result' | 'championship-result' | 'versus-game' | 'versus-result' | 'scores' | 'tracks' | 'explore';
@@ -103,6 +103,8 @@ export default function MarioApp() {
   const [huntUnlockPairs, setHuntUnlockPairs] = useSavedSetting('hunt-unlock', 0, oneOf([0, 1, 2, 3, 4, 5]));
   const [screen, setScreen] = useState<Screen>('home');
   const [kart, setKart] = useState<KartRace | null>(null);
+  // Presentation only: survives challenge screens, but never replays on reload.
+  const kartPositionMemory: KartPositionMemory = useRef([null, null]);
   const [session, setSession] = useState<GameSession | null>(null);
   const [versus, setVersus] = useState<VersusQuiz | null>(null);
   const [versusReady, setVersusReady] = useState(false);
@@ -909,7 +911,7 @@ export default function MarioApp() {
       {showVoiceSettings && <div className="voice-settings-panel"><h3>🔊 Voice Settings</h3>{speechAvailable() ? <><label className="voice-setting-label">Voice<select className="voice-select" value={selectedVoice} onChange={event => { setSelectedVoice(event.target.value); setVoiceName(event.target.value); }}><option value="">Browser default</option>{voices.map(voice => <option key={`${voice.name}-${voice.lang}`} value={voice.name}>{voice.name} ({voice.lang})</option>)}</select></label><label className="voice-setting-label">Speed: {speechRate.toFixed(1)}x<input className="voice-range" type="range" min="0.5" max="2" step="0.1" value={speechRate} onChange={event => { const rate = Number(event.target.value); setRate(rate); setSpeechRate(rate); }} /></label><button className="start-btn" onClick={() => speakText('Hello! Ready for a Mario challenge?')}>🔊 Test Voice</button></> : <p>Voice reading is not available in this browser.</p>}</div>}
     </section>}
 
-    {screen === 'kart' && <KartQuest race={kart} names={[draftName, draftOpponent]} onStart={startKart} onChange={change => setKart(current => current ? change(current) : current)} onChallenge={playKartChallenge} onExit={leaveGame} />}
+    {screen === 'kart' && <KartQuest race={kart} positionMemory={kartPositionMemory} names={[draftName, draftOpponent]} onStart={startKart} onChange={change => setKart(current => current ? change(current) : current)} onChallenge={playKartChallenge} onExit={leaveGame} />}
     {screen === 'hub' && <section className="two-player-setup play-mode-hub">
       <button className="back-btn" onClick={() => setScreen('home')}>← Home</button>
       <h2 className="setup-title">🎮 Play Games</h2>

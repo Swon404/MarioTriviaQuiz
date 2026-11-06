@@ -51,7 +51,7 @@
 .kart-start-grid > span { display:flex; align-items:center; gap:.35rem; min-width:0; }
 .kart-start-grid .kart-token { width:2rem; height:2.5rem; transform:rotate(90deg); }
 .kart-start-grid small { font-size:.65rem; overflow-wrap:anywhere; }
-.kart-road-board { position:relative; margin:.5rem -.25rem; }
+.kart-road-board { position:relative; margin:1.6rem -.25rem .5rem; }
 .kart-road { position:absolute; inset:0; width:100%; height:100%; overflow:visible; pointer-events:none; }
 .kart-road path { fill:none; stroke:#f4e9cf; stroke-width:84; stroke-linecap:round; }
 .kart-road .kart-road-surface { fill:none; stroke:#263440; stroke-width:76; stroke-linecap:round; }

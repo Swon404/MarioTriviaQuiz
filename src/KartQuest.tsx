@@ -1,11 +1,12 @@
-import { useState } from 'react';
+import { useState, useRef, useLayoutEffect, type RefObject } from 'react';
+import { kartPoint, kartMotion } from './mario/kartMotion.ts';
 import { KART_TRACK, KART_EFFECTS, kartActive, rollKart, chooseKartRoute, safeKartMushroom, claimKartItem, nextKartTurn, type KartRace } from './mario/kartQuest.ts';
 import './kartQuest.css';
 import { kartHistory, saveKartHistory } from './mario/kartHistory.ts';
 import { useEffect } from 'react';
 
 export const KART_GAME_NAMES: Record<string, string> = { 'pair-match': 'Match & Hunt', 'game-order': 'Game Order', quiz: 'Quiz Battle', 'clue-duel': 'Clue Duel', 'track-finder': 'Track Finder', 'category-finder': 'Category Finder' };
-const ROAD_PATH = 'M50 50H350Q375 50 375 100T350 150H50Q25 150 25 200T50 250H350Q375 250 375 300T350 350H50Q25 350 25 400T50 450H350Q375 450 375 500T350 550H50';
+const ROAD_PATH = 'M50 20V50H350Q375 50 375 100T350 150H50Q25 150 25 200T50 250H350Q375 250 375 300T350 350H50Q25 350 25 400T50 450H350Q375 450 375 500T350 550H50';
 const DIE_PIPS = [[4], [0, 8], [0, 4, 8], [0, 2, 6, 8], [0, 2, 4, 6, 8], [0, 2, 3, 5, 6, 8]];
 
 function DieFace({ value, rolling = false }: { value: number; rolling?: boolean }) {
@@ -16,7 +17,31 @@ function KartToken({ player }: { player: number }) {
   return <svg className={`kart-token kart-token-${player}`} viewBox="0 0 48 56" aria-hidden="true"><rect x="3" y="12" width="9" height="15" rx="3" fill="#101827" /><rect x="36" y="12" width="9" height="15" rx="3" fill="#101827" /><rect x="3" y="35" width="9" height="15" rx="3" fill="#101827" /><rect x="36" y="35" width="9" height="15" rx="3" fill="#101827" /><path d="M15 4h18l5 14v31H10V18Z" fill="currentColor" stroke="white" strokeWidth="2" /><rect x="16" y="15" width="16" height="17" rx="6" fill="#18283f" /><circle cx="24" cy="24" r="6" fill="#ffe4b3" /><path d="M15 40h18M20 5v8h8V5" stroke="white" strokeWidth="4" /><text x="24" y="49" textAnchor="middle" fill="white" fontSize="10" fontWeight="900">{player + 1}</text></svg>;
 }
 
-export default function KartQuest({ race: savedRace, names, onStart, onChange, onChallenge, onExit }: {
+export type KartPositionMemory = RefObject<({ id: string; position: number } | null)[]>;
+
+function RoadRacer({ race, player, memory }: { race: KartRace; player: number; memory: KartPositionMemory }) {
+  const element = useRef<HTMLSpanElement>(null);
+  const journey = useRef<{ id: string; to: number; from: number } | null>(null);
+  const position = race.positions[player];
+  const point = kartPoint(position);
+  const row = Math.floor((Math.max(1, Math.min(24, position)) - 1) / 4);
+  useLayoutEffect(() => {
+    const previous = memory.current[player];
+    if (journey.current?.id !== race.id || journey.current.to !== position) journey.current = { id: race.id, to: position, from: previous?.id === race.id ? previous.position : position };
+    memory.current[player] = { id: race.id, position };
+    const from = journey.current.from;
+    if (!element.current || from === position || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const frames = kartMotion(from, position);
+    const duration = Math.min(1800, Math.max(350, Math.abs(Math.min(24, position) - Math.min(24, from)) * 220));
+    const movement = element.current.animate(frames.map(({ left, top }) => ({ left, top })), { duration, easing: 'ease-in-out' });
+    const steering = element.current.querySelector('.kart-token')!.animate(frames.map(({ angle }) => ({ transform: `rotate(${angle}deg)` })), { duration, easing: 'ease-in-out' });
+    return () => { movement.cancel(); steering.cancel(); };
+  }, [race.id, position, player, memory]);
+  return <span ref={element} className={`kart-road-racer kart-road-racer-${player} ${row % 2 ? 'kart-facing-left' : ''}`} style={{ left: `${point.x / 4}%`, top: `${point.y / 6}%` }} aria-label={position === 0 ? `${race.players[player]} at the start` : `${race.players[player]} on space ${position}`}><KartToken player={player} /><span className="kart-racer-name">{race.players[player]}</span></span>;
+}
+
+export default function KartQuest({ race: savedRace, positionMemory, names, onStart, onChange, onChallenge, onExit }: {
+  positionMemory: KartPositionMemory;
   race: KartRace | null; names: [string, string]; onStart: (names: [string, string]) => void;
   onChange: (change: (race: KartRace) => KartRace) => void; onChallenge: () => void; onExit: () => void;
 }) {
@@ -88,17 +113,10 @@ export default function KartQuest({ race: savedRace, names, onStart, onChange, o
     {finished && <><p>Final positions after {race.turn / 2} rolls each. Furthest wins; equal positions share the victory.</p><button className="start-btn" onClick={() => onStart(race.players)}>Race again</button></>}
     <div className="kart-course">
       <div className="kart-course-heading"><span>START <span aria-hidden="true">→</span></span><span>FOLLOW THE ROAD TO <b>24</b> 🏁</span></div>
-      {race.positions.some(pos => pos === 0) && <div className="kart-start-grid" aria-label="Starting grid">{race.players.map((name, i) => race.positions[i] === 0 && <span key={i} aria-label={`${name} at the start`}><KartToken player={i} /><small>{name}</small></span>)}</div>}
       <div className="kart-road-board">
         <svg className="kart-road" viewBox="0 0 400 600" preserveAspectRatio="none" aria-hidden="true"><path d={ROAD_PATH} /><path d={ROAD_PATH} className="kart-road-surface" /><path d={ROAD_PATH} className="kart-road-line" /></svg>
         <ol className="kart-track" aria-label="Race track">{KART_TRACK.map((tile, index) => <li key={index} style={{ gridRow: Math.floor(index / 4) + 1, gridColumn: Math.floor(index / 4) % 2 === 0 ? index % 4 + 1 : 4 - index % 4 }} className={`kart-space kart-space-${tile.effect} ${race.space === index + 1 ? 'kart-landed' : ''} ${index === 23 ? 'kart-finish' : ''} ${race.positions.some(pos => Math.min(24, pos) === index + 1) ? 'kart-occupied' : ''}`} aria-label={`Space ${index + 1}: ${KART_EFFECTS[tile.effect].name}, ${KART_GAME_NAMES[tile.mode]}`}><span className="kart-space-number">{index + 1}</span><span className={`kart-space-icon ${tile.effect === 'box' ? 'kart-item-box' : ''}`} aria-hidden="true">{index === 23 ? '🏁' : tile.effect === 'box' ? '?' : tile.effect === 'pipe' ? <span className="kart-pipe" /> : tile.effect === 'road' ? Math.floor(index / 4) % 2 === 0 ? '→' : '←' : KART_EFFECTS[tile.effect].icon}</span><small>{tile.mode === 'pair-match' ? 'Match' : tile.mode === 'game-order' ? 'Order' : tile.mode === 'quiz' ? 'Quiz' : tile.mode === 'clue-duel' ? 'Clues' : 'Find'}</small>{tile.fork && <span className="kart-fork" aria-label="Route choice">⑂</span>}</li>)}</ol>
-        <div className="kart-racer-layer">{race.players.map((name, player) => {
-          if (race.positions[player] === 0) return null;
-          const index = Math.min(24, race.positions[player]) - 1;
-          const row = Math.floor(index / 4);
-          const column = row % 2 === 0 ? index % 4 : 3 - index % 4;
-          return <span key={player} className={`kart-road-racer kart-road-racer-${player} ${row % 2 ? 'kart-facing-left' : ''}`} style={{ left: `${(column + .5) * 25}%`, top: `${(row + .5) * 100 / 6}%` }} aria-label={`${name} on space ${race.positions[player]}`}><KartToken player={player} /><span className="kart-racer-name">{name}</span></span>;
-        })}</div>
+        <div className="kart-racer-layer">{race.players.map((_, player) => <RoadRacer key={`${race.id}:${player}`} race={race} player={player} memory={positionMemory} />)}</div>
       </div>
       <div className="kart-course-legend"><span>🍌 Dodge</span><span>🟢 Shortcut</span><span>❓ Item</span><span>🏁 Race</span></div>
     </div>
