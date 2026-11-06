@@ -1,3 +1,4 @@
+import KartStakes, { kartDistance } from './KartStakes.tsx';
 import { useState, useRef, useLayoutEffect, type RefObject } from 'react';
 import { kartPoint, kartMotion } from './mario/kartMotion.ts';
 import { KART_TRACK, KART_EFFECTS, kartActive, rollKart, chooseKartRoute, safeKartMushroom, claimKartItem, nextKartTurn, type KartRace } from './mario/kartQuest.ts';
@@ -47,7 +48,7 @@ function RoadRacer({ race, player, memory }: { race: KartRace; player: number; m
     });
     return () => { window.cancelAnimationFrame(camera); movement.cancel(); steering.cancel(); };
   }, [race.id, position, player, memory]);
-  return <span ref={element} id={`kart-player-${player}`} tabIndex={-1} className={`kart-road-racer kart-road-racer-${player} ${shared ? 'kart-sharing-space' : ''} ${point.x === 50 ? 'kart-edge-left' : point.x === 350 ? 'kart-edge-right' : ''} ${row % 2 ? 'kart-facing-left' : ''}`} style={{ left: `${point.x / 4}%`, top: `${point.y / 6}%` }} aria-label={position === 0 ? `${race.players[player]} at the start` : `${race.players[player]} on space ${position}`}><KartToken player={player} /><span className="kart-player-number" aria-hidden="true">{player + 1}</span><span className="kart-racer-name"><span>{race.players[player]}</span><b>{position === 0 ? 'START' : position >= 24 ? 'FINISH' : position}</b></span></span>;
+  return <span ref={element} id={`kart-player-${player}`} tabIndex={-1} className={`kart-road-racer kart-road-racer-${player} ${shared ? 'kart-sharing-space' : ''} ${point.x === 50 ? 'kart-edge-left' : point.x === 350 ? 'kart-edge-right' : ''} ${row % 2 ? 'kart-facing-left' : ''}`} style={{ left: `${point.x / 4}%`, top: `${point.y / 6}%` }} aria-label={position === 0 ? `${race.players[player]} at the start` : `${race.players[player]} on space ${position}`}><KartToken player={player} /><span className="kart-player-number" aria-hidden="true">{player + 1}</span><span className="kart-racer-name"><span>{race.players[player]}</span><b>{position === 0 ? 'START' : position >= 24 ? kartDistance(position) : position}</b></span></span>;
 }
 
 export default function KartQuest({ race: savedRace, positionMemory, names, onStart, onChange, onChallenge, onExit }: {
@@ -90,7 +91,7 @@ export default function KartQuest({ race: savedRace, positionMemory, names, onSt
     <p>Roll the die. Dodge bananas. Race through your favourite games!</p>
     <label className="field-label">Red kart name<input className="player-name-input" maxLength={24} value={first} onChange={e => setFirst(e.target.value)} /></label>
     <label className="field-label">Blue kart name<input className="player-name-input" maxLength={24} value={second} onChange={e => setSecond(e.target.value)} /></label>
-    <p>Match & Hunt, Game Order and Clue Duel lead the way — seven spaces each. Clue Duel is one shared challenge; other games give you one short go each. Reach 24, then finish the pair of turns. Six rolls each at most.</p>
+    <p>Match & Hunt, Game Order and Clue Duel lead the way — seven spaces each. Clue Duel is one shared challenge; other games give you one short go each. Reach 24, then finish the pair of turns. Furthest wins, including spaces past the finish. Six rolls each at most.</p>
     <button className="start-btn" onClick={() => onStart([first, second])}>Start Kart Quest</button>
     {historyPanel}
   </section>;
@@ -102,25 +103,25 @@ export default function KartQuest({ race: savedRace, positionMemory, names, onSt
   return <section className="kart-quest">
     <header className="kart-header"><div><p className="kart-kicker">MUSHROOM MOTORWAY</p><h1>Kart Quest<span aria-hidden="true">🏁</span></h1></div><button className="back-btn" onClick={onExit}>← Games</button></header>
     {historyWarning && <p role="alert">This race could not be saved to history. Keep this tab open and try again when storage is available.</p>}
-    <div className="kart-standings" aria-label="Race positions">{race.players.map((name, i) => <button key={i} type="button" aria-label={`Find ${name}'s kart`} onClick={() => { const marker = document.getElementById(`kart-player-${i}`); marker?.scrollIntoView({ block: 'center', behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' }); marker?.focus({ preventScroll: true }); }} className={`kart-driver kart-driver-${i} ${!finished && active === i ? 'kart-driver-active' : ''}`}><KartToken player={i} /><span className="kart-driver-info"><strong><span className="kart-driver-number">{i + 1}</span> {name}</strong><span><small>Space </small><b>{race.positions[i]}</b><small> / 24</small></span><small>{race.items[i] === 'star' ? '⭐ Star shield' : race.items[i] === 'mushroom' ? '🍄 Mushroom boost' : 'Item slot empty'}</small><small className="kart-find-hint">Find my kart ↗</small></span>{!finished && active === i && <span className="kart-turn-light" aria-label="Current player" />}</button>)}</div>
-    <div className="kart-turn-heading">{finished ? <h2 role="status">{winning}</h2> : <><h2>{race.players[active]}'s turn</h2><span>ROLL <b>{Math.floor(race.turn / 2) + 1}</b> / 6</span></>}</div>
+    <div className="kart-standings" aria-label="Race positions">{race.players.map((name, i) => <button key={i} type="button" aria-label={`Find ${name}'s kart`} onClick={() => { const marker = document.getElementById(`kart-player-${i}`); marker?.scrollIntoView({ block: 'center', behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' }); marker?.focus({ preventScroll: true }); }} className={`kart-driver kart-driver-${i} ${!finished && active === i ? 'kart-driver-active' : ''}`}><KartToken player={i} /><span className="kart-driver-info"><strong><span className="kart-driver-number">{i + 1}</span> {name}</strong><span><b>{kartDistance(race.positions[i])}</b></span><small>{race.items[i] === 'star' ? '⭐ Star shield' : race.items[i] === 'mushroom' ? '🍄 Mushroom boost' : 'Item slot empty'}</small><small className="kart-find-hint">Find my kart ↗</small></span>{!finished && active === i && <span className="kart-turn-light" aria-label="Current player" />}</button>)}</div>
+    <div className="kart-turn-heading">{finished ? <h2 role="status">{winning}</h2> : <><h2>{race.players[active]}'s turn</h2><span>{race.turn >= 10 ? 'FINAL ROUND' : <>ROLL <b>{Math.floor(race.turn / 2) + 1}</b> / 6</>}</span></>}</div>
     <p className="kart-message" role="status">{rolling ? 'Rolling the die…' : race.turn === 0 && race.phase === 'roll' ? 'Roll out! Race to 24. Both players get equal turns.' : race.message}</p>
     {!rolling && race.phase === 'landed' && <div className="kart-roll-result" aria-label={`Dice result: ${race.die}`}><DieFace value={race.die} /><strong>You rolled {race.die}</strong></div>}
     {race.phase === 'roll' && <div className="kart-actions">
-      {race.turn % 2 === 1 && Math.max(...race.positions) >= 24 && <p>Final roll! Both players get equal turns.</p>}
+      {race.turn % 2 === 1 && Math.max(...race.positions) >= 24 && <p>Final chance! Both players get equal rolls. Furthest distance wins, including spaces beyond 24.</p>}
       <button className="start-btn kart-roll" aria-label="🎲 Roll die" disabled={!!rolling} onClick={() => rollDie()}><DieFace value={rolling ? rollingFace : 5} rolling={!!rolling} /><span>{rolling ? 'Rolling…' : 'Roll die'}<small>{rolling ? 'Here we go!' : 'Let’s hit the track'}</small></span><span className="kart-roll-arrow" aria-hidden="true">→</span></button>
       {race.items[active] === 'mushroom' && <button className="round-btn" disabled={!!rolling} onClick={() => rollDie(true)}>Use Mushroom: roll +2</button>}
     </div>}
     {race.phase === 'landed' && <div className="kart-destination">
       {!race.routeChosen ? <><h3>Choose your route</h3><p>Both routes play {KART_GAME_NAMES[space.mode]}.</p><button className="round-btn" onClick={() => onChange(current => chooseKartRoute(current, true))}>Open road: winner +2</button><button className="round-btn" onClick={() => onChange(current => chooseKartRoute(current, false))}>{effect.icon} {effect.name}: winner +3</button></> : <>
-        <h3>{effect.icon} {effect.name}</h3><p>{effect.rule}</p><p><strong>{KART_GAME_NAMES[space.mode]}</strong> · {space.mode === 'clue-duel' ? 'One shared clue challenge' : 'One short round each'} · {race.players[active]} plays first.</p>
+        <KartStakes race={race} /><p><strong>{KART_GAME_NAMES[space.mode]}</strong> · {space.mode === 'clue-duel' ? 'One shared clue challenge' : 'One short round each'} · {race.players[active]} plays first.</p>
         {race.effect === 'mushroom' && <button className="round-btn" onClick={() => onChange(current => safeKartMushroom(current))}>Take safe +1</button>}
         <button className="start-btn" onClick={onChallenge}>{race.effect === 'mushroom' ? 'Race for +3' : 'Play challenge'}</button>
       </>}
     </div>}
     {race.phase === 'reward' && race.rewardPlayer !== null && <div className="kart-destination"><h3>{race.players[race.rewardPlayer]}, choose your item</h3><p>One item at a time. Choosing replaces your current item.</p><button className="round-btn" onClick={() => onChange(current => claimKartItem(current, 'mushroom'))}>🍄 Mushroom: next roll +2</button><button className="round-btn" onClick={() => onChange(current => claimKartItem(current, 'star'))}>⭐ Star: block one banana</button></div>}
     {race.phase === 'summary' && <button className="start-btn" onClick={() => onChange(nextKartTurn)}>{(race.turn + 1) % 2 === 0 && (Math.max(...race.positions) >= 24 || race.turn >= 11) ? 'See race result' : 'Next roll'}</button>}
-    {finished && <><p>Final positions after {race.turn / 2} rolls each. Furthest wins; equal positions share the victory.</p><button className="start-btn" onClick={() => onStart(race.players)}>Race again</button></>}
+    {finished && <><p>Finished after {race.turn / 2} rolls each. {race.players[0]}: {kartDistance(race.positions[0])} · {race.players[1]}: {kartDistance(race.positions[1])}. Furthest wins, including distance beyond 24.</p><button className="start-btn" onClick={() => onStart(race.players)}>Race again</button></>}
     <div className="kart-course">
       <div className="kart-course-heading"><span>START <span aria-hidden="true">→</span></span><span>FOLLOW THE ROAD TO <b>24</b> 🏁</span></div>
       <div className="kart-road-board">

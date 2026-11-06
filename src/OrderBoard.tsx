@@ -11,10 +11,10 @@ import { personalTimeBest, personalBestMessage } from './mario/personalBest.ts';
 
 export type OrderCheckpoint = { resultId: string; tiles: string[]; selected: number | null; started: number | null; elapsed: number; penalty: number; attempts: number; feedback: string[]; solved: boolean; recordMessage: string; frames: ReplayFrame[]; practice: boolean };
 
-export default function OrderBoard({ round, difficulty, options, player, resultId, onSolved, onNext, onRestart, nextLabel, resultMessage, initialCheckpoint, onCheckpoint, firstRound, computer = false }: {
+export default function OrderBoard({ round, difficulty, options, player, resultId, onSolved, onNext, onRestart, nextLabel, resultMessage, initialCheckpoint, onCheckpoint, firstRound, kartMode = false, computer = false }: {
   round: OrderRound; difficulty: Difficulty; options: OrderOptions; player: string; resultId: string; onSolved: (elapsedMs: number) => void;
   onNext: () => void; onRestart: () => void; nextLabel: string; resultMessage?: string;
-  computer?: boolean; firstRound?: boolean; initialCheckpoint?: OrderCheckpoint | null; onCheckpoint?: (value: OrderCheckpoint) => void;
+  kartMode?: boolean; computer?: boolean; firstRound?: boolean; initialCheckpoint?: OrderCheckpoint | null; onCheckpoint?: (value: OrderCheckpoint) => void;
 }) {
   const initial = initialCheckpoint?.resultId === resultId ? initialCheckpoint : null;
   const ruleset = round.orderRuleset ?? 'order-v2'; // Preserve resumed pre-expansion boards.
@@ -98,8 +98,8 @@ export default function OrderBoard({ round, difficulty, options, player, resultI
       {!solved && !computer && <button className="start-btn check-button" onClick={check}>Check order</button>}
       {feedback.length > 0 && <p className="order-feedback" role="status">{solved ? `Solved in ${(elapsed / 1000).toFixed(1)} seconds! ${attempts} ${attempts === 1 ? 'check' : 'checks'}.` : `${feedback.filter(value => value === 'correct').length}/${tiles.length} correct positions. Keep going!${rules.penalty ? ' +1 second.' : ''}`}</p>}
       {solved && <details className="order-sources"><summary>Original US releases</summary><ul>{[...round.tiles].sort((a, b) => a.year - b.year).map(game => <li key={game.id}><a href={game.sourceUrl ?? round.sourceUrl} target="_blank" rel="noreferrer">{game.title} · {game.system} · {game.year} ↗</a></li>)}</ul></details>}
-      {solved && <>{resultMessage && !resultMessage.startsWith('Time recorded.') && <p className="order-result">{resultMessage}</p>}{recordMessage && <p role="status">{recordMessage}</p>}{round.funFact && <div className="order-discovery"><p><strong>Fun fact:</strong> {round.funFact}</p><a href={round.funFactSourceUrl ?? round.sourceUrl} target="_blank" rel="noreferrer">Tip / fun fact source ↗</a></div>}<div className="feedback-actions"><button className="back-btn" onClick={() => { markOrderPractice(resultId); onRestart(); }}>Rewind</button><button className="start-btn" onClick={onNext}>{nextLabel}</button></div></>}
+      {solved && <>{resultMessage && !resultMessage.startsWith('Time recorded.') && <p className="order-result">{resultMessage}</p>}{recordMessage && !kartMode && <p role="status">{recordMessage}</p>}{round.funFact && <div className="order-discovery"><p><strong>Fun fact:</strong> {round.funFact}</p><a href={round.funFactSourceUrl ?? round.sourceUrl} target="_blank" rel="noreferrer">Tip / fun fact source ↗</a></div>}<div className="feedback-actions"><button className="back-btn" onClick={() => { markOrderPractice(resultId); onRestart(); }}>Rewind</button><button className="start-btn" onClick={onNext}>{nextLabel}</button></div></>}
     </>}
-    <section className="order-leaderboard" aria-label="Game Order Top 5"><h3>Game Order Top 5</h3><p>{options.tiles} tiles · {rules.label}</p>{scores.length ? <ol>{scores.map(score => <li key={score.id}><span>{score.player}</span><strong>{(score.elapsedMs / 1000).toFixed(1)}s</strong><ReplayViewer replay={score.replay} /></li>)}</ol> : <p>No times yet. Set the first!</p>}</section>
+    {!kartMode && <section className="order-leaderboard" aria-label="Game Order Top 5"><h3>Game Order Top 5</h3><p>{options.tiles} tiles · {rules.label}</p>{scores.length ? <ol>{scores.map(score => <li key={score.id}><span>{score.player}</span><strong>{(score.elapsedMs / 1000).toFixed(1)}s</strong><ReplayViewer replay={score.replay} /></li>)}</ol> : <p>No times yet. Set the first!</p>}</section>}
   </div>;
 }

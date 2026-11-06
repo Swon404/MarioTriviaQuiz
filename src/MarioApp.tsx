@@ -1,3 +1,4 @@
+import KartStakes from './KartStakes.tsx';
 import { PairCards, HuntTarget, pairTilesFor } from './GameBoards.tsx';
 import { trackLabel } from './mario/trackChallenges.ts';
 import { readCheckpoint, saveCheckpoint, clearCheckpoint } from './mario/checkpoint.ts';
@@ -729,7 +730,7 @@ export default function MarioApp() {
   };
 
   const timedResultMessage = turnScores && session?.submission && pairRoundCompletedMs.current !== null
-    ? session.index % 2 === 0 ? 'Waiting for the other player’s time — fastest earns 1 point.'
+    ? session.index % 2 === 0 ? kart ? 'Pass the phone — fastest wins the track reward.' : 'Waiting for the other player’s time — fastest earns 1 point.'
       : turnScores.previousOrderMs === pairRoundCompletedMs.current ? `Equal times at ${(pairRoundCompletedMs.current / 1000).toFixed(1)}s — one point each!`
         : `${turnScores.previousOrderMs! < pairRoundCompletedMs.current ? player : opponentName} wins in ${(Math.min(turnScores.previousOrderMs!, pairRoundCompletedMs.current) / 1000).toFixed(1)}s — +1 point!`
     : undefined;
@@ -1025,11 +1026,12 @@ export default function MarioApp() {
     </section>}
 
     {screen === 'game' && round && session && <section className={`quiz-playing mario-game quiz-panel${round.mode === 'pair-match' ? ' pair-game' : ''}`}>
-      <div className="game-topbar"><button className="back-btn" onClick={leaveGame}>← Games</button>{championship
+      <div className="game-topbar"><button className="back-btn" onClick={leaveGame}>← Games</button>{kart ? <span>{activeName}'s turn</span> : championship
         ? <span className="versus-now-playing" role="status">{activeName}'s turn · 🏆 {championship.index + 1}/{championship.modes.length}</span>
         : <span className="score-display">{activeName} · {round.mode === 'pair-match' ? `${foundPairs.length} ${foundPairs.length === 1 ? 'pair' : 'pairs'}` : round.mode === 'match-hunt' ? `${matchedIds.length} ${matchedIds.length === 1 ? 'pair' : 'pairs'}` : `${(turnScores ? turnScores.correct[activePlayer] : session.correct) + (session.submission?.correct ? 1 : 0)} correct`} · {pointText(gamePointsNow)}</span>}</div>
       {renderTotals(true)}
-      {turnScores && !championship && <div className="versus-now-playing" role="status">{activeName}'s turn · {player}: {pointText(displayedGamePoints[0])} · {opponentName}: {pointText(displayedGamePoints[1])}</div>}
+      {kart && <KartStakes race={kart} activeName={activeName} compact />}
+      {turnScores && !championship && !kart && <div className="versus-now-playing" role="status">{activeName}'s turn · {player}: {pointText(displayedGamePoints[0])} · {opponentName}: {pointText(displayedGamePoints[1])}</div>}
       <div className="quiz-topline"><span>{MODE_ICONS[mode]} {MODE_LABELS[mode]}{round.mode === 'pair-match' ? ` · ${round.variant === 'hunt' ? 'Hunt' : 'Time Trial'}` : round.mode === 'game-order' ? ` · ${ORDER_RULES[orderChallenge].label} · ${round.tiles.length} tiles` : ` · ${DIFFICULTY_LABELS[difficulty]}`}</span>{kart && round.mode === 'clue-duel' ? <span>{session.rounds.length === 1 ? 'One shared clue challenge' : `Shared clue ${session.index + 1} of ${session.rounds.length}`}</span> : <span>{turnScores && !sharedHunt ? 'Round' : mode === 'pair-match' ? 'Board' : 'Question'} {turnScores && !sharedHunt ? Math.floor(session.index / 2) + 1 : session.index + 1} of {turnScores && !sharedHunt ? session.rounds.length / 2 : session.rounds.length}{turnScores && !sharedHunt ? ' each' : ''}</span>}{timed && mode !== 'game-order' && mode !== 'pair-match' && <span aria-label="Elapsed time">{(elapsedMs / 1000).toFixed(1)}s</span>}</div>
       <div className="progress-track"><div style={{ width: `${(session.index / session.rounds.length) * 100}%` }} /></div>
       <div className="game-question"><h1>{round.prompt}</h1>
@@ -1044,7 +1046,7 @@ export default function MarioApp() {
         <div className="answer-grid">{round.question.choices.map((choice, option) => <button key={choice} disabled={isBotTurn || session.submission !== null || session.wrongAnswers.includes(choice)} className={`choice-btn ${session.submission && choice === round.question.answer ? 'correct' : session.wrongAnswers.includes(choice) || session.submission?.answer === choice ? 'wrong' : ''}`} onClick={() => setSession(attemptQuiz(session, choice))}><span className="choice-letter">{String.fromCharCode(65 + option)}</span><span className="choice-text">{choice}</span></button>)}</div>
       </>}
 
-      {round.mode === 'game-order' && <OrderBoard computer={isBotTurn} firstRound={session.index === 0} initialCheckpoint={orderCheckpoint} onCheckpoint={setOrderCheckpoint} key={round.id + orderReset} round={round} difficulty={difficulty} options={orderOptions} player={turnScores?.active === 1 ? opponentName : player} resultId={runId + ':' + session.index} onNext={next} onRestart={undo} nextLabel={session.index + 1 === session.rounds.length ? 'See result' : turnScores ? 'Next turn' : 'Next round'} resultMessage={timedResultMessage} onSolved={time => { pairRoundCompletedMs.current = time; setSession(submit(session, round.correctIds, turnScores ? 0 : 1)); }} />}
+      {round.mode === 'game-order' && <OrderBoard kartMode={!!kart} computer={isBotTurn} firstRound={session.index === 0} initialCheckpoint={orderCheckpoint} onCheckpoint={setOrderCheckpoint} key={round.id + orderReset} round={round} difficulty={difficulty} options={orderOptions} player={turnScores?.active === 1 ? opponentName : player} resultId={runId + ':' + session.index} onNext={next} onRestart={undo} nextLabel={session.index + 1 === session.rounds.length ? 'See result' : turnScores ? 'Next turn' : 'Next round'} resultMessage={kart && session.submission && session.index % 2 === 1 ? 'Both times are in — see who moves ahead!' : timedResultMessage} onSolved={time => { pairRoundCompletedMs.current = time; setSession(submit(session, round.correctIds, turnScores ? 0 : 1)); }} />}
 
       {round.mode === 'track-finder' && <>
         <GameHelp key={round.id} first={session.index === 0} hint="Choose one track that fits." />
@@ -1091,7 +1093,7 @@ export default function MarioApp() {
         {round.timed && !session.submission && <div className="pair-live-timer" role="timer" aria-label="Elapsed time"><span>{activeName} · Time</span><strong>{((pairTimerReady ? Math.max(0, elapsedMs - previousRoundMs.current) : 0) / 1000).toFixed(1)}<small>s</small></strong></div>}
         {pairTimerReady && <PairCards tiles={pairTilesFor(round.cards, flippedCards, foundPairs)} disabled={pairLocked || isBotTurn || session.submission !== null} onChoose={flipPairCard} />}
         {pairMessage && <p className="match-message" aria-live="polite">{pairMessage}</p>}
-        {round.timed && <section className="order-leaderboard" aria-label="Match & Hunt Top 5"><h3>Match &amp; Hunt Top 5</h3><p>{round.pairs.length} pairs · {round.targetPairId ? `All targets · unlock after ${round.unlockPairs}` : `Find ${round.goal}`}</p><PairTimeList records={pairScores} currentId={session.submission && !practisedRounds.current.has(runId + ':' + session.index) ? runId + ':' + session.index : undefined} /></section>}
+        {round.timed && !kart && <section className="order-leaderboard" aria-label="Match & Hunt Top 5"><h3>Match &amp; Hunt Top 5</h3><p>{round.pairs.length} pairs · {round.targetPairId ? `All targets · unlock after ${round.unlockPairs}` : `Find ${round.goal}`}</p><PairTimeList records={pairScores} currentId={session.submission && !practisedRounds.current.has(runId + ':' + session.index) ? runId + ':' + session.index : undefined} /></section>}
       </>}
 
       {round.mode === 'clue-duel' && <>
