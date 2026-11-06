@@ -274,6 +274,44 @@ async function solve(page: Page, round: GameRound) {
   await page.locator('.feedback-actions .start-btn').click();
 }
 
+test('compact track results preview real moves, map reversed players and handle shields, draws and items', async ({ page }) => {
+  await start(page);
+  const base = await saved(page);
+  const cases = [
+    { effect: 'road', red: 1, blue: 0, shield: false, moves: ['+2 spaces', 'Stays put'], positions: [10, 5] },
+    { effect: 'banana', red: 1, blue: 0, shield: false, moves: ['+2 spaces', '−1 space'], positions: [10, 4] },
+    { effect: 'banana', red: 1, blue: 0, shield: true, moves: ['+2 spaces', 'Stays put'], positions: [10, 5] },
+    { effect: 'banana', red: 1, blue: 1, shield: false, moves: ['Stays put', 'Stays put'], positions: [8, 5] },
+    { effect: 'box', red: 0, blue: 1, shield: false, moves: ['Stays put', '+2 spaces'], positions: [8, 7] },
+    { effect: 'pipe', red: 0, blue: 1, shield: false, moves: ['Stays put', '+4 spaces'], positions: [8, 9] },
+  ];
+  for (const fixture of cases) {
+    await page.evaluate(({ base, fixture }) => {
+      const value = { ...base, screen: 'result', mode: 'game-order', kart: { ...base.kart, phase: 'challenge', starter: 1, turn: 0, effect: fixture.effect, positions: [8, 5], space: 5, routeChosen: true, items: [null, fixture.shield ? 'star' : null] },
+        latestResult: { id: 'track-result-preview', mode: 'game-order', player: 'Blue', opponent: 'Red', points: fixture.blue, opponentPoints: fixture.red, correct: 1, opponentCorrect: 1, total: 1, elapsedMs: fixture.blue > fixture.red ? 12300 : 14200, opponentElapsedMs: fixture.red > fixture.blue ? 12300 : 14200, difficulty: 'explorer', topic: 'mixed', completedAt: new Date().toISOString() } };
+      const envelope = JSON.parse(localStorage.getItem('mariotrivia_checkpoint_v1')!);
+      envelope.payload = JSON.stringify(value);
+      let hash = 2166136261;
+      for (let i = 0; i < envelope.payload.length; i++) hash = Math.imul(hash ^ envelope.payload.charCodeAt(i), 16777619);
+      envelope.checksum = hash >>> 0;
+      localStorage.setItem('mariotrivia_checkpoint_v1', JSON.stringify(envelope));
+    }, { base, fixture });
+    await page.reload();
+    await page.getByRole('button', { name: 'Resume game', exact: true }).click();
+    await expect(page.getByRole('heading', { name: fixture.red === fixture.blue ? "It's a draw!" : `${fixture.red > fixture.blue ? 'Red' : 'Blue'} wins!`, exact: true })).toBeVisible();
+    await expect(page.locator('.kart-result-move')).toHaveText(fixture.moves);
+    await expect(page.getByLabel("Red's time", { exact: true })).toHaveText(fixture.red > fixture.blue ? '12.3s' : '14.2s');
+    await expect(page.getByLabel("Blue's time", { exact: true })).toHaveText(fixture.blue > fixture.red ? '12.3s' : '14.2s');
+    await expect(page.getByRole('table', { name: 'Game results' })).toHaveCount(0);
+    await expect(page.getByText('How points work', { exact: true })).toHaveCount(0);
+    if (fixture.shield) await expect(page.locator('.kart-result-extra')).toContainText('Star blocked the banana');
+    if (fixture.effect === 'box') await expect(page.locator('.kart-result-extra')).toContainText('Blue, choose a power-up');
+    expect((await saved(page)).kart.positions).toEqual([8, 5]);
+    await page.getByRole('button', { name: 'Return to track', exact: true }).click();
+    expect((await saved(page)).kart.positions).toEqual(fixture.positions);
+  }
+});
+
 test('phone race preserves a roll and both timed turns through reload, then awards banana movement once', async ({ page }) => {
   await start(page);
   await roll(page, 4);
@@ -291,6 +329,15 @@ test('phone race preserves a roll and both timed turns through reload, then awar
   await page.getByRole('button', { name: 'Resume game', exact: true }).click();
   expect((await saved(page)).session.index).toBe(1);
   await solve(page, state.session.rounds[1]);
+  const result = (await saved(page)).latestResult;
+  expect(result.opponentElapsedMs).toBeGreaterThan(0);
+  await expect(page.getByLabel(`${result.player}'s time`, { exact: true })).toHaveText(`${(result.elapsedMs / 1000).toFixed(1)}s`);
+  await expect(page.getByLabel(`${result.opponent}'s time`, { exact: true })).toHaveText(`${(result.opponentElapsedMs / 1000).toFixed(1)}s`);
+  const summary = await page.getByRole('region', { name: 'Track challenge result' }).innerText();
+  await page.reload();
+  await page.getByRole('button', { name: 'Resume game', exact: true }).click();
+  await expect(page.getByRole('region', { name: 'Track challenge result' })).toHaveText(summary, { useInnerText: true });
+  expect((await saved(page)).kart.positions).toEqual(landed.kart.positions);
   await page.getByRole('button', { name: 'Return to track', exact: true }).click();
   const resolved = await saved(page);
   expect(resolved.kart.phase).toBe('summary');

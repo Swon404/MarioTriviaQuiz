@@ -19,7 +19,7 @@ const level = (v: unknown) => ['explorer', 'scientist', 'professor'].includes(v 
 const optional = (v: Record<string, unknown>, key: string, valid: (v: unknown) => boolean) => v[key] === undefined || valid(v[key]);
 function result(v: Record<string, unknown>, lifetime = false) {
   return text(v.player) && number(v.correct) && number(v.total) && (v.correct as number) <= (v.total as number)
-    && ['points', 'bestStreak', 'opponentCorrect', 'opponentPoints', 'opponentBestStreak'].every(key => optional(v, key, number))
+    && ['points', 'bestStreak', 'opponentCorrect', 'opponentPoints', 'opponentBestStreak', 'opponentElapsedMs'].every(key => optional(v, key, number))
     && optional(v, 'opponent', text) && optional(v, 'format', value => ['solo', 'two-player', 'computer'].includes(value as string))
     && (lifetime || (number(v.elapsedMs) && date(v.completedAt) && level(v.difficulty)
       && ['mario', 'kart', 'mixed'].includes(v.topic as string) && optional(v, 'mode', value => modes.includes(value as string))));

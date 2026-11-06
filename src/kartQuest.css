@@ -103,6 +103,18 @@
 .kart-quest summary { cursor:pointer; min-height:44px; display:flex; align-items:center; gap:.5rem; font-weight:700; }
 .kart-quest summary::before { content:'+'; color:#ffe290; }
 .kart-quest details[open] > summary::before { content:'−'; }
+.kart-challenge-result { width:min(100%,34rem); margin:auto; }
+.kart-result-moves { width:100%; padding:.4rem 1rem; box-sizing:border-box; border:1px solid #ffffff35; border-radius:1rem; background:#17263bef; }
+.kart-result-player { display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:1rem 0; text-align:left; }
+.kart-result-player + .kart-result-player { border-top:1px solid #ffffff25; }
+.kart-result-identity { display:flex; align-items:center; gap:.6rem; min-width:0; }
+.kart-result-identity strong { display:block; overflow-wrap:anywhere; }
+.kart-result-identity small { display:block; font-size:1rem; font-variant-numeric:tabular-nums; color:#d4e2f4; margin-top:.2rem; }
+.kart-result-number { display:grid; place-items:center; flex-shrink:0; width:1.6rem; height:1.6rem; border-radius:50%; color:#152138; background:#ff7977; font-weight:900; }
+.kart-result-player-1 .kart-result-number { background:#67cfff; }
+.kart-result-move { font-size:1.1rem; white-space:nowrap; }
+.kart-result-winner .kart-result-move { color:#ffe290; }
+.kart-result-extra { margin:.5rem 0; font-size:.95rem; }
 @media (min-width:600px) { .kart-track { grid-template-rows:repeat(6,100px); } .kart-space-icon { font-size:1.8rem; } .kart-driver { padding:.75rem 1rem; } .kart-driver-info > strong { font-size:1rem; } }
 @media (max-width:360px) { .kart-quest { padding:.6rem; } .kart-driver { padding:.5rem; gap:.3rem; } .kart-driver > .kart-token { width:1.5rem; } .kart-course { padding:.55rem; } }
 @media (prefers-reduced-motion:reduce) { .kart-quest *, .kart-quest *::before { animation:none !important; transition:none !important; } }

@@ -42,6 +42,7 @@ export type QuizResult = {
   opponentCorrect?: number;
   opponentPoints?: number;
   opponentBestStreak?: number;
+  opponentElapsedMs?: number;
   format?: 'solo' | 'two-player' | 'computer';
   elapsedMs: number;
   completedAt: string;

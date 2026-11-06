@@ -42,6 +42,7 @@ import { difficultyDetails, usesKnowledgeLevel } from './mario/difficultyDetails
 import AppMaintenance from './AppMaintenance.tsx';
 import ProgressBackup from './ProgressBackup.tsx';
 import KartQuest, { type KartPositionMemory } from './KartQuest.tsx';
+import KartChallengeResult, { kartResultPoints } from './KartChallengeResult.tsx';
 import { newKartRace, kartActive, beginKartChallenge, resolveKart, KART_TRACK, type KartRace } from './mario/kartQuest.ts';
 
 type Screen = 'home' | 'hub' | 'kart' | 'setup' | 'championship-setup' | 'championship-handover' | 'game' | 'result' | 'championship-result' | 'versus-game' | 'versus-result' | 'scores' | 'tracks' | 'explore';
@@ -438,9 +439,7 @@ export default function MarioApp() {
   };
   const returnToKart = () => {
     if (!kart || !latestResult) return;
-    const points: [number, number] = latestResult.player === kart.players[0]
-      ? [latestResult.points ?? 0, latestResult.opponentPoints ?? 0]
-      : [latestResult.opponentPoints ?? 0, latestResult.points ?? 0];
+    const points = kartResultPoints(kart, latestResult);
     setKart(current => current ? resolveKart(current, points) : current);
     setStandalone(null); setSession(null); setScreen('kart');
   };
@@ -525,7 +524,7 @@ export default function MarioApp() {
         player: name, topic: section, difficulty, correct: totals.correct[index], total: sharedHunt ? updated.rounds.reduce((sum, item) => sum + (item.mode === 'pair-match' ? item.pairs.length : 0), 0) : mode === 'clue-duel' ? updated.rounds.length : updated.rounds.length / 2,
         points: totals.points[index], bestStreak: totals.bestStreaks[index], elapsedMs: totals.elapsed[index], completedAt: new Date().toISOString(),
       }));
-      const combined = { ...results[0], opponent: opponentName, opponentCorrect: results[1].correct, opponentPoints: results[1].points, opponentBestStreak: results[1].bestStreak, format: championship?.format ?? standalone?.format };
+      const combined = { ...results[0], opponent: opponentName, opponentCorrect: results[1].correct, opponentPoints: results[1].points, opponentBestStreak: results[1].bestStreak, opponentElapsedMs: results[1].elapsedMs, format: championship?.format ?? standalone?.format };
       setSession(updated);
       setTurnScores(null);
       if (kart) {
@@ -1125,7 +1124,8 @@ export default function MarioApp() {
       </div>}
     </section>}
 
-    {screen === 'result' && latestResult && <section className="quiz-result result-panel">
+    {screen === 'result' && latestResult && kart && <KartChallengeResult race={kart} result={latestResult} onReturn={returnToKart} onExit={leaveGame} />}
+    {screen === 'result' && latestResult && !kart && <section className="quiz-result result-panel">
       <p className="eyebrow">{championship ? `CHAMPIONSHIP · GAME ${championship.index + 1} OF ${championship.modes.length}` : 'GAME COMPLETE'}</p>
       <h1>{latestResult.opponent ? latestResult.points === latestResult.opponentPoints ? "It's a draw!" : `${(latestResult.points ?? 0) > (latestResult.opponentPoints ?? 0) ? latestResult.player : latestResult.opponent} wins!` : `Nice work, ${latestResult.player}!`}</h1>
       {balancedChampionship && latestResult.opponent && <p className="champ-game-award" role="status">{latestResult.points === latestResult.opponentPoints ? 'Game drawn. +1 Championship point each.' : `${(latestResult.points ?? 0) > (latestResult.opponentPoints ?? 0) ? latestResult.player : latestResult.opponent} wins ${modeLabel(latestResult.mode)}. +1 Championship point.`}</p>}
@@ -1142,7 +1142,7 @@ export default function MarioApp() {
         </details>
         <p>{latestResult.mode === 'pair-match' ? 'Match & Hunt' : latestResult.mode === 'game-order' ? `Game Order · ${ORDER_RULES[orderChallenge].label} · ${orderTiles} tiles` : DIFFICULTY_LABELS[latestResult.difficulty]}{timed ? ` · ${(latestResult.elapsedMs / 1000).toFixed(1)}s` : ''}</p>
       </div>
-      {kart ? <button className="start-btn" onClick={returnToKart}>Return to track</button> : championship ? <button className="start-btn" onClick={continueChampionship}>{championship.index + 1 === championship.modes.length ? 'See championship result' : 'Next: ' + MODE_LABELS[championship.modes[championship.index + 1]]}</button> : <button className="start-btn" onClick={start}>Play again</button>}
+      {championship ? <button className="start-btn" onClick={continueChampionship}>{championship.index + 1 === championship.modes.length ? 'See championship result' : 'Next: ' + MODE_LABELS[championship.modes[championship.index + 1]]}</button> : <button className="start-btn" onClick={start}>Play again</button>}
       <button className="back-btn" onClick={leaveGame}>← Back to games</button>
       {!championship && !kart && <button className="high-scores-link" onClick={() => setScreen('scores')}>🏆 High Scores</button>}
     </section>}
