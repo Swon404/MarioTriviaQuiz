@@ -38,10 +38,16 @@ a choice between Open Road (+2 to the winner) and a Rival Race (+3 to the
 winner). These junctions feature Order, Clue Duel and Match & Hunt. Pipes
 provide the larger shortcuts.
 
-Hold one item at a time; a new item replaces the previous one. An item-box
-winner chooses a Mushroom (add +2 to a future roll) or Star (automatically
-block one banana slip). No shells, skipped turns, hidden catch-up rules or
-chain reactions. Bonus movement never launches another space.
+Hold one item at a time. In new races, an item-box winner chooses a Mushroom
+(add +2 to a chosen future roll), Star (next challenge win adds +3, or block
+one banana slip), or keeps their held item. A Star is consumed on either use;
+draws and other losses retain it. A Star-space reward fills an empty slot but
+never overwrites a held item. Saved races without `boost-star-v2` retain the
+original shield-only Star and automatic Star-space replacement rules.
+The table above shows base movement before a held Star's win boost.
+No shells, skipped turns, hidden catch-up rules or chain reactions. Bonus
+movement never launches another space. Competitive Kart Quest has no Rewind
+or fresh-timer restart; interruption recovery preserves the same challenge.
 
 ## Finish
 

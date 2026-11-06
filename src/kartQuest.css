@@ -128,3 +128,15 @@
 .kart-stakes-compact { margin-bottom:.5rem; }
 .kart-driver-info b { font-size:1rem !important; }
 .kart-racer-name { max-width:8rem !important; }
+.kart-turn-controls { scroll-margin-top:.5rem; }
+.kart-turn-dock { position:fixed; bottom:0; left:0; right:0; z-index:20; display:flex; align-items:center; justify-content:center; gap:.5rem; padding:.35rem .6rem calc(.35rem + env(safe-area-inset-bottom)); background:#142238f5; border-top:2px solid #ffe290; box-shadow:0 -3px 15px #0005; }
+.kart-turn-dock strong { font-size:.75rem; max-width:45%; overflow-wrap:anywhere; }
+.kart-quest { padding-bottom:5rem !important; }
+.kart-track button.kart-space-icon { padding:0; border:0; background:none; cursor:pointer; min-width:44px; min-height:44px; }
+.kart-track button.kart-space-icon:focus-visible { outline:3px solid white; outline-offset:3px; }
+.kart-course-legend > span { display:flex; align-items:center; gap:.25rem; }
+.kart-space-help { position:fixed; bottom:5rem; left:1rem; right:1rem; max-width:32rem; margin:auto; padding:1rem; background:#17263b; border:2px solid #ffe290; border-radius:1rem; z-index:25; box-shadow:0 5px 30px #000a; font-size:.85rem; }
+.kart-podium { display:flex; flex-wrap:wrap; justify-content:center; gap:.7rem; padding:1rem; background:linear-gradient(140deg,#24394e,#17263b); border:2px solid #ffe290; border-radius:1rem; }
+.kart-trophy { width:100%; text-align:center; font-size:2.5rem; }
+.kart-podium-player { display:flex; flex:1; min-width:0; flex-direction:column; gap:.4rem; align-items:center; text-align:center; padding:.8rem .3rem; background:#ffffff0a; border-radius:.6rem; overflow-wrap:anywhere; }
+.kart-podium-player:first-of-type { border-top:3px solid #ffe290; }

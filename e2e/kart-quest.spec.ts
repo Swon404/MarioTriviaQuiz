@@ -114,6 +114,59 @@ async function roll(page: Page, die: number, settle = true) {
   if (settle) await page.clock.runFor(1650);
 }
 
+async function restoreKart(page: Page, changes: Partial<KartRace>) {
+  await page.evaluate(changes => {
+    const envelope = JSON.parse(localStorage.getItem('mariotrivia_checkpoint_v1')!);
+    const value = JSON.parse(envelope.payload);
+    value.kart = { ...value.kart, ...changes };
+    envelope.payload = JSON.stringify(value);
+    let hash = 2166136261;
+    for (let i = 0; i < envelope.payload.length; i++) hash = Math.imul(hash ^ envelope.payload.charCodeAt(i), 16777619);
+    envelope.checksum = hash >>> 0;
+    localStorage.setItem('mariotrivia_checkpoint_v1', JSON.stringify(envelope));
+  }, changes);
+  await page.reload();
+  await page.getByRole('button', { name: 'Resume game', exact: true }).click();
+}
+
+test('phone race explains stakes, inspects icons and brings late-track controls back into view', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await start(page);
+  await restoreKart(page, { starter: 0, positions: [19, 18], turn: 8 });
+  await roll(page, 2);
+  await expect(page.getByLabel('Race stakes')).toContainText('Red wins: Red +2');
+  await expect(page.getByLabel('Race stakes')).toContainText('Blue wins: Red −1');
+  await page.getByRole('button', { name: 'About space 24: Rival race', exact: true }).click();
+  await expect(page.getByRole('region', { name: 'Space 24 details' })).toContainText('Winner moves +3');
+  await page.getByRole('button', { name: 'Close space details' }).click();
+  await expect(page.locator('.kart-turn-dock')).toBeVisible();
+  await page.locator('.kart-turn-dock button').click();
+  await expect(page.getByRole('button', { name: 'Play challenge', exact: true })).toBeInViewport();
+  await page.getByRole('button', { name: 'Play challenge', exact: true }).click();
+  await expect(page.getByLabel('Race stakes')).toContainText('Banana challenge');
+  const round = (await saved(page)).session.rounds[0];
+  await solve(page, round);
+  await expect(page.getByRole('region', { name: 'Track challenge result' })).toBeVisible();
+});
+
+test('finish distances, final round and podium explain equal-roll outcomes', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await start(page);
+  await restoreKart(page, { starter: 0, turn: 10, positions: [18, 20] });
+  await expect(page.locator('.kart-turn-heading')).toContainText('FINAL ROUND');
+  await restoreKart(page, { turn: 9, positions: [25, 20] });
+  await expect(page.locator('.kart-actions')).toContainText('Final chance!');
+  await restoreKart(page, { phase: 'summary', turn: 9, positions: [25, 29] });
+  await page.getByRole('button', { name: 'See race result', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Blue wins!', exact: true })).toBeVisible();
+  await expect(page.getByLabel('Race podium')).toContainText('Finish +5');
+  await expect(page.getByLabel('Race podium')).toContainText('Finish +1');
+  await expect(page.locator('#kart-player-0')).toContainText('Finish +1');
+  await expect(page.locator('#kart-player-1')).toContainText('Finish +5');
+  await page.getByText('Past races', { exact: true }).click();
+  await expect(page.locator('details').filter({ hasText: 'Past races' })).toContainText('Blue won');
+});
+
 test('dice tumbles once, locks repeat rolls, and settles on the saved result', async ({ page }) => {
   await start(page);
   await page.clock.pauseAt(await page.evaluate(() => Date.now() + 1000));
@@ -249,6 +302,7 @@ for (const [space, mode] of [[3, 'quiz'], [9, 'clue-duel'], [11, 'category-finde
   expect(state.mode).toBe(mode);
   expect(state.session.quizAttempts).toBe(1);
   expect(state.session.rounds).toHaveLength(mode === 'clue-duel' ? 1 : 2);
+  await expect(page.getByLabel("Race stakes")).toBeVisible();
   for (const round of state.session.rounds) await solve(page, round);
   await page.evaluate(() => {
     const original = Element.prototype.animate;
@@ -334,6 +388,8 @@ async function solve(page: Page, round: GameRound) {
       await page.getByRole('button', { name: 'Check order', exact: true }).click();
     }
   }
+  await expect(page.getByRole('button', { name: /Rewind|Restart go/ })).toHaveCount(0);
+  await expect(page.locator('.order-leaderboard')).toHaveCount(0);
   await page.locator('.feedback-actions .start-btn').click();
 }
 

@@ -6,6 +6,29 @@ and entry into Match & Hunt. Other outcomes were traced through source and
 existing tests, not all manually played. This is a design assessment, not a
 child playtest or a new full regression run. No gameplay was changed.
 
+## Implementation follow-up
+
+The user approved implementation after this audit. Race challenges now show
+named movement stakes and current positions, with standalone leaderboards and
+redundant point totals hidden. Rewind/restart actions are disabled only in Kart
+Quest. Existing timer/checkpoint recovery is preserved.
+
+Finish distances are shown as Finish +N, the sixth round is explicitly final,
+and a podium and named race-history winner explain the result. Track icons open
+rule details, the legend uses the same artwork, and a bottom shortcut returns
+players to the turn controls when they scroll out of view. Route choice is now
+labelled as a stakes choice.
+
+New races use versioned Star rules: a held Star adds +3 on the next challenge
+win OR blocks a banana slip, then is consumed. Draws and ordinary losses retain
+it. Mushrooms remain +2 on a chosen roll. A Star-space reward cannot overwrite a
+held item in new races; item boxes let the player keep their current item.
+Saved races without the new rules marker keep their original Star behaviour.
+
+Family acceptance testing below remains a real-person task. Shuffled layouts,
+harder races and comeback bonuses remain deferred until playtest evidence shows
+which would help; no claim is made that automated tests establish fun.
+
 ## Overall judgement
 
 The core is promising: recognisable pieces, a real road, anticipation from the

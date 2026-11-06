@@ -13,9 +13,11 @@ export function kartOutcome(race: KartRace, winner: number | null) {
 
 export default function KartStakes({ race, activeName, compact = false }: { race: KartRace; activeName?: string; compact?: boolean }) {
   return <aside className={`kart-stakes${compact ? ' kart-stakes-compact' : ''}`} aria-label="Race stakes">
-    <strong className="kart-stakes-title"><span className="kart-mini-icon"><KartSpaceIcon effect={race.effect} /></span>{activeName ? `Kart Quest · ${activeName}'s turn` : `${race.players[kartActive(race)]}'s ${KART_EFFECTS[race.effect].name.toLowerCase()}`}</strong>
+    <strong className="kart-stakes-title"><span className="kart-mini-icon"><KartSpaceIcon effect={race.effect} /></span>{activeName ? `Kart Quest · ${KART_EFFECTS[race.effect].name}` : `${race.players[kartActive(race)]}'s ${KART_EFFECTS[race.effect].name.toLowerCase()}`}</strong>
     {activeName && <p className="kart-stakes-positions">{race.players.map((name, i) => <span key={i} className={`kart-colour-${i}`}>{name}: {kartDistance(race.positions[i])}</span>)}</p>}
     {race.players.map((name, i) => <p key={i}><b>{name} wins:</b> {kartOutcome(race, i)}</p>)}
+    {race.effect === 'box' && <small>Winner also chooses a power-up.</small>}
+    {race.effect === 'star' && <small>{race.itemRules === 'boost-star-v2' ? 'Winner gets a Star if their item slot is empty. Held items stay safe.' : 'Winner gets a Star shield, replacing any held item.'}</small>}
     {!compact && <small>Draw: {kartOutcome(race, null)}</small>}
   </aside>;
 }
