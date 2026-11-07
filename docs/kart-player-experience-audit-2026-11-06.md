@@ -8,6 +8,13 @@ child playtest or a new full regression run. No gameplay was changed.
 
 ## Implementation follow-up
 
+7 November: further family feedback asked for simpler rules, not just shorter
+copy. New races now use `simple-v3`: win +2, draw +1 each, automatic +2 boost on
+box/Mushroom/pipe wins, and shield-only Stars. Route/item/safe-step choices are
+removed for new races. Older saves keep their rules. Setup is now Roll / Play /
+Race, two names, one short goal and Start. Earlier implementation notes below
+record the changes that preceded this simplification.
+
 Following family feedback that the outcome tables were too complicated, landing
 cards now lead with the game and first player, followed by one short reward line.
 The same simple reward appears during play. Named win/loss/draw predictions and

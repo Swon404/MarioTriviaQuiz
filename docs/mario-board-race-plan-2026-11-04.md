@@ -1,6 +1,6 @@
 # Kart Quest — implemented rules and acceptance plan
 
-Updated 6 November 2026. The user's approved banana challenge replaces the
+Updated 7 November 2026. The user's approved banana challenge replaces the
 original automatic penalty. Kart Quest is now implemented for two people
 sharing one device; deployment has not been requested for this stage.
 
@@ -21,7 +21,22 @@ is no second subject. Other games keep one short go each. Existing active clue
 sessions retain their saved rounds. Clue Match Up is not in this track. Each
 challenge reuses the existing games, scoring, timers, feedback and history.
 
-## Space effects
+## Simple rules for new races
+
+New races use `simple-v3`. Win: +2; draw: +1 each on every space. Item boxes,
+Mushrooms and pipes automatically add another +2 for the winner, regardless of
+who landed there. No reward selection, route choice or safe-Mushroom choice.
+A Star only blocks one banana slip and never gives a win boost. Losing on your
+banana moves you back one unless protected. Boosts do not launch another game.
+
+The setup shows only Roll / Play / Race, names and Start. Each landing has one
+short instruction, with details available on request. The finish still uses
+equal rolls, a maximum of six rolls each and furthest distance wins.
+
+Saved races retain their existing rules. The following effects describe those
+older saves; they are not the default for new races.
+
+## Legacy space effects
 
 | Space | Landing player wins | Landing player loses | Draw |
 | --- | --- | --- | --- |

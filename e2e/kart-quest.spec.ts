@@ -18,9 +18,9 @@ test('kart movement follows every hairpin in both directions and stops at the fi
   expect(kartPoint(-1)).toEqual(kartPoint(0));
 });
 
-const challenge = (effect: KartEffect): KartRace => ({ ...newKartRace(['Red', 'Blue'], () => 0), positions: [8, 7], phase: 'challenge', effect });
+const challenge = (effect: KartEffect): KartRace => ({ ...newKartRace(['Red', 'Blue'], () => 0), itemRules: 'boost-star-v2', positions: [8, 7], phase: 'challenge', effect });
 
-test('new Stars reward a win or block a slip, preserve held items and keep legacy saves unchanged', () => {
+test('saved v2 Stars reward a win or block a slip and preserve older saves unchanged', () => {
   const boosted = { ...challenge('road'), items: ['star', null] as KartRace['items'] };
   const won = resolveKart(boosted, [1, 0]);
   expect(won.positions).toEqual([13, 7]);
@@ -34,6 +34,30 @@ test('new Stars reward a win or block a slip, preserve held items and keep legac
   const both = resolveKart({ ...challenge('banana'), items: ['star', 'star'] }, [0, 1]);
   expect(both.positions).toEqual([8, 12]);
   expect(both.items).toEqual([null, null]);
+});
+
+test('simple races use automatic boosts, one-purpose shields and no choices', () => {
+  const race = newKartRace(['Red', 'Blue'], () => 0);
+  expect(race.itemRules).toBe('simple-v3');
+  const fork = rollKart(race, false, () => .99);
+  expect(fork.routeChosen).toBe(true);
+  for (const effect of ['road', 'rival', 'box', 'mushroom', 'pipe', 'banana', 'star'] as const) {
+    const play: KartRace = { ...race, phase: 'challenge', effect, positions: [8, 7], routeChosen: true };
+    const win = resolveKart(play, [1, 0]);
+    expect(win.positions[0]).toBe(['box', 'mushroom', 'pipe'].includes(effect) ? 12 : 10);
+    expect(win.phase).toBe('summary');
+    expect(win.rewardPlayer).toBeNull();
+    expect(resolveKart(win, [1, 0])).toEqual(win);
+    expect(resolveKart(play, [0, 0]).positions).toEqual([9, 8]);
+    const rivalWin = resolveKart(play, [0, 1]);
+    expect(rivalWin.positions[1]).toBe(['box', 'mushroom', 'pipe'].includes(effect) ? 11 : 9);
+  }
+  const shield: KartRace = { ...race, phase: 'challenge', effect: 'road', items: ['star', null] };
+  expect(resolveKart(shield, [1, 0]).positions).toEqual([2, 0]);
+  expect(resolveKart(shield, [1, 0]).items[0]).toBe('star');
+  const slip = resolveKart({ ...shield, effect: 'banana', positions: [8, 7] }, [0, 1]);
+  expect(slip.positions).toEqual([8, 9]);
+  expect(slip.items[0]).toBeNull();
 });
 
 test('track gives Clue Duel, Order and Hunt equal priority while preserving hazards and variety', () => {
@@ -137,12 +161,10 @@ test('phone race explains stakes, inspects icons and brings late-track controls 
   await expect(page.locator('.kart-simple-reward')).toHaveText('Win to dodge the banana!');
   await expect(page.getByText('Red wins:', { exact: true })).not.toBeVisible();
   await page.getByLabel('Race stakes').getByText('Rules', { exact: true }).click();
-  await expect(page.getByText('Red wins:', { exact: true })).toBeVisible();
-  await expect(page.getByLabel('Race stakes')).toContainText('Red wins: Red +2');
-  await expect(page.getByLabel('Race stakes')).toContainText('Blue wins: Red −1');
+  await expect(page.getByLabel('Race stakes')).toContainText('Lose on your banana: back 1.');
   await page.getByLabel('Race stakes').getByText('Rules', { exact: true }).click();
   await page.getByRole('button', { name: 'About space 24: Rival race', exact: true }).click();
-  await expect(page.getByRole('region', { name: 'Space 24 details' })).toContainText('Winner moves +3');
+  await expect(page.getByRole('region', { name: 'Space 24 details' })).toContainText('Win: forward 2.');
   await page.getByRole('button', { name: 'Close space details' }).click();
   await expect(page.locator('.kart-turn-dock')).toBeVisible();
   await page.locator('.kart-turn-dock button').click();
@@ -152,6 +174,28 @@ test('phone race explains stakes, inspects icons and brings late-track controls 
   const round = (await saved(page)).session.rounds[0];
   await solve(page, round);
   await expect(page.getByRole('region', { name: 'Track challenge result' })).toBeVisible();
+});
+
+test('simple item box boosts immediately without a reward choice and survives reload', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await start(page);
+  await restoreKart(page, { starter: 0, positions: [1, 0] });
+  await roll(page, 1);
+  await expect(page.locator('.kart-simple-reward')).toHaveText('Win a Mushroom boost!');
+  await page.getByRole('button', { name: 'Play challenge', exact: true }).click();
+  const rounds = (await saved(page)).session.rounds;
+  await solve(page, rounds[0]);
+  await solve(page, rounds[1], 15000);
+  await expect(page.locator('.kart-result-move').first()).toHaveText('+4 spaces');
+  await page.reload();
+  await page.getByRole('button', { name: 'Resume game', exact: true }).click();
+  await page.getByRole('button', { name: 'Return to track', exact: true }).click();
+  const race = (await saved(page)).kart;
+  expect(race.positions).toEqual([6, 0]);
+  expect(race.items).toEqual([null, null]);
+  expect(race.phase).toBe('summary');
+  await expect(page.getByRole('heading', { name: /choose your item/ })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Next roll', exact: true })).toBeVisible();
 });
 
 test('finish distances, final round and podium explain equal-roll outcomes', async ({ page }) => {
@@ -360,13 +404,14 @@ for (const outcome of ['pass', 'bonus', 'draw'] as const) test(`track Clue Duel 
   expect((await saved(page)).kart.positions).toEqual(landed.positions);
   await page.getByRole('button', { name: 'Return to track', exact: true }).click();
   const expected = [...landed.positions];
-  if (outcome !== 'draw') expected[1 - landed.starter] += 2;
+  if (outcome !== 'draw') expected[1 - landed.starter] += 4;
+  else { expected[0]++; expected[1]++; }
   expect((await saved(page)).kart.positions).toEqual(expected);
   expect((await saved(page)).kart.log).toHaveLength(1);
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem('mariotrivia_results_v1')!).length)).toBe(1);
 });
 
-async function solve(page: Page, round: GameRound) {
+async function solve(page: Page, round: GameRound, waitMs = 5000) {
   if (round.mode === 'quiz') await page.locator('.answer-grid').getByText(round.question.answer, { exact: true }).click();
   if (round.mode === 'clue-duel') await page.locator('.answer-grid').getByText(round.choices.find(c => c.id === round.answerId)!.label, { exact: true }).click();
   if (round.mode === 'track-finder') {
@@ -376,7 +421,7 @@ async function solve(page: Page, round: GameRound) {
   if (round.mode === 'category-finder') await page.locator('.finder-grid').getByText(round.tiles.find(t => fitsCategory(t, round.targetCategory))!.name, { exact: true }).click();
   if (round.mode === 'pair-match' || round.mode === 'game-order') {
     await page.getByRole('button', { name: 'Start Timer', exact: true }).click();
-    await page.clock.runFor(5000);
+    await page.clock.runFor(waitMs);
     if (round.mode === 'pair-match') for (const pair of round.pairs.slice(0, round.goal)) {
       await page.locator(`.pair-card[data-pair-id="${pair.id}"][data-kind="icon"]`).click();
       await page.locator(`.pair-card[data-pair-id="${pair.id}"][data-kind="word"]`).click();
@@ -411,7 +456,7 @@ test('compact track results preview real moves, map reversed players and handle 
   ];
   for (const fixture of cases) {
     await page.evaluate(({ base, fixture }) => {
-      const value = { ...base, screen: 'result', mode: 'game-order', kart: { ...base.kart, phase: 'challenge', starter: 1, turn: 0, effect: fixture.effect, positions: [8, 5], space: 5, routeChosen: true, items: [null, fixture.shield ? 'star' : null] },
+      const value = { ...base, screen: 'result', mode: 'game-order', kart: { ...base.kart, itemRules: 'boost-star-v2', phase: 'challenge', starter: 1, turn: 0, effect: fixture.effect, positions: [8, 5], space: 5, routeChosen: true, items: [null, fixture.shield ? 'star' : null] },
         latestResult: { id: 'track-result-preview', mode: 'game-order', player: 'Blue', opponent: 'Red', points: fixture.blue, opponentPoints: fixture.red, correct: 1, opponentCorrect: 1, total: 1, elapsedMs: fixture.blue > fixture.red ? 12300 : 14200, opponentElapsedMs: fixture.red > fixture.blue ? 12300 : 14200, difficulty: 'explorer', topic: 'mixed', completedAt: new Date().toISOString() } };
       const envelope = JSON.parse(localStorage.getItem('mariotrivia_checkpoint_v1')!);
       envelope.payload = JSON.stringify(value);

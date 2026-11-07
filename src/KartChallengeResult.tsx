@@ -35,6 +35,7 @@ export default function KartChallengeResult({ race, result, onReturn, onExit }: 
     </div>
     {shieldUsed && <p className="kart-result-extra">⭐ {race.players[active]}’s Star blocked the banana!</p>}
     {next.rewardPlayer !== null && <p className="kart-result-extra">🎁 {race.players[next.rewardPlayer]}, choose a power-up back on the track.</p>}
+    {race.itemRules === 'simple-v3' && winner !== null && ['box', 'mushroom', 'pipe'].includes(race.effect) && <p className="kart-result-extra">{race.effect === 'pipe' ? '🟢 Shortcut!' : '🍄 Mushroom boost!'} +2 extra spaces included.</p>}
     {starBoost && <p className="kart-result-extra">⭐ {race.players[winner!]}'s Star added +3 spaces!</p>}
     {race.effect === 'star' && winner !== null && <p className="kart-result-extra">⭐ {race.players[winner]} {next.items[winner] === 'star' ? race.itemRules === 'boost-star-v2' ? 'holds a Star: next win +3, or block a banana slip.' : 'gets a Star shield.' : 'keeps their Mushroom boost.'}</p>}
     <button className="start-btn" onClick={onReturn}>Return to track</button>
