@@ -126,6 +126,10 @@
 .kart-stakes-positions { display:flex; flex-wrap:wrap; gap:.4rem 1rem; }
 .kart-colour-0 { color:#ff9ba4; } .kart-colour-1 { color:#8cddff; }
 .kart-stakes-compact { margin-bottom:.5rem; }
+.kart-stakes .kart-simple-reward { font-size:1rem; font-weight:700; margin:.35rem 0; }
+.kart-stakes .kart-stakes-rules { margin:0; border:0; }
+.kart-stakes-rules summary { font-size:.75rem; min-height:44px; cursor:pointer; color:#c6d3e8; }
+.kart-stakes-compact .kart-stakes-title { font-size:.75rem; }
 .kart-driver-info b { font-size:1rem !important; }
 .kart-racer-name { max-width:8rem !important; }
 .kart-turn-controls { scroll-margin-top:.5rem; }

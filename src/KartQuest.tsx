@@ -128,7 +128,7 @@ export default function KartQuest({ race: savedRace, positionMemory, names, onSt
     </div>}
     {race.phase === 'landed' && <div className="kart-destination">
       {!race.routeChosen ? <><h3>Choose the stakes</h3><p>Same game: {KART_GAME_NAMES[space.mode]}. Either of you can win the bonus! Draw: both +1.</p><button className="round-btn" onClick={() => onChange(current => chooseKartRoute(current, true))}>Open road: winner +2</button><button className="round-btn" onClick={() => onChange(current => chooseKartRoute(current, false))}>{effect.icon} {effect.name}: winner +3</button></> : <>
-        <KartStakes race={race} /><p><strong>{KART_GAME_NAMES[space.mode]}</strong> · {space.mode === 'clue-duel' ? 'One shared clue challenge' : 'One short round each'} · {race.players[active]} plays first.</p>
+        <h3>{KART_GAME_NAMES[space.mode]}</h3><p>{race.players[active]} goes first.{space.mode === 'clue-duel' ? ' One shared clue challenge.' : ''}</p><KartStakes race={race} />
         {race.effect === 'mushroom' && <button className="round-btn" onClick={() => onChange(current => safeKartMushroom(current))}>Take safe +1</button>}
         <button className="start-btn" onClick={onChallenge}>{race.effect === 'mushroom' ? 'Race for +3' : 'Play challenge'}</button>
       </>}

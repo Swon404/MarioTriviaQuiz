@@ -8,6 +8,12 @@ child playtest or a new full regression run. No gameplay was changed.
 
 ## Implementation follow-up
 
+Following family feedback that the outcome tables were too complicated, landing
+cards now lead with the game and first player, followed by one short reward line.
+The same simple reward appears during play. Named win/loss/draw predictions and
+item details are available under a closed Rules disclosure instead of being
+shown by default. This presentation change does not alter movement or item rules.
+
 The user approved implementation after this audit. Race challenges now show
 named movement stakes and current positions, with standalone leaderboards and
 redundant point totals hidden. Rewind/restart actions are disabled only in Kart

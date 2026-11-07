@@ -134,8 +134,13 @@ test('phone race explains stakes, inspects icons and brings late-track controls 
   await start(page);
   await restoreKart(page, { starter: 0, positions: [19, 18], turn: 8 });
   await roll(page, 2);
+  await expect(page.locator('.kart-simple-reward')).toHaveText('Win to dodge the banana!');
+  await expect(page.getByText('Red wins:', { exact: true })).not.toBeVisible();
+  await page.getByLabel('Race stakes').getByText('Rules', { exact: true }).click();
+  await expect(page.getByText('Red wins:', { exact: true })).toBeVisible();
   await expect(page.getByLabel('Race stakes')).toContainText('Red wins: Red +2');
   await expect(page.getByLabel('Race stakes')).toContainText('Blue wins: Red −1');
+  await page.getByLabel('Race stakes').getByText('Rules', { exact: true }).click();
   await page.getByRole('button', { name: 'About space 24: Rival race', exact: true }).click();
   await expect(page.getByRole('region', { name: 'Space 24 details' })).toContainText('Winner moves +3');
   await page.getByRole('button', { name: 'Close space details' }).click();
@@ -143,7 +148,7 @@ test('phone race explains stakes, inspects icons and brings late-track controls 
   await page.locator('.kart-turn-dock button').click();
   await expect(page.getByRole('button', { name: 'Play challenge', exact: true })).toBeInViewport();
   await page.getByRole('button', { name: 'Play challenge', exact: true }).click();
-  await expect(page.getByLabel('Race stakes')).toContainText('Banana challenge');
+  await expect(page.locator('.kart-simple-reward')).toHaveText('Win to dodge the banana!');
   const round = (await saved(page)).session.rounds[0];
   await solve(page, round);
   await expect(page.getByRole('region', { name: 'Track challenge result' })).toBeVisible();
