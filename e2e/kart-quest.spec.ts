@@ -138,6 +138,36 @@ async function roll(page: Page, die: number, settle = true) {
   if (settle) await page.clock.runFor(1650);
 }
 
+test('Kart Quest remembers both names for fresh races and repairs old saved defaults on resume', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('./');
+  await page.getByRole('button', { name: 'Play Games' }).click();
+  await page.getByRole('button', { name: /Kart Quest/ }).click();
+  await page.getByLabel('Red kart name').fill(' Dad ');
+  await page.getByLabel('Blue kart name').fill(' Blaize ');
+  await page.getByRole('button', { name: 'Start Kart Quest', exact: true }).click();
+  await expect.poll(() => page.evaluate(() => [localStorage.getItem('mariotrivia_setting_player-name'), localStorage.getItem('mariotrivia_setting_opponent-name')])).toEqual(['"Dad"', '"Blaize"']);
+  // Reproduce the defaults left behind by older versions, then resume.
+  await page.evaluate(() => {
+    localStorage.setItem('mariotrivia_setting_player-name', '"Old name"');
+    localStorage.setItem('mariotrivia_setting_opponent-name', '"Player 2"');
+  });
+  await page.reload();
+  await page.getByRole('button', { name: 'Resume game', exact: true }).click();
+  await expect(page.getByRole('button', { name: "Find Dad's kart", exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: "Find Blaize's kart", exact: true })).toBeVisible();
+  page.once('dialog', dialog => dialog.accept());
+  await page.getByRole('button', { name: '← Games', exact: true }).click();
+  await page.getByRole('button', { name: /Kart Quest/ }).click();
+  await expect(page.getByLabel('Red kart name')).toHaveValue('Dad');
+  await expect(page.getByLabel('Blue kart name')).toHaveValue('Blaize');
+  await page.reload();
+  await page.getByRole('button', { name: 'Play Games' }).click();
+  await page.getByRole('button', { name: /Kart Quest/ }).click();
+  await expect(page.getByLabel('Red kart name')).toHaveValue('Dad');
+  await expect(page.getByLabel('Blue kart name')).toHaveValue('Blaize');
+});
+
 async function restoreKart(page: Page, changes: Partial<KartRace>) {
   await page.evaluate(changes => {
     const envelope = JSON.parse(localStorage.getItem('mariotrivia_checkpoint_v1')!);

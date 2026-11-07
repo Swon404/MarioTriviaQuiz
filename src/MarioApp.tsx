@@ -260,6 +260,10 @@ export default function MarioApp() {
     if (!pendingResume) return;
     const saved = pendingResume;
     setKart(saved.kart ?? null);
+    if (saved.kart) {
+      setDraftName(saved.kart.players[0]);
+      setDraftOpponent(saved.kart.players[1]);
+    }
     setScoringVersion(saved.scoringVersion === SCORE_VERSION ? SCORE_VERSION : undefined);
     setPlayer(saved.player); savePlayer(saved.player); setOpponentName((saved.championship?.format ?? saved.standalone?.format ?? saved.quizFormat) === 'computer' ? MUSHBOT : saved.opponentName);
     setMode(saved.mode); setDifficulty(saved.difficulty); setQuizFormat(saved.quizFormat); setTimerEnabled(saved.timerEnabled);
@@ -416,6 +420,7 @@ export default function MarioApp() {
     setKart(newKartRace([first, second]));
     setChampionship(null); setStandalone(null); setTurnScores(null); setSession(null);
     setPlayer(first); savePlayer(first); setOpponentName(second);
+    setDraftName(first); setDraftOpponent(second);
     setScoringVersion(SCORE_VERSION);
     setScreen('kart');
   };
