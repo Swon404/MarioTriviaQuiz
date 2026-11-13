@@ -126,3 +126,8 @@ html:has(.mario-app), body:has(.mario-app) { overflow-x: clip; }
   .pair-card-svg { height: 58px; }
   .pair-card-word { font-size: .72rem; }
 }
+.online-leaderboard label { display: inline-flex; align-items: center; gap: .5rem; margin: .4rem .8rem .4rem 0; flex-wrap: wrap; }
+.online-leaderboard select { min-height: 44px; max-width: 100%; font: inherit; }
+.online-leaderboard summary { cursor: pointer; padding: .75rem 0; }
+.online-leaderboard button { min-height: 44px; }
+.online-leaderboard li { overflow-wrap: anywhere; }

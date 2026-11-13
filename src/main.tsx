@@ -5,9 +5,11 @@ import './styles.css';
 import './mario-theme.css';
 import './modes.css';
 import { recoverProgressImport } from './mario/progressBackup.ts';
+import { startOnlineSync } from './mario/onlineScores.ts';
 
 let recovered = true;
 try { recovered = recoverProgressImport(); } catch { /* Storage access can be blocked; normal in-memory play remains available. */ }
+if (recovered) startOnlineSync();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

@@ -9,11 +9,13 @@
     "test:questions": "node scripts/audit-mario.mjs",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
-    "test:all": "npm run test:questions && npm run test:e2e && npm run build && npm run test:pwa",
+    "test:all": "npm run test:questions && npm run test:online-sql && npm run test:e2e && npm run build && npm run test:pwa",
+    "test:online-sql": "node scripts/audit-online-sql.mjs",
     "test:pwa": "node scripts/audit-pwa.mjs",
     "preview": "vite preview"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.5.16",
     "@playwright/test": "^1.63.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
@@ -23,6 +25,7 @@
     "vite": "^8.0.4"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.119.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "react-router-dom": "^7.14.0",

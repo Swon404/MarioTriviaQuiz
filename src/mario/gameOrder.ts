@@ -1,5 +1,6 @@
 import type { Difficulty } from './questions.ts';
 import type { BoardReplay } from './replay.ts';
+import { queueOnlineTime } from './onlineScores.ts';
 
 export type OrderChallenge = 'easy' | 'medium' | 'hard';
 export type OrderOptions = { challenge: OrderChallenge; tiles: number };
@@ -28,7 +29,11 @@ export function saveOrderTime(value: OrderTime): boolean {
     const existing = getOrderTimes();
     // Keep older best times and their replays. If storage is full, the failed
     // atomic write leaves existing records intact and the caller shows a warning.
-    if (!existing.some(item => item.id === value.id)) localStorage.setItem(KEY, JSON.stringify([{ ...value, ruleset: value.ruleset ?? ORDER_RULESET }, ...existing]));
+    if (!existing.some(item => item.id === value.id)) {
+      const record = { ...value, ruleset: value.ruleset ?? ORDER_RULESET };
+      localStorage.setItem(KEY, JSON.stringify([record, ...existing]));
+      queueOnlineTime('order', record);
+    }
     return true;
   } catch { return false; }
 }

@@ -1,6 +1,7 @@
 import type { Difficulty } from './questions.ts';
 import type { PairRound } from './rounds.ts';
 import type { BoardReplay } from './replay.ts';
+import { queueOnlineTime } from './onlineScores.ts';
 
 export const PAIR_RULESET = 'pairs-v1';
 const KEY = 'mariotrivia_pair_times_v1';
@@ -42,7 +43,10 @@ export function savePairTime(item: PairTime, eligible: boolean): boolean {
     const existing = getPairTimes();
     // Never discard an older best/replay just because newer boards were played.
     // Storage failure returns false without overwriting the existing records.
-    if (!existing.some(value => value.id === item.id)) localStorage.setItem(KEY, JSON.stringify([item, ...existing]));
+    if (!existing.some(value => value.id === item.id)) {
+      localStorage.setItem(KEY, JSON.stringify([item, ...existing]));
+      queueOnlineTime('trial', item);
+    }
     return true;
   } catch { return false; }
 }

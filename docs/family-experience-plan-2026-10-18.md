@@ -1,12 +1,47 @@
 # Mushroom Power Quiz — main experience plan
 
-Updated 30 October 2026. **This is the main plan and single active backlog.**
+Updated 13 November 2026. **This is the main plan and single active backlog.**
 
 It combines the 18 October whole-game audit with every outstanding workstream
 and acceptance check from the [previous roadmap](family-experience-roadmap-2026-10-11.md).
 That roadmap and earlier plans remain historical evidence, not competing task lists.
 Unchecked items below are not claimed complete merely because they have tests or
 appear in this document. Proposed rule changes still require a family decision.
+
+## 12 November — shared leaderboard implementation, pending live setup
+
+User requested leaderboards across devices and supplied Supabase public config.
+This explicitly adds an online service to the earlier local-only scope.
+
+- [x] Add opt-in Community Top 5 for current Time Trial and Game Order settings,
+  random public aliases, replay downloads and local-score fallback.
+- [x] Queue new eligible results, retry after restart/reconnection, deduplicate
+  uploads and provide opt-out/removal without deleting local scores.
+- [x] Prepare private-table SQL and restricted RPCs; test migration, read/write
+  permissions, two identities, ranking, duplicate handling, deletion and limits
+  against embedded PostgreSQL. Browser tests use mocked service responses.
+- [x] Owner setup progressed: live read endpoint now returns HTTP 200 and an
+  empty leaderboard (initially 404). This verifies availability, not all live permissions.
+- [x] Anonymous sign-in enabled and verified 13 November. Live two-identity API
+  checks passed: public read, private-table denial, upload/deduplication, invalid
+  payload rejection, replay title redaction, cross-owner direct-write denial and
+  owner-only removal. Temporary scores removed; two empty anonymous test identities
+  remain in Auth. Existing player records untouched.
+- [ ] Verify physical iPhone restart/offline upload and live rate limiting;
+  review CAPTCHA/moderation/retention before broader public promotion.
+- [x] Final `npm run test:all`: 365 browser tests passed (253 Chromium, 112
+  iPhone-WebKit), content audit, embedded PostgreSQL checks, TypeScript/build and
+  production PWA update/offline checks. Full browser close/reopen preserves a
+  queued Time Trial in both engines. iPhone-width preview has no horizontal overflow.
+- [ ] Publish when explicitly requested, after live setup/acceptance. No commit,
+  push or production upload was performed in this implementation turn.
+- [ ] Follow up dependency advisories and the >500 kB build chunk warning before
+  wider promotion; do not confuse functional test success with a security audit.
+
+Setup, privacy boundaries and live acceptance:
+[shared leaderboard setup](shared-leaderboards-setup.md).
+This first release is not family-code boards, cross-device identity recovery or
+cloud progress backup. Community-submitted times are not independently verified.
 
 ## 29–30 October — implementation checkpoint, not family acceptance
 

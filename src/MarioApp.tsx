@@ -34,6 +34,7 @@ import './phone.css';
 import LearningCards, { LearningFeedback } from './LearningCards.tsx';
 import PairLeaderboards, { PairTimeList } from './PairLeaderboard.tsx';
 import OrderLeaderboards from './OrderLeaderboards.tsx';
+import OnlineLeaderboard from './OnlineLeaderboard.tsx';
 import FinishedScoreTables from './FinishedScoreTables.tsx';
 import { SCORE_VERSION, scoreConfiguration, scoreUsesLevel } from './mario/scoreGroups.ts';
 import type { ReplayFrame } from './mario/replay.ts';
@@ -1167,6 +1168,7 @@ export default function MarioApp() {
     {screen === 'scores' && <section className="high-scores-screen">
       <div className="high-scores-header"><button className="back-btn" onClick={() => setScreen('hub')}>← Back to games</button><div><h2>🏆 High Scores</h2><p>Your finished games</p></div></div>
       {scores.filter(result => !result.championshipLeg).length === 0 ? <p>No completed games yet.</p> : <FinishedScoreTables records={scores.filter(result => !result.championshipLeg)} />}
+      <OnlineLeaderboard />
       <PairLeaderboards />
       <OrderLeaderboards />
       <ProgressBackup />
